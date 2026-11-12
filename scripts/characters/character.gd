@@ -28,6 +28,13 @@ const MAX_REMOTE_AMOUNT := 20.0
 const REMOTE_HIT_REACH := 35.0
 ## o reviver chega pela rede com a posicao um pouco atrasada
 const REMOTE_REACH_SLACK := 1.5
+## velocidade de recuo perdida por segundo
+const KNOCKBACK_DECAY := 14.0
+## o recuo cresce com o dano ate o golpe pesado comum; o rapido empurra pouco para nao quebrar o combo
+const KNOCKBACK_MAX_DAMAGE := 2.0
+## pausa da animacao quando o golpe acerta: da peso ao impacto
+const HITSTOP := 0.06
+const HITSTOP_HEAVY := 0.11
 
 @export var max_health := 10.0
 @export var walk_speed := 4.0
@@ -40,6 +47,10 @@ const REMOTE_REACH_SLACK := 1.5
 @export var turn_speed := 18.0
 ## gravidade extra na queda
 @export var fall_gravity_multiplier := 1.8
+## velocidade do empurrao de um golpe pesado; 0 nao recua
+@export var knockback := 4.0
+## depois de cambalear, segundos sem cambalear de novo: apanhando sem parar, ainda consegue revidar
+@export var flinch_guard := 0.0
 @export var model: Node3D
 @export var animation_player: AnimationPlayer
 ## ataque principal
@@ -63,6 +74,9 @@ var active_buffs: Array[Buff] = []
 var damage_log := DamageLog.new()
 ## o host conta cada queda uma vez so, mesmo que o relato chegue repetido
 var fall_counted := false
+var knockback_velocity := Vector3.ZERO
+var _frozen := false
+var _flinch_ready_at := 0.0
 
 var _action_time := 0.0
 var _action_cancel_after := INF
@@ -106,12 +120,15 @@ func _physics_process(delta: float) -> void:
 	var target := direction * get_max_speed()
 	var rate := acceleration if direction != Vector3.ZERO else deceleration
 	var horizontal := Vector2(velocity.x, velocity.z).move_toward(Vector2(target.x, target.z), rate * delta)
-	velocity.x = horizontal.x
-	velocity.z = horizontal.y
+	velocity.x = horizontal.x + knockback_velocity.x
+	velocity.z = horizontal.y + knockback_velocity.z
 	if direction != Vector3.ZERO and not is_busy:
 		_face(direction, delta)
 
 	move_and_slide()
+	velocity.x -= knockback_velocity.x
+	velocity.z -= knockback_velocity.z
+	knockback_velocity = knockback_velocity.move_toward(Vector3.ZERO, KNOCKBACK_DECAY * delta)
 	_update_animation(direction)
 	_count_steps(delta)
 	_send_network_state(delta)
@@ -138,6 +155,7 @@ func take_damage(amount: float, source: Node3D = null) -> void:
 		blocked.emit()
 		return
 	_note_attacker(source, minf(amount, health))
+	_push_away_from(source, amount)
 	health = maxf(health - amount, 0.0)
 	health_changed.emit(health, get_max_health())
 	_share_health()
@@ -145,7 +163,10 @@ func take_damage(amount: float, source: Node3D = null) -> void:
 		die()
 		return
 	_play(hurt_sound)
-	if _can_flinch():
+	var now := Time.get_ticks_msec() / 1000.0
+	if _can_flinch() and now >= _flinch_ready_at:
+		_flinch_ready_at = now + flinch_guard
+		_on_flinch()
 		play_action(ANIM_HIT, 1.0, 0.0, HIT_RECOVERY)
 
 ## Restaura pontos de vida do personagem até o limite máximo permitido.
@@ -191,6 +212,7 @@ func damage_recap() -> String:
 ## Executa as alterações de física, colisão e animação necessárias na máquina local ao morrer.
 func _die_locally() -> void:
 	is_dead = true
+	knockback_velocity = Vector3.ZERO
 	collision_shape.set_deferred("disabled", true)
 	animation_player.speed_scale = 1.0
 	animation_player.play(ANIM_DEATH, ANIM_BLEND)
@@ -213,6 +235,7 @@ func _revive_locally(amount: float) -> void:
 	damage_log.clear()
 	fall_counted = false
 	is_dead = false
+	knockback_velocity = Vector3.ZERO
 	collision_shape.set_deferred("disabled", false)
 	health = clampf(amount, 1.0, get_max_health())
 	health_changed.emit(health, get_max_health())
@@ -283,9 +306,40 @@ func get_max_speed() -> float:
 func _get_move_direction() -> Vector3:
 	return Vector3.ZERO
 
+func _push_away_from(source: Node3D, amount: float) -> void:
+	if not source or knockback <= 0.0:
+		return
+	var away := global_position - source.global_position
+	away.y = 0.0
+	if away.length_squared() < 0.0001:
+		return
+	knockback_velocity = away.normalized() * knockback * clampf(amount / KNOCKBACK_MAX_DAMAGE, 0.5, 1.0)
+
+## Chamado em quem bateu quando o golpe encontra um alvo.
+func on_hit_landed(heavy: bool) -> void:
+	freeze_animation(HITSTOP_HEAVY if heavy else HITSTOP)
+
+## Para a animacao por um instante; so visual, roda em cada maquina.
+func freeze_animation(seconds: float) -> void:
+	if _frozen:
+		return
+	_frozen = true
+	var speed := animation_player.speed_scale
+	animation_player.speed_scale = 0.0
+	await get_tree().create_timer(seconds, true, false, true).timeout
+	if not is_instance_valid(self):
+		return
+	_frozen = false
+	if animation_player.speed_scale == 0.0:
+		animation_player.speed_scale = speed
+
 ## Método virtual a ser sobrescrito para indicar intenção de corrida.
 func wants_to_run() -> bool:
 	return false
+
+## Método virtual chamado quando o golpe recebido faz o personagem cambalear.
+func _on_flinch() -> void:
+	pass
 
 ## Método virtual a ser sobrescrito para indicar se o personagem reage com flinch a ataques.
 func _can_flinch() -> bool:
@@ -355,7 +409,8 @@ func _update_animation(direction: Vector3) -> void:
 
 
 func play_locomotion(animation: String, speed_scale := 1.0) -> void:
-	animation_player.speed_scale = speed_scale
+	if not _frozen:
+		animation_player.speed_scale = speed_scale
 	if animation_player.current_animation != animation:
 		animation_player.play(animation, ANIM_BLEND)
 

@@ -95,6 +95,8 @@ func _on_body_entered(body: Node3D) -> void:
 			target.take_damage(damage)
 	elif _shooter.is_multiplayer_authority():
 		target.take_damage(damage, _shooter)
+		_shooter.on_hit_landed(false)
+	target.freeze_animation(Character.HITSTOP)
 	if not pierce:
 		var point := global_position + _direction * STICK_DEPTH
 		_leave_impact(point, -_direction, _stick_holder(target, point))

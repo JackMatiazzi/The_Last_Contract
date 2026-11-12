@@ -1,0 +1,16 @@
+[gd_scene format=3]
+
+[node name="ObjectivePip" type="Control"]
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 3
+mouse_filter = 2
+
+[node name="Shadow" type="Polygon2D" parent="."]
+position = Vector2(10, 11)
+color = Color(0, 0, 0, 0.7)
+polygon = PackedVector2Array(0, -9, 8, 0, 0, 9, -8, 0)
+
+[node name="Diamond" type="Polygon2D" parent="."]
+position = Vector2(10, 10)
+color = Color(0.98, 0.84, 0.55, 1)
+polygon = PackedVector2Array(0, -8, 7, 0, 0, 8, -7, 0)

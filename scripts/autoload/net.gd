@@ -103,10 +103,10 @@ func choose_adventurer(index: int) -> void:
 func display_name(peer_id: int) -> String:
 	return names.get(peer_id, Settings.player_name)
 
-## Limpa e valida o nome do jogador, retornando 'Aventureiro' caso o resultado fique vazio.
+## Limpa e valida o nome do jogador, retornando o nome padrão caso o resultado fique vazio.
 static func clean_name(raw: String) -> String:
 	var cleaned := clean_text(raw, MAX_NAME_LENGTH)
-	return cleaned if not cleaned.is_empty() else "Aventureiro"
+	return cleaned if not cleaned.is_empty() else Settings.DEFAULT_PLAYER_NAME
 
 
 ## texto vindo de outro jogador: sem quebra de linha, caractere de controle ou invisivel

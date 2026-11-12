@@ -24,6 +24,7 @@ var player: Adventurer
 var players: Array[Adventurer] = []
 var boss: Enemy
 var _groups_left := 0
+var _groups_total := 0
 # peer_id -> indice da bencao votada; so o host conta
 var _votes := {}
 var _vote_paths := PackedStringArray()
@@ -45,6 +46,8 @@ func _ready() -> void:
 	Net.player_left.connect(_on_player_left)
 	capture_cursor()
 	Net.report_level_loaded()
+	if RunState.attempt == 1:
+		hud.show_start_hint()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -54,7 +57,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("pause"):
 		release_cursor()
 		player.input_locked = true
-		pause_menu.open()
+		pause_menu.open(hud.objective_summary(), player)
 		get_viewport().set_input_as_handled()
 	elif event is InputEventMouseButton and event.pressed and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
 		# o clique que devolve o controle da camera nao deve virar ataque
@@ -104,6 +107,7 @@ func _adventurer_of(peer_id: int) -> AdventurerInfo:
 ## Inicializa o rastreamento do progresso de eliminação dos grupos de inimigos.
 func _track_groups(groups: Array[EnemyGroup]) -> void:
 	_groups_left = groups.size()
+	_groups_total = groups.size()
 	for group in groups:
 		group.cleared.connect(_on_group_cleared)
 	_show_objective()
@@ -117,7 +121,7 @@ func _on_group_cleared() -> void:
 
 ## Atualiza o texto do objetivo atual na HUD.
 func _show_objective() -> void:
-	hud.set_objective("Grupos restantes: %d" % _groups_left)
+	hud.set_objective("Grupos restantes", _groups_left, _groups_total)
 
 ## RPC enviado pelo Host para instanciar o chefe final em todas as máquinas.
 @rpc("authority", "call_local", "reliable")
@@ -132,7 +136,7 @@ func _summon_boss() -> void:
 	boss.died.connect(_on_boss_died)
 	hud.show_boss(boss)
 	hud.set_objective("Derrote o Necromante")
-	hud.announce("O Necromante despertou na praça")
+	hud.announce_boss("O Necromante despertou na praça")
 
 ## Chamado quando o chefe é derrotado para acionar a tela de vitória.
 func _on_boss_died() -> void:
