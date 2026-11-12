@@ -16,6 +16,8 @@ const SECTION := "settings"
 const GAMEPLAY_ACTIONS := ["move_forward", "move_back", "move_left", "move_right", "attack", "secondary",
 		"run", "look_left", "look_right", "look_up", "look_down", "interact", "scoreboard",
 		"next_ability", "next_item"]
+## quem nunca assinou o contrato aparece assim
+const DEFAULT_PLAYER_NAME := "Aventureiro"
 
 var master_volume := 1.0
 var music_volume := 0.8
@@ -26,7 +28,7 @@ var mouse_sensitivity := 1.0
 var invert_y := false
 var input_device := InputDevice.AUTOMATIC
 var stick_sensitivity := 1.0
-var player_name := "Aventureiro"
+var player_name := DEFAULT_PLAYER_NAME
 
 var _applied_device := -1
 var _last_used_gamepad := false

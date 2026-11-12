@@ -1,10 +1,13 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene format=3]
 
 [ext_resource type="Texture2D" path="res://assets/ui/ring.png" id="ring_texture"]
 [ext_resource type="Script" path="res://scripts/ui/hud.gd" id="1_hud"]
 [ext_resource type="Script" path="res://scripts/ui/cost_ticks.gd" id="cost_ticks"]
 [ext_resource type="PackedScene" path="res://scenes/ui/feed_entry.tscn" id="feed_entry"]
 [ext_resource type="PackedScene" path="res://scenes/ui/score_cell.tscn" id="score_cell"]
+[ext_resource type="AudioStream" path="res://resources/audio/rise.tres" id="boss_cue"]
+[ext_resource type="PackedScene" path="res://scenes/ui/buff_chip.tscn" id="buff_chip"]
+[ext_resource type="PackedScene" path="res://scenes/ui/objective_pip.tscn" id="objective_pip"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_boss_bg"]
 bg_color = Color(0.08, 0.05, 0.05, 0.85)
@@ -15,7 +18,46 @@ border_width_bottom = 2
 border_color = Color(0.45, 1, 0.4, 0.8)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_stamina_fill"]
-bg_color = Color(0.93, 0.74, 0.25, 1)
+bg_color = Color(0.851, 0.631, 0.231, 1)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_health_bg"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_health_fill"]
+bg_color = Color(0.639, 0.141, 0.169, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_trail_bg"]
+bg_color = Color(0.078, 0.071, 0.059, 0.85)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.302, 0.239, 0.161, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_trail_fill"]
+bg_color = Color(0.878, 0.478, 0.373, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cost_badge"]
+content_margin_left = 6.0
+content_margin_top = 1.0
+content_margin_right = 6.0
+content_margin_bottom = 1.0
+bg_color = Color(0.851, 0.631, 0.231, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mana_fill"]
 bg_color = Color(0.3, 0.52, 0.95, 1)
@@ -26,10 +68,12 @@ bg_color = Color(0.36, 0.78, 0.3, 1)
 [node name="Hud" type="CanvasLayer"]
 script = ExtResource("1_hud")
 feed_entry_scene = ExtResource("feed_entry")
+buff_chip_scene = ExtResource("buff_chip")
+objective_pip_scene = ExtResource("objective_pip")
 score_cell_scene = ExtResource("score_cell")
 
 [node name="Margin" type="MarginContainer" parent="."]
-offset_right = 360.0
+offset_right = 900.0
 offset_bottom = 220.0
 mouse_filter = 2
 theme_override_constants/margin_left = 24
@@ -40,18 +84,51 @@ layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 8
 
-[node name="AttemptLabel" type="Label" parent="Margin/Content"]
+[node name="AttemptRow" type="HBoxContainer" parent="Margin/Content"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 16
+
+[node name="AttemptLabel" type="Label" parent="Margin/Content/AttemptRow"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"HeadingLabel"
+theme_override_colors/font_color = Color(0.98, 0.84, 0.55, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 6
 theme_override_font_sizes/font_size = 22
-text = "Tentativa 1"
+text = "Tentativa I"
+
+[node name="BuffList" type="HBoxContainer" parent="Margin/Content/AttemptRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+theme_override_constants/separation = 6
 
 [node name="HealthBar" type="ProgressBar" parent="Margin/Content"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(300, 26)
+custom_minimum_size = Vector2(440, 26)
 layout_mode = 2
+size_flags_horizontal = 0
 mouse_filter = 2
+theme_override_styles/background = SubResource("StyleBoxEmpty_health_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_health_fill")
+max_value = 10.0
+step = 0.0
+value = 10.0
+show_percentage = false
+
+[node name="HealthTrail" type="ProgressBar" parent="Margin/Content/HealthBar"]
+unique_name_in_owner = true
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_styles/background = SubResource("StyleBoxFlat_trail_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_trail_fill")
 max_value = 10.0
 step = 0.0
 value = 10.0
@@ -71,8 +148,9 @@ vertical_alignment = 1
 [node name="StaminaBar" type="ProgressBar" parent="Margin/Content"]
 unique_name_in_owner = true
 visible = false
-custom_minimum_size = Vector2(300, 12)
+custom_minimum_size = Vector2(440, 12)
 layout_mode = 2
+size_flags_horizontal = 0
 mouse_filter = 2
 theme_override_styles/fill = SubResource("StyleBoxFlat_stamina_fill")
 step = 0.0
@@ -93,8 +171,9 @@ script = ExtResource("cost_ticks")
 [node name="ManaBar" type="ProgressBar" parent="Margin/Content"]
 unique_name_in_owner = true
 visible = false
-custom_minimum_size = Vector2(300, 12)
+custom_minimum_size = Vector2(440, 12)
 layout_mode = 2
+size_flags_horizontal = 0
 mouse_filter = 2
 theme_override_styles/fill = SubResource("StyleBoxFlat_mana_fill")
 step = 0.0
@@ -111,18 +190,6 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("cost_ticks")
-
-[node name="BuffTitle" type="Label" parent="Margin/Content"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_color = Color(0.98, 0.84, 0.55, 1)
-theme_override_font_sizes/font_size = 15
-text = "Bênçãos ativas (também nos mortos-vivos)"
-
-[node name="BuffList" type="VBoxContainer" parent="Margin/Content"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_constants/separation = 2
 
 [node name="Crosshair" type="Control" parent="."]
 unique_name_in_owner = true
@@ -223,21 +290,39 @@ offset_bottom = 1.0
 mouse_filter = 2
 color = Color(1, 0.94, 0.82, 0.95)
 
-[node name="ObjectiveLabel" type="Label" parent="."]
-unique_name_in_owner = true
+[node name="Objective" type="VBoxContainer" parent="."]
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
 offset_left = -420.0
 offset_top = 24.0
 offset_right = -24.0
-offset_bottom = 54.0
+offset_bottom = 80.0
+grow_horizontal = 0
+mouse_filter = 2
+theme_override_constants/separation = 8
+
+[node name="ObjectiveLabel" type="Label" parent="Objective"]
+unique_name_in_owner = true
+layout_mode = 2
 theme_type_variation = &"HeadingLabel"
 theme_override_colors/font_color = Color(0.98, 0.84, 0.55, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 6
-theme_override_font_sizes/font_size = 22
+theme_override_font_sizes/font_size = 20
 horizontal_alignment = 2
+
+[node name="Pips" type="HBoxContainer" parent="Objective"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 10
+alignment = 2
+
+[node name="BossCue" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
+stream = ExtResource("boss_cue")
+bus = &"SFX"
 
 [node name="Cross" type="GridContainer" parent="."]
 layout_mode = 3
@@ -295,25 +380,25 @@ tint_progress = Color(0.98, 0.8, 0.4, 1)
 
 [node name="AbilityCost" type="Label" parent="Cross/AbilitySlot/Face"]
 unique_name_in_owner = true
-theme_type_variation = &"OutlinedSmallLabel"
 layout_mode = 1
-anchors_preset = 3
+anchors_preset = 1
 anchor_left = 1.0
-anchor_top = 1.0
 anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -60.0
-offset_top = -24.0
+offset_left = -46.0
+offset_top = -8.0
+offset_right = 4.0
+offset_bottom = 14.0
 grow_horizontal = 0
-grow_vertical = 0
-horizontal_alignment = 2
-vertical_alignment = 2
+theme_override_colors/font_color = Color(0.055, 0.047, 0.039, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_cost_badge")
+horizontal_alignment = 1
 
 [node name="AbilityName" type="Label" parent="Cross"]
 unique_name_in_owner = true
-theme_type_variation = &"OutlinedLabel"
+theme_type_variation = &"OutlinedSmallLabel"
 layout_mode = 2
-custom_minimum_size = Vector2(220, 88)
+custom_minimum_size = Vector2(300, 88)
 vertical_alignment = 1
 
 [node name="SecondarySlot" type="PanelContainer" parent="Cross"]
@@ -403,9 +488,9 @@ vertical_alignment = 2
 
 [node name="ItemHint" type="Label" parent="Cross"]
 unique_name_in_owner = true
-theme_type_variation = &"OutlinedLabel"
+theme_type_variation = &"OutlinedSmallLabel"
 layout_mode = 2
-custom_minimum_size = Vector2(220, 88)
+custom_minimum_size = Vector2(300, 88)
 vertical_alignment = 1
 
 [node name="Feed" type="VBoxContainer" parent="."]

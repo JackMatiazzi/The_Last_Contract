@@ -18,6 +18,7 @@ var models: Array[Node3D] = []
 var name_tags: Array[Label3D] = []
 
 @onready var picker: AdventurerPicker = %AdventurerPicker
+@onready var contract: ContractSign = %ContractSign
 
 
 func _ready() -> void:
@@ -25,8 +26,10 @@ func _ready() -> void:
 	for i in picker.options.size():
 		_add_slot(i, picker.options[i])
 	picker.selection_changed.connect(_highlight)
-	picker.confirmed.connect(_start_contract)
+	picker.confirmed.connect(_offer_contract)
 	picker.back_requested.connect(get_tree().change_scene_to_file.bind(MAIN_MENU))
+	contract.signed.connect(func(_signature: String) -> void: _start_contract(picker.selected))
+	contract.cancelled.connect(_back_to_choice)
 	_highlight(picker.selected)
 
 
@@ -61,6 +64,17 @@ func _highlight(_info: AdventurerInfo) -> void:
 	var player := _animation_player(models[chosen])
 	player.play("Cheer")
 	player.queue(Character.ANIM_IDLE)
+
+
+# o seletor escondido para de ler as setas e o Esc, que agora sao do contrato
+func _offer_contract(info: AdventurerInfo) -> void:
+	picker.hide()
+	contract.open(info)
+
+
+func _back_to_choice() -> void:
+	picker.show()
+	picker.focus_accept()
 
 
 func _start_contract(info: AdventurerInfo) -> void:

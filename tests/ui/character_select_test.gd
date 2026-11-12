@@ -39,6 +39,34 @@ func test_ring_marks_the_chosen_adventurer() -> void:
 	assert_float(screen.ring.position.x).is_equal_approx(screen.models[3].position.x, 0.01)
 
 
+func test_accepting_asks_for_the_signature_first() -> void:
+	screen.picker.confirmed.emit(screen.picker.selected)
+
+	assert_bool(screen.contract.visible).is_true()
+	assert_bool(screen.picker.visible).is_false()
+
+
+func test_hidden_picker_ignores_esc_while_signing() -> void:
+	screen.picker.confirmed.emit(screen.picker.selected)
+	var signals := monitor_signals(screen.picker)
+
+	var event := InputEventAction.new()
+	event.action = "ui_cancel"
+	event.pressed = true
+	screen.picker._input(event)
+
+	await assert_signal(signals).wait_until(200).is_not_emitted("back_requested")
+
+
+func test_going_back_from_the_contract_returns_to_the_choice() -> void:
+	screen.picker.confirmed.emit(screen.picker.selected)
+
+	screen.contract.cancel()
+
+	assert_bool(screen.contract.visible).is_false()
+	assert_bool(screen.picker.visible).is_true()
+
+
 func test_only_the_chosen_name_is_highlighted() -> void:
 	await _choose(1)
 

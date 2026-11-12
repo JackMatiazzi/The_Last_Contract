@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/characters/character.tscn" id="1_character"]
 [ext_resource type="Script" path="res://scripts/characters/adventurers/adventurer.gd" id="2_adventurer"]
@@ -8,10 +8,12 @@
 [ext_resource type="Script" path="res://scripts/characters/adventurers/states/block_state.gd" id="6_block"]
 [ext_resource type="Script" path="res://scripts/characters/adventurers/states/dead_state.gd" id="7_dead"]
 [ext_resource type="Script" path="res://scripts/characters/adventurers/quick_inventory.gd" id="8_inventory"]
+[ext_resource type="AudioStream" path="res://resources/audio/hit.tres" id="9_hit"]
 
 [node name="Adventurer" instance=ExtResource("1_character")]
 collision_layer = 2
 max_health = 10.0
+knockback = 2.0
 script = ExtResource("2_adventurer")
 
 [node name="CameraPivot" type="Node3D" parent="."]
@@ -85,3 +87,8 @@ script = ExtResource("7_dead")
 
 [node name="Inventory" type="Node" parent="."]
 script = ExtResource("8_inventory")
+
+[node name="HitConfirm" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("9_hit")
+volume_db = -6.0
+bus = &"SFX"

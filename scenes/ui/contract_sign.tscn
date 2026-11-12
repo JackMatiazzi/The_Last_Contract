@@ -1,0 +1,149 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/contract_sign.gd" id="1_sign"]
+[ext_resource type="FontFile" uid="uid://ccfqa8tc4p3wu" path="res://assets/fonts/Cinzel-wght.ttf" id="2_cinzel"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_paper"]
+content_margin_left = 44.0
+content_margin_top = 26.0
+content_margin_right = 44.0
+content_margin_bottom = 22.0
+bg_color = Color(0.9, 0.84, 0.71, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.72, 0.54, 0.25, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+shadow_color = Color(0, 0, 0, 0.5)
+shadow_size = 24
+shadow_offset = Vector2(0, 10)
+
+[sub_resource type="FontVariation" id="FontVariation_signature"]
+base_font = ExtResource("2_cinzel")
+variation_opentype = {
+2003265652: 600
+}
+variation_transform = Transform2D(1, 0, 0.28, 1, 0, 0)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_line"]
+bg_color = Color(0.17, 0.11, 0.07, 1)
+content_margin_top = 1.0
+content_margin_bottom = 1.0
+
+[node name="ContractSign" type="CanvasLayer"]
+layer = 10
+script = ExtResource("1_sign")
+
+[node name="Dim" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.02, 0.015, 0.01, 0.65)
+
+[node name="Center" type="CenterContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Paper" type="PanelContainer" parent="Center"]
+custom_minimum_size = Vector2(760, 0)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_paper")
+
+[node name="Content" type="VBoxContainer" parent="Center/Paper"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Seal" type="Label" parent="Center/Paper/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.48, 0.11, 0.13, 1)
+theme_override_font_sizes/font_size = 13
+text = "Selado pelo Lorde, senhor destas terras"
+horizontal_alignment = 1
+
+[node name="Title" type="Label" parent="Center/Paper/Content"]
+layout_mode = 2
+theme_type_variation = &"HeadingLabel"
+theme_override_colors/font_color = Color(0.17, 0.11, 0.07, 1)
+theme_override_font_sizes/font_size = 30
+text = "Contrato de Limpeza"
+horizontal_alignment = 1
+
+[node name="Clauses" type="Label" parent="Center/Paper/Content"]
+custom_minimum_size = Vector2(672, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.17, 0.11, 0.07, 1)
+theme_override_font_sizes/font_size = 15
+text = "I. Limpar a vila de todo morto-vivo e derrubar quem os levanta.
+II. Uma vida por tentativa; caindo, a vila volta a ser ocupada.
+III. A bênção do Lorde vale para todos dentro da vila, vivos ou não.
+IV. Até quatro podem assinar juntos e erguer quem cair com uma poção.
+V. Desistir é quebra de contrato. A pena é a execução."
+autowrap_mode = 3
+
+[node name="FinePrint" type="Label" parent="Center/Paper/Content"]
+custom_minimum_size = Vector2(672, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.17, 0.11, 0.07, 0.6)
+theme_override_font_sizes/font_size = 11
+text = "O Lorde não responde pelo que se levantar depois de morto dentro de suas terras, contratados inclusive."
+autowrap_mode = 3
+
+[node name="SignRow" type="HBoxContainer" parent="Center/Paper/Content"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="TradeLabel" type="Label" parent="Center/Paper/Content/SignRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.48, 0.11, 0.13, 1)
+theme_override_font_sizes/font_size = 14
+text = "Ofício: Knight"
+
+[node name="NameInput" type="LineEdit" parent="Center/Paper/Content/SignRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Assine aqui com o seu nome"
+max_length = 16
+select_all_on_focus = true
+
+[node name="Signature" type="Label" parent="Center/Paper/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.13, 0.12, 0.3, 1)
+theme_override_fonts/font = SubResource("FontVariation_signature")
+theme_override_font_sizes/font_size = 28
+text = "Aventureiro"
+horizontal_alignment = 1
+
+[node name="Line" type="HSeparator" parent="Center/Paper/Content"]
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxFlat_line")
+
+[node name="Caption" type="Label" parent="Center/Paper/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.17, 0.11, 0.07, 0.7)
+theme_override_font_sizes/font_size = 11
+text = "O Contratado"
+horizontal_alignment = 1
+
+[node name="Buttons" type="HBoxContainer" parent="Center/Paper/Content"]
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="BackButton" type="Button" parent="Center/Paper/Content/Buttons"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Voltar"
+
+[node name="SignButton" type="Button" parent="Center/Paper/Content/Buttons"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"PrimaryButton"
+text = "Assinar"

@@ -109,11 +109,11 @@ func test_hud_cross_shows_ability_secondary_and_quick_item() -> void:
 
 	assert_object(hud.ability_icon.texture).is_same(knight.attack.icon)
 	assert_str(hud.ability_cost.text).is_equal("15%")
-	assert_str(hud.ability_name.text).is_equal("Espada\nestamina")
+	assert_str(hud.ability_name.text).is_equal("Espada")
 	assert_float(hud.secondary_slot.self_modulate.a).is_equal(1.0)
 	assert_object(hud.secondary_icon.texture).is_same(knight.block.icon)
 	assert_object(hud.item_icon.texture).is_null()
-	assert_str(hud.item_hint.text).is_equal("Sem itens")
+	assert_str(hud.item_hint.text).is_empty()
 
 	knight.inventory.add(HEALTH_POTION)
 	assert_object(hud.item_icon.texture).is_same(HEALTH_POTION.icon)
