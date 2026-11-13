@@ -137,6 +137,28 @@ func test_joining_with_a_room_code_goes_through_the_relay() -> void:
 	Net.relay_url = Net.RELAY_URL
 
 
+func test_the_report_address_follows_the_relay() -> void:
+	assert_str(Net.http_address("wss://sala.exemplo.workers.dev")).is_equal("https://sala.exemplo.workers.dev")
+	assert_str(Net.http_address("ws://127.0.0.1:8787")).is_equal("http://127.0.0.1:8787")
+
+
+func test_no_report_leaves_without_a_ticket_from_the_room() -> void:
+	Net.relay_ticket = ""
+
+	assert_int(Net.send_match_report({"resultado": "victory"})).is_equal(ERR_UNCONFIGURED)
+
+
+func test_a_ticket_is_spent_by_the_first_report() -> void:
+	Net.relay_url = "ws://127.0.0.1:9"
+	Net.relay_ticket = "ficha-de-teste"
+
+	Net.send_match_report({"resultado": "victory"})
+
+	assert_str(Net.relay_ticket).is_empty()
+	assert_int(Net.send_match_report({"resultado": "victory"})).is_equal(ERR_UNCONFIGURED)
+	Net.relay_url = Net.RELAY_URL
+
+
 func test_a_full_party_turns_new_players_away() -> void:
 	Net.roster = {1: 0, 2: 1, 3: 2}
 	assert_bool(Net.admits_new_player()).is_true()

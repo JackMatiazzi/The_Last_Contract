@@ -1,37 +1,19 @@
 import { after, before, test } from "node:test";
 import assert from "node:assert/strict";
-import { spawn } from "node:child_process";
-import { fileURLToPath } from "node:url";
 import { escreverRegistros, lerRegistros } from "../src/protocolo.js";
+import { derrubar, subirRelay } from "./local.js";
 
-// sobe o relay de verdade com o wrangler dev e conversa com ele como o jogo conversaria
+// o relay de verdade no wrangler dev, conversando com ele como o jogo conversaria
 const PORTA = 8799;
 const BASE = `ws://127.0.0.1:${PORTA}`;
-const PASTA = fileURLToPath(new URL("..", import.meta.url));
 const SALAS_POR_MINUTO_NO_TESTE = 40;
 let wrangler;
 
 before(async () => {
-	const limites = ["--var", `SALAS_POR_IP_POR_MINUTO:${SALAS_POR_MINUTO_NO_TESTE}`, "--var", "MAX_SALAS:100", "--var", "SALAS_ABERTAS_POR_IP:100", "--var", "TENTATIVAS_POR_IP_POR_MINUTO:500"];
-	wrangler = spawn("npx", ["wrangler", "dev", "--port", String(PORTA), "--ip", "127.0.0.1", ...limites], { cwd: PASTA, shell: true, stdio: "pipe" });
-	await new Promise((pronto, falhou) => {
-		const limite = setTimeout(() => falhou(new Error("wrangler dev nao subiu")), 60000);
-		wrangler.stdout.on("data", (pedaco) => {
-			if (pedaco.toString().includes("Ready on")) {
-				clearTimeout(limite);
-				pronto();
-			}
-		});
-	});
+	wrangler = await subirRelay(PORTA, { SALAS_POR_IP_POR_MINUTO: SALAS_POR_MINUTO_NO_TESTE, MAX_SALAS: 100, SALAS_ABERTAS_POR_IP: 100, TENTATIVAS_POR_IP_POR_MINUTO: 500, ORCAMENTO_DIARIO: 10000000 });
 });
 
-after(() => {
-	if (process.platform === "win32") {
-		spawn("taskkill", ["/pid", String(wrangler.pid), "/T", "/F"]);
-	} else {
-		wrangler.kill();
-	}
-});
+after(() => derrubar(wrangler));
 
 class Jogador {
 	constructor(url) {

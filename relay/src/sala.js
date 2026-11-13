@@ -1,4 +1,5 @@
 import { DurableObject } from "cloudflare:workers";
+import { contarJogadores, criarFicha, fecharPartida } from "./banco.js";
 import { destinatarios, escreverRegistros, ID_HOST, idDeClienteValido, lerRegistros } from "./protocolo.js";
 
 // o jogo manda no maximo 10 mensagens por segundo; o resto da folga e para rajada de inicio de fase
@@ -7,7 +8,8 @@ export const LIMITES = {
 	mensagensPorSegundo: 15,
 	bytesPorMensagem: 64 * 1024,
 	bytesPorComando: 256,
-	mensagensPorSala: 150000,
+	// uma partida de 45 min mediu 39 mil; o teto da 5 mil requisicoes e corta quem so quer gastar a cota
+	mensagensPorSala: 100000,
 	ociosaMs: 10 * 60 * 1000,
 	semClientesMs: 2 * 60 * 1000,
 	duracaoMs: 90 * 60 * 1000,
@@ -35,19 +37,37 @@ export class Sala extends DurableObject {
 		if (recusa) {
 			return recusarConexao(recusa);
 		}
+		const partida = papel === "host" ? url.searchParams.get("partida") : this.host().deserializeAttachment().partida;
 		const [cliente, servidor] = Object.values(new WebSocketPair());
 		this.ctx.acceptWebSocket(servidor);
-		servidor.serializeAttachment({ id, codigo, inicio: Date.now(), trancada: false, teveCliente: false });
-		servidor.send(JSON.stringify({ t: "bem-vindo", id, sala: codigo, pares: this.pares().filter((par) => par !== id) }));
-		this.avisar({ t: "entrou", id }, id);
+		servidor.serializeAttachment({ id, codigo, partida, inicio: Date.now(), trancada: false, teveCliente: false, jogadores: 1 });
 		if (papel !== "host") {
-			this.atualizarHost({ teveCliente: true });
+			this.atualizarHost({ teveCliente: true, jogadores: Math.max(this.host().deserializeAttachment().jogadores, this.pares().length) });
 		}
+		const ficha = await this.prepararBanco(partida, papel);
+		servidor.send(JSON.stringify({ t: "bem-vindo", id, sala: codigo, ficha, pares: this.pares().filter((par) => par !== id) }));
+		this.avisar({ t: "entrou", id }, id);
 		this.ultimaAtividade = Date.now();
 		if ((await this.ctx.storage.getAlarm()) === null) {
 			await this.ctx.storage.setAlarm(Date.now() + LIMITES.verificacaoMs);
 		}
 		return new Response(null, { status: 101, webSocket: cliente });
+	}
+
+	// banco fora do ar nao pode travar o co-op: a partida segue, so sem ficha para o relatorio
+	async prepararBanco(partida, papel) {
+		if (!partida) {
+			return "";
+		}
+		try {
+			if (papel !== "host") {
+				await contarJogadores(this.env.DB, partida, this.pares().length);
+			}
+			return await criarFicha(this.env.DB, partida, Date.now());
+		} catch (erro) {
+			console.error(JSON.stringify({ evento: "banco-indisponivel", etapa: "entrada", erro: String(erro) }));
+			return "";
+		}
 	}
 
 	motivoDeRecusa(papel, id) {
@@ -78,7 +98,7 @@ export class Sala extends DurableObject {
 			return;
 		}
 		if (typeof mensagem === "string") {
-			this.controle(mensagem);
+			await this.controle(mensagem);
 			return;
 		}
 		const registros = lerRegistros(mensagem);
@@ -139,10 +159,15 @@ export class Sala extends DurableObject {
 
 	// trancar no inicio da partida, tirar alguem e encerrar. Encerrar avisa todos na hora;
 	// so fechar a conexao leva alguns segundos para chegar aos outros
-	controle(texto) {
+	async controle(texto) {
 		const comando = lerJson(texto);
 		if (comando?.t === "encerrar") {
+			const dadosHost = this.host()?.deserializeAttachment();
+			const consumo = this.consumoAtual();
 			this.fecharTodos("O host encerrou a partida.", 4004);
+			if (dadosHost) {
+				await this.encerrar(dadosHost, consumo);
+			}
 		} else if (comando?.t === "trancar") {
 			this.atualizarHost({ trancada: true });
 		} else if (comando?.t === "expulsar" && Number.isInteger(comando.id) && comando.id !== ID_HOST) {
@@ -182,7 +207,7 @@ export class Sala extends DurableObject {
 			return;
 		}
 		const consumo = this.consumoAtual();
-		const inicio = eu.id === ID_HOST ? eu.inicio : this.host()?.deserializeAttachment().inicio;
+		const dadosHost = eu.id === ID_HOST ? eu : (this.host()?.deserializeAttachment() ?? eu);
 		const restantes = this.ctx.getWebSockets().filter((outro) => outro !== ws);
 		if (eu.id === ID_HOST) {
 			this.fecharTodos("O host saiu da partida.", 4004);
@@ -190,7 +215,7 @@ export class Sala extends DurableObject {
 			this.avisar({ t: "saiu", id: eu.id }, eu.id);
 		}
 		if (eu.id === ID_HOST || restantes.length === 0) {
-			await this.encerrar(eu.codigo, consumo, inicio);
+			await this.encerrar(dadosHost, consumo);
 		}
 	}
 
@@ -225,20 +250,31 @@ export class Sala extends DurableObject {
 		if (host) {
 			enviarSemErro(host, JSON.stringify({ t: "encerrada", motivo }));
 		}
+		const dadosHost = host?.deserializeAttachment();
 		this.fecharTodos(motivo, 4009);
-		if (host) {
-			const { codigo, inicio } = host.deserializeAttachment();
-			await this.encerrar(codigo, consumo, inicio);
+		if (dadosHost) {
+			await this.encerrar(dadosHost, consumo);
 		}
 	}
 
-	// o registro libera a vaga e o consumo da sala fica no log do Worker, para medir o custo real
-	async encerrar(codigo, consumo, inicio) {
-		const minutos = inicio ? Math.round((Date.now() - inicio) / 6000) / 10 : null;
-		console.log(JSON.stringify({ evento: "sala-encerrada", ...consumo, requisicoes: Math.ceil(consumo.mensagens / 20), minutos }));
+	// o consumo vai para o banco (orcamento do dia e media por partida) e o registro libera a vaga
+	// a vaga sempre volta ao registro, mesmo com o banco fora do ar; o consumo tambem vai para o registro,
+	// que soma por IP e segura quem gasta o orcamento do dia sozinho
+	async encerrar({ codigo, partida, inicio, jogadores }, consumo) {
+		const fim = Date.now();
+		const requisicoes = Math.ceil(consumo.mensagens / 20);
 		this.consumo = null;
 		await this.ctx.storage.deleteAlarm();
-		await this.env.REGISTRO.get(this.env.REGISTRO.idFromName("global")).liberar(codigo);
+		try {
+			if (partida) {
+				const minutos = Math.round((fim - inicio) / 6000) / 10;
+				await fecharPartida(this.env.DB, partida, { fim, minutos, jogadores: jogadores ?? 1, ...consumo, requisicoes });
+			}
+		} catch (erro) {
+			console.error(JSON.stringify({ evento: "banco-indisponivel", etapa: "encerramento", erro: String(erro) }));
+		} finally {
+			await this.env.REGISTRO.get(this.env.REGISTRO.idFromName("global")).liberar(codigo, requisicoes);
+		}
 	}
 
 	dentroDaTaxa(ws) {

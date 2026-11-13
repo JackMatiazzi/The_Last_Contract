@@ -41,7 +41,20 @@ func run() -> void:
 	await _forged_damage_is_ignored()
 	await _revive_through_the_network(host, helper)
 	await _everyone_falls_and_votes()
+	await _report_to_the_online_room()
 	await _leave_together()
+
+
+# pela sala online cada jogador manda o relatorio da partida com a ficha que recebeu; a sala precisa aceitar
+func _report_to_the_online_room() -> void:
+	if Net.relay_ticket.is_empty():
+		return
+	var answer := []
+	Net.match_report_sent.connect(func(accepted: bool) -> void: answer.append(accepted), CONNECT_ONE_SHOT)
+	var deaths: int = RunState.stats_of(multiplayer.get_unique_id()).deaths
+	Net.send_match_report({"classe": RunState.current_adventurer().title, "resultado": "left_party", "tentativas": RunState.attempt, "mortes": deaths, "minutos": 1.0, "eventos": []})
+	if await wait_until(func() -> bool: return not answer.is_empty(), "resposta da sala ao relatorio"):
+		check(answer[0], "relatorio da partida aceito pela sala online")
 
 
 func _damage_crosses_the_network(host: Adventurer, helper: Adventurer) -> void:

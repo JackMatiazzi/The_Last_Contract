@@ -9,6 +9,7 @@ signal roster_changed
 signal connection_failed
 signal player_left(peer_id: int)
 signal room_ready(code: String)
+signal match_report_sent(accepted: bool)
 
 ## ENET e a rede local (UDP); RELAY e a sala online com codigo, na pasta relay/ (Cloudflare);
 ## WEBSOCKET e o host publicando a propria porta com o tunel do cloudflared
@@ -48,6 +49,8 @@ var last_error := ""
 var relay_url := RELAY_URL
 ## codigo da sala online que o host passa para os amigos
 var room_code := ""
+## ficha que a sala online deu a este jogador; o relatorio do fim da partida so vale com ela, uma vez
+var relay_ticket := ""
 ## solo (offline ou host sozinho) conta 1: reviver aliado, votacao e pausa sem congelar ficam desligados
 var player_count: int:
 	get:
@@ -85,6 +88,7 @@ func host(port := PORT, transport := Transport.ENET) -> Error:
 	if transport == Transport.RELAY:
 		var relay_peer := RelayPeer.new()
 		relay_peer.room_ready.connect(_on_room_ready)
+		relay_peer.room_ready.connect(_remember_ticket.bind(relay_peer))
 		# adiado: o aviso sai de dentro do poll do proprio peer, que nao pode ser trocado ali
 		relay_peer.dropped.connect(_on_relay_host_dropped.bind(relay_peer), CONNECT_DEFERRED)
 		error = relay_peer.create_host(relay_url)
@@ -116,6 +120,7 @@ func join(address: String, port := PORT) -> Error:
 	var error: Error
 	if is_room_code(address):
 		var relay_peer := RelayPeer.new()
+		relay_peer.room_ready.connect(_remember_ticket.bind(relay_peer))
 		error = relay_peer.create_client(relay_url, address.strip_edges().to_upper())
 		peer = relay_peer
 	elif not web.is_empty():
@@ -144,6 +149,37 @@ static func web_address(raw: String) -> String:
 static func is_room_code(raw: String) -> bool:
 	var code := raw.strip_edges().to_upper()
 	return code.length() == ROOM_CODE_LENGTH and Array(code.split("")).all(func(letter: String) -> bool: return letter in ROOM_CODE_LETTERS)
+
+
+func _remember_ticket(_code: String, relay_peer: RelayPeer) -> void:
+	relay_ticket = relay_peer.ticket
+
+
+static func http_address(web_url: String) -> String:
+	if web_url.begins_with("wss://"):
+		return "https://" + web_url.trim_prefix("wss://")
+	return "http://" + web_url.trim_prefix("ws://") if web_url.begins_with("ws://") else web_url
+
+
+## relatorio do fim da partida para o banco da sala online (placar e playtest). Sem ficha nao manda:
+## partida local ou pelo tunel nao passa pela sala. A ficha vale uma vez so
+func send_match_report(report: Dictionary) -> Error:
+	if relay_ticket.is_empty():
+		return ERR_UNCONFIGURED
+	var body := JSON.stringify(report.merged({"ficha": relay_ticket, "apelido": Settings.player_name}))
+	relay_ticket = ""
+	var request := HTTPRequest.new()
+	add_child(request)
+	request.request_completed.connect(_on_report_sent.bind(request))
+	return request.request(http_address(relay_url) + "/telemetria", ["Content-Type: application/json"], HTTPClient.METHOD_POST, body)
+
+
+func _on_report_sent(result: int, code: int, _headers: PackedStringArray, _body: PackedByteArray, request: HTTPRequest) -> void:
+	var accepted := result == HTTPRequest.RESULT_SUCCESS and code == 200
+	if not accepted:
+		push_warning("Net: relatorio da partida nao foi aceito pela sala online (resultado %d, http %d)" % [result, code])
+	request.queue_free()
+	match_report_sent.emit(accepted)
 
 
 func _on_room_ready(code: String) -> void:

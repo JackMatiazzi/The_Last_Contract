@@ -25,6 +25,8 @@ const ROOM_CLOSE_CODES := 4000
 var room_code := ""
 ## motivo dado pela sala ao recusar a entrada ou encerrar a partida
 var refusal := ""
+## ficha de uso unico desta partida: so com ela a sala aceita o relatorio do jogador no fim
+var ticket := ""
 
 var _socket := WebSocketPeer.new()
 var _id := 0
@@ -124,6 +126,7 @@ func _on_control(text: String) -> void:
 	match control.get("t"):
 		"bem-vindo":
 			room_code = str(control.get("sala", ""))
+			ticket = str(control.get("ficha", ""))
 			_status = CONNECTION_CONNECTED
 			for peer: Variant in control.get("pares", []):
 				_add_peer(int(peer))

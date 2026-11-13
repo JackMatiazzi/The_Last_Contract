@@ -73,7 +73,8 @@ run_coop() {
 
 # a sala online roda local com o wrangler dev (relay/); precisa de Node e de npm ci em relay/
 run_relay() {
-	(cd "$PROJECT/relay" && npx wrangler dev --port 8787 --ip 127.0.0.1 --var SALAS_POR_IP_POR_MINUTO:100 --var MAX_SALAS:100) > "$LOGS/relay.log" 2>&1 &
+	(cd "$PROJECT/relay" && npx wrangler d1 migrations apply DB --local) > "$LOGS/relay-banco.log" 2>&1
+	(cd "$PROJECT/relay" && npx wrangler dev --port 8787 --ip 127.0.0.1 --var SALAS_POR_IP_POR_MINUTO:100 --var MAX_SALAS:100 --var ADMIN_TOKEN:e2e-local) > "$LOGS/relay.log" 2>&1 &
 	for _ in $(seq 90); do
 		grep -q "Ready on" "$LOGS/relay.log" 2>/dev/null && break
 		sleep 1
@@ -81,7 +82,8 @@ run_relay() {
 	run_coop coop-relay --host=relay codigo --relay=ws://127.0.0.1:8787
 	play recusa_e2e.tscn --join=ZZZZZZ --relay=ws://127.0.0.1:8787 > "$LOGS/recusa.log" 2>&1
 	check_log recusa $?
-	grep "sala-encerrada" "$LOGS/relay.log" || true
+	echo "consumo do dia na sala local:"
+	node -e "fetch('http://127.0.0.1:8787/uso', { headers: { Authorization: 'Bearer e2e-local' } }).then((r) => r.text()).then(console.log)" || true
 	pkill -f "wrangler dev" || true
 	pkill -f workerd || true
 }

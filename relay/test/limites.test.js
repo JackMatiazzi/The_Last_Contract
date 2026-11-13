@@ -1,35 +1,18 @@
 import { after, before, test } from "node:test";
 import assert from "node:assert/strict";
-import { spawn } from "node:child_process";
 import { request } from "node:http";
-import { fileURLToPath } from "node:url";
+import { derrubar, subirRelay } from "./local.js";
 
 // o relay com os limites de producao: protege a cota do dia contra abuso de um PC so
 const PORTA = 8798;
 const BASE = `ws://127.0.0.1:${PORTA}`;
-const PASTA = fileURLToPath(new URL("..", import.meta.url));
 let wrangler;
 
 before(async () => {
-	wrangler = spawn("npx", ["wrangler", "dev", "--port", String(PORTA), "--ip", "127.0.0.1"], { cwd: PASTA, shell: true, stdio: "pipe" });
-	await new Promise((pronto, falhou) => {
-		const limite = setTimeout(() => falhou(new Error("wrangler dev nao subiu")), 60000);
-		wrangler.stdout.on("data", (pedaco) => {
-			if (pedaco.toString().includes("Ready on")) {
-				clearTimeout(limite);
-				pronto();
-			}
-		});
-	});
+	wrangler = await subirRelay(PORTA);
 });
 
-after(() => {
-	if (process.platform === "win32") {
-		spawn("taskkill", ["/pid", String(wrangler.pid), "/T", "/F"]);
-	} else {
-		wrangler.kill();
-	}
-});
+after(() => derrubar(wrangler));
 
 function primeiroControle(url) {
 	const ws = new WebSocket(url);
@@ -65,6 +48,17 @@ test("um PC so nao segura mais de duas salas abertas", async () => {
 	assert.equal(segunda.controle.t, "bem-vindo");
 	assert.match(terceira.controle.motivo, /já tem salas abertas/);
 	[primeira, segunda, terceira].forEach(({ ws }) => ws.close());
+});
+
+test("relatorios sem parar do mesmo PC sao barrados", async () => {
+	const status = [];
+	for (let i = 0; i < 12; i++) {
+		const resposta = await fetch(`http://127.0.0.1:${PORTA}/telemetria`, { method: "POST", body: JSON.stringify({ ficha: "0".repeat(64) }) });
+		status.push(resposta.status);
+	}
+
+	assert.equal(status.at(-1), 429);
+	assert.ok(status.slice(0, 10).every((codigo) => codigo !== 429));
 });
 
 test("tentar codigos sem parar e barrado antes de acordar salas", async () => {

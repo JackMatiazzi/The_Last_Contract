@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "wrangler dev --port 8787",
-    "test": "node --test test/protocolo.test.js && node --test test/sala.test.js && node --test test/limites.test.js",
+    "test": "node --test test/protocolo.test.js && node --test test/sala.test.js && node --test test/limites.test.js && node --test test/banco.test.js",
     "deploy": "wrangler deploy"
   },
   "devDependencies": {

@@ -88,6 +88,12 @@ popup/item_1/id = 2
 popup/item_2/text = "Túnel próprio (cloudflared)"
 popup/item_2/id = 1
 
+[node name="PrivacyHint" type="Label" parent="Panel/Scroll/Content/ConnectPanel"]
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Na sala online, seu apelido aparece no placar público e ele e os dados da partida ficam guardados por 90 dias para avaliar o jogo (servidores do Cloudflare). Não use seu nome real. Para apagar, peça ao grupo do jogo."
+autowrap_mode = 3
+
 [node name="Buttons" type="HBoxContainer" parent="Panel/Scroll/Content/ConnectPanel"]
 layout_mode = 2
 theme_override_constants/separation = 12
