@@ -31,6 +31,8 @@ jobs:
         with:
           repository: JackMatiazzi/the-last-contract-api
           path: api
+          # repositorio privado: token fine-grained so com leitura de conteudo da API
+          token: ${{ secrets.API_REPO_TOKEN }}
       - if: matrix.flow == 'coop-relay'
         uses: actions/setup-node@v6
         with:
