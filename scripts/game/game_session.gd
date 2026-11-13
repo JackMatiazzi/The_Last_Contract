@@ -6,8 +6,11 @@ extends Node
 
 const EXECUTION := "res://scenes/cutscenes/execution.tscn"
 const MAIN_MENU := "res://scenes/ui/main_menu.tscn"
-## espera a animacao de morte do boss
-const VICTORY_DELAY := 2.5
+## Fase bônus: o alçapão que o Necromante deixa ao morrer leva até ela.
+const BONUS_LEVEL := "res://scenes/levels/calabouco_escondido_level.tscn"
+const TRAPDOOR := preload("res://scenes/world/trapdoor.tscn")
+## Segundos que o alçapão fica aberto. Se ninguém descer, o contrato fecha com a tela de vitória.
+const TRAPDOOR_TIME := 30.0
 const PLAYER_SPACING := 1.5
 
 ## so nas cenas de teste; com encounters o ponto e sorteado
@@ -30,6 +33,9 @@ var _votes := {}
 var _vote_paths := PackedStringArray()
 var _vote_open := false
 var _contract_ended := false
+var trapdoor_time := TRAPDOOR_TIME
+var _trapdoor: Trapdoor
+var _trapdoor_left := 0.0
 
 
 func _ready() -> void:
@@ -139,14 +145,63 @@ func _summon_boss() -> void:
 	hud.set_objective("Derrote o Necromante")
 	hud.announce_boss("O Necromante despertou na praça")
 
-## Chamado quando o chefe é derrotado para acionar a tela de vitória.
+## com o grupo inteiro morto junto com ele não abre alçapão: vale a votação de bênção
 func _on_boss_died() -> void:
 	hud.set_objective("")
-	await get_tree().create_timer(VICTORY_DELAY).timeout
-	if _all_players_dead():
+	if multiplayer.is_server() and not _all_players_dead():
+		open_trapdoor_at(boss.global_position)
+
+
+func open_trapdoor_at(spot: Vector3) -> void:
+	if multiplayer.is_server() and _trapdoor == null and not _contract_ended:
+		_net_open_trapdoor.rpc(spot)
+
+
+@rpc("authority", "call_local", "reliable")
+func _net_open_trapdoor(spot: Vector3) -> void:
+	if _trapdoor:
 		return
+	_trapdoor = TRAPDOOR.instantiate() as Trapdoor
+	_trapdoor.session = self
+	get_parent().add_child(_trapdoor)
+	_trapdoor.global_position = spot
+	_trapdoor_left = trapdoor_time
+	hud.announce("O Necromante caiu e abriu um alçapão no chão")
+
+
+func _process(delta: float) -> void:
+	if _trapdoor == null or not _trapdoor.is_open:
+		return
+	_trapdoor_left = maxf(_trapdoor_left - delta, 0.0)
+	hud.set_objective("Desça pelo alçapão: %d s" % ceili(_trapdoor_left))
+	if _trapdoor_left == 0.0 and multiplayer.is_server():
+		_net_close_trapdoor.rpc()
+
+
+## tempo esgotado ou grupo morto depois do chefe: o contrato já foi cumprido
+@rpc("authority", "call_local", "reliable")
+func _net_close_trapdoor() -> void:
+	if _trapdoor == null or not _trapdoor.is_open:
+		return
+	_trapdoor.close()
+	_contract_ended = true
+	hud.set_objective("")
 	release_cursor()
 	victory_screen.open(RunState.attempt)
+
+
+## se todos caírem lá dentro, o grupo recomeça da entrada do calabouço, não da Pedra Alta
+func descend_to_bonus() -> void:
+	if multiplayer.is_server() and _trapdoor and _trapdoor.is_open:
+		_net_descend.rpc()
+
+
+@rpc("authority", "call_local", "reliable")
+func _net_descend() -> void:
+	_trapdoor.close()
+	_contract_ended = true
+	Net.waiting_for_peers = true
+	get_tree().change_scene_to_file(BONUS_LEVEL)
 
 
 # solo e um grupo de um: cai todo mundo, vota todo mundo
@@ -160,6 +215,10 @@ func _on_player_died() -> void:
 ## Executado quando todos os jogadores do grupo são derrotados.
 func _on_party_down() -> void:
 	release_cursor()
+	if _trapdoor and _trapdoor.is_open:
+		if multiplayer.is_server():
+			_net_close_trapdoor.rpc()
+		return
 	if multiplayer.is_server() and not _vote_open:
 		_start_vote()
 

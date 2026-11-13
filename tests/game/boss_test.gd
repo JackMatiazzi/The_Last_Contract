@@ -149,15 +149,18 @@ func _until(condition: Callable, seconds: float) -> bool:
 	return condition.call()
 
 
+# sem ninguem descer pelo alcapao, a contagem acaba e o contrato fecha com a vitoria
 func test_defeating_the_necromancer_wins_the_contract() -> void:
 	var level := await _level_with_patrols(1)
 	var session := level.get_node("GameSession") as GameSession
 	var victory := level.get_node("VictoryScreen") as VictoryScreen
+	session.trapdoor_time = 1.0
 	for member in (level.get_node("Encounters").find_children("*", "EnemyGroup", false, false)[0] as EnemyGroup).members():
 		member.take_damage(99.0)
 	await await_idle_frame()
 
 	session.boss.take_damage(99.0)
 	assert_bool(victory.visible).is_false()
-	assert_bool(await _until(func() -> bool: return victory.visible, GameSession.VICTORY_DELAY + 3.0)).is_true()
+	assert_object(level.find_child("Alcapao", true, false)).is_not_null()
+	assert_bool(await _until(func() -> bool: return victory.visible, session.trapdoor_time + 3.0)).is_true()
 	assert_str(victory.summary_label.text).contains("tentativa I")

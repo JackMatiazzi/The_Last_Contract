@@ -325,6 +325,18 @@ position = Vector3(80.0, -4.0, 51.0)
 [node name="PocaoVida8" parent="Interativos" instance=ExtResource("9_health")]
 position = Vector3(88.0, -6.0, 92.0)
 
+[node name="PocaoVidaEntrada" parent="Interativos" instance=ExtResource("9_health")]
+position = Vector3(34.4, 0.0, 11.2)
+
+[node name="PocaoManaEntrada" parent="Interativos" instance=ExtResource("8_mana")]
+position = Vector3(37.6, 0.0, 11.2)
+
+[node name="PocaoVidaAndar2" parent="Interativos" instance=ExtResource("9_health")]
+position = Vector3(34.4, -4.0, 57.2)
+
+[node name="PocaoVidaAndar3" parent="Interativos" instance=ExtResource("9_health")]
+position = Vector3(70.0, -8.0, 87.0)
+
 [node name="BauDoTesouro" parent="Interativos" instance=ExtResource("10_chest")]
 transform = Transform3D(-1.0, 0, 0.0, 0, 1, 0, -0.0, 0, -1.0, 72.0, -6, 121.4)
 loot_scene = ExtResource("8_mana")
