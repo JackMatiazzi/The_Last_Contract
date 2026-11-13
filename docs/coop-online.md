@@ -45,3 +45,7 @@ npx wrangler dev --port 8787
 
 O jogo usa a sala local com `--relay=ws://127.0.0.1:8787`. O teste ponta a ponta com 4 jogadores
 pela sala é `bash tests/e2e/run_e2e.sh coop-relay`.
+
+A partida de carga (`tests/e2e/carga_e2e.tscn`, com `--minutos=N`) põe 4 bots jogando pela sala local
+para medir o custo. Medido em 13/11/2026 na vila: 45 minutos gastaram 1.971 requisições (39.412
+mensagens); os 2 primeiros minutos, com todo mundo correndo, gastam o dobro do ritmo médio.

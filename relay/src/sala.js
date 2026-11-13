@@ -182,6 +182,7 @@ export class Sala extends DurableObject {
 			return;
 		}
 		const consumo = this.consumoAtual();
+		const inicio = eu.id === ID_HOST ? eu.inicio : this.host()?.deserializeAttachment().inicio;
 		const restantes = this.ctx.getWebSockets().filter((outro) => outro !== ws);
 		if (eu.id === ID_HOST) {
 			this.fecharTodos("O host saiu da partida.", 4004);
@@ -189,7 +190,7 @@ export class Sala extends DurableObject {
 			this.avisar({ t: "saiu", id: eu.id }, eu.id);
 		}
 		if (eu.id === ID_HOST || restantes.length === 0) {
-			await this.encerrar(eu.codigo, consumo);
+			await this.encerrar(eu.codigo, consumo, inicio);
 		}
 	}
 
@@ -226,13 +227,15 @@ export class Sala extends DurableObject {
 		}
 		this.fecharTodos(motivo, 4009);
 		if (host) {
-			await this.encerrar(host.deserializeAttachment().codigo, consumo);
+			const { codigo, inicio } = host.deserializeAttachment();
+			await this.encerrar(codigo, consumo, inicio);
 		}
 	}
 
 	// o registro libera a vaga e o consumo da sala fica no log do Worker, para medir o custo real
-	async encerrar(codigo, consumo) {
-		console.log(JSON.stringify({ evento: "sala-encerrada", ...consumo, requisicoes: Math.ceil(consumo.mensagens / 20) }));
+	async encerrar(codigo, consumo, inicio) {
+		const minutos = inicio ? Math.round((Date.now() - inicio) / 6000) / 10 : null;
+		console.log(JSON.stringify({ evento: "sala-encerrada", ...consumo, requisicoes: Math.ceil(consumo.mensagens / 20), minutos }));
 		this.consumo = null;
 		await this.ctx.storage.deleteAlarm();
 		await this.env.REGISTRO.get(this.env.REGISTRO.idFromName("global")).liberar(codigo);

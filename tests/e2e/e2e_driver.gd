@@ -8,6 +8,8 @@ const TOTAL_TIMEOUT := 180.0
 
 var failures := PackedStringArray()
 var label := "e2e"
+## a partida de carga dura dezenas de minutos e troca esse limite
+var total_timeout := TOTAL_TIMEOUT
 # marco -> processos que ja passaram por ele; so o teste em grupo usa
 var _marks := {}
 
@@ -18,7 +20,7 @@ func _ready() -> void:
 
 func _take_over() -> void:
 	reparent(get_tree().root)
-	get_tree().create_timer(TOTAL_TIMEOUT).timeout.connect(_give_up)
+	get_tree().create_timer(total_timeout).timeout.connect(_give_up)
 	get_tree().change_scene_to_file(ProjectSettings.get_setting("application/run/main_scene"))
 	_run_and_report()
 
@@ -137,5 +139,5 @@ func vote_for_first_blessing() -> void:
 
 
 func _give_up() -> void:
-	printerr("E2E FALHOU %s: passou de %d s" % [label, TOTAL_TIMEOUT])
+	printerr("E2E FALHOU %s: passou de %d s" % [label, total_timeout])
 	get_tree().quit(1)
