@@ -63,12 +63,18 @@ placeholder_text = "Aventureiro"
 [node name="AddressHint" type="Label" parent="Panel/Scroll/Content/ConnectPanel"]
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
-text = "Endereço do host (vazio = esta máquina)"
+text = "Endereço do host: IP da rede ou link do túnel (vazio = esta máquina)"
+autowrap_mode = 3
 
 [node name="AddressInput" type="LineEdit" parent="Panel/Scroll/Content/ConnectPanel"]
 unique_name_in_owner = true
 layout_mode = 2
-placeholder_text = "127.0.0.1"
+placeholder_text = "127.0.0.1 ou https://...trycloudflare.com"
+
+[node name="OnlineToggle" type="CheckButton" parent="Panel/Scroll/Content/ConnectPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Hospedar pela internet (túnel Cloudflare)"
 
 [node name="Buttons" type="HBoxContainer" parent="Panel/Scroll/Content/ConnectPanel"]
 layout_mode = 2

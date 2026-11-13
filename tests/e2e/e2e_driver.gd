@@ -4,11 +4,11 @@ extends Node
 # e sai com codigo 1 se alguma conferencia falhar. O driver fica na raiz para sobreviver as trocas de cena
 
 const STEP_TIMEOUT := 20.0
-const TOTAL_TIMEOUT := 120.0
+const TOTAL_TIMEOUT := 180.0
 
 var failures := PackedStringArray()
 var label := "e2e"
-# marcos que o outro processo ja passou; so o teste em grupo usa
+# marco -> processos que ja passaram por ele; so o teste em grupo usa
 var _marks := {}
 
 
@@ -72,18 +72,20 @@ func wait_physics(frames: int) -> void:
 		await get_tree().physics_frame
 
 
-# os dois processos tem um Driver na raiz, no mesmo caminho, entao a rpc acha o outro
+# todos os processos tem um Driver na raiz, no mesmo caminho, entao a rpc acha os outros
 func mark(step: String) -> void:
 	_mark.rpc(step)
 
 
-func wait_mark(step: String) -> bool:
-	return await wait_until(func() -> bool: return _marks.has(step), "o outro processo chegar em %s" % step)
+func wait_mark(step: String, processes := 1) -> bool:
+	return await wait_until(func() -> bool: return _marks.get(step, {}).size() >= processes, "%d processo(s) chegarem em %s" % [processes, step])
 
 
 @rpc("any_peer", "reliable")
 func _mark(step: String) -> void:
-	_marks[step] = true
+	if not _marks.has(step):
+		_marks[step] = {}
+	_marks[step][multiplayer.get_remote_sender_id()] = true
 
 
 # a cutscene so aceita a tecla depois de comecar a tocar

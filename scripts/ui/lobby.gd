@@ -3,6 +3,7 @@ extends Control
 
 const MAIN_MENU := "res://scenes/ui/main_menu.tscn"
 const LOCAL_ADDRESS := "127.0.0.1"
+const TUNNEL_COMMAND := "cloudflared tunnel --url http://127.0.0.1:%d"
 
 @export var address_button_scene: PackedScene
 
@@ -13,6 +14,7 @@ var _adventurer_buttons: Array[Button] = []
 @onready var name_input: LineEdit = %NameInput
 @onready var friendly_fire_toggle: CheckButton = %FriendlyFireToggle
 @onready var address_input: LineEdit = %AddressInput
+@onready var online_toggle: CheckButton = %OnlineToggle
 @onready var status_label: Label = %StatusLabel
 @onready var connect_panel: Control = %ConnectPanel
 @onready var room_panel: Control = %RoomPanel
@@ -53,7 +55,8 @@ func _apply_command_line() -> void:
 		elif arg.begins_with("--name="):
 			name_input.text = arg.get_slice("=", 1)
 	for arg: String in args:
-		if arg == "--host":
+		if arg == "--host" or arg == "--host=ws":
+			online_toggle.button_pressed = arg == "--host=ws"
 			_host()
 		elif arg.begins_with("--join"):
 			address_input.text = arg.get_slice("=", 1) if "=" in arg else LOCAL_ADDRESS
@@ -61,12 +64,16 @@ func _apply_command_line() -> void:
 
 
 func _host() -> void:
-	var error := Net.host()
+	var online := online_toggle.button_pressed
+	var error := Net.host(Net.PORT, Net.Transport.WEBSOCKET if online else Net.Transport.ENET)
 	if error != OK:
 		status_label.text = "Não foi possível abrir a porta %d (%s)." % [Net.PORT, error_string(error)]
 		return
 	status_label.text = "Aguardando jogadores."
-	_show_host_address()
+	if online:
+		_show_tunnel_steps()
+	else:
+		_show_host_address()
 	Net.set_player_name(name_input.text)
 	_show_room(true)
 	_choose_pending()
@@ -85,6 +92,17 @@ func _show_host_address() -> void:
 		button.text = "%s   (%s)" % [entry.address, entry.label]
 		button.pressed.connect(_copy_address.bind(entry.address))
 		%AddressButtons.add_child(button)
+
+
+# o jogo escuta WebSocket na porta; o cloudflared publica essa porta num link https que os outros colam
+func _show_tunnel_steps() -> void:
+	var command := TUNNEL_COMMAND % Net.PORT
+	%HostAddress.show()
+	%AddressLabel.text = "Com o cloudflared instalado, rode este comando num terminal e mande para os outros, em particular, o link https://...trycloudflare.com que ele mostrar. Clique para copiar:"
+	var button := address_button_scene.instantiate() as Button
+	button.text = command
+	button.pressed.connect(_copy_address.bind(command))
+	%AddressButtons.add_child(button)
 
 
 func _copy_address(address: String) -> void:
