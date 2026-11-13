@@ -39,10 +39,10 @@ func test_the_stamina_bar_shows_one_block_per_attack() -> void:
 
 
 func test_each_class_gets_blocks_of_its_own_cost() -> void:
-	var hud := _hud_for(TestArena.BARBARIAN)
+	var hud := _hud_for(TestArena.ROGUE)
 	await arena.wait_physics(2)
 
-	assert_int(hud.stamina_ticks.tick_positions().size()).is_equal(4)
+	assert_int(hud.stamina_ticks.tick_positions().size()).is_equal(8)
 
 
 func test_the_mage_sees_the_blocks_on_the_mana_bar() -> void:

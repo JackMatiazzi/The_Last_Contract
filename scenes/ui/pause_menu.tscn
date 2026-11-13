@@ -1,7 +1,9 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/pause_menu.gd" id="1_pause"]
 [ext_resource type="PackedScene" path="res://scenes/ui/settings_menu.tscn" id="2_settings"]
+[ext_resource type="Script" path="res://scripts/ui/device_hint.gd" id="3_hint"]
+[ext_resource type="Texture2D" path="res://assets/ui/logo_seal_gold.svg" id="4_seal"]
 
 [node name="PauseMenu" type="CanvasLayer"]
 process_mode = 3
@@ -12,7 +14,7 @@ script = ExtResource("1_pause")
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0.02, 0.015, 0.01, 0.65)
+color = Color(0.02, 0.015, 0.01, 0.72)
 
 [node name="Center" type="CenterContainer" parent="."]
 anchors_preset = 15
@@ -21,35 +23,312 @@ anchor_bottom = 1.0
 
 [node name="MainPanel" type="PanelContainer" parent="Center"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(380, 0)
+custom_minimum_size = Vector2(820, 0)
 layout_mode = 2
 
-[node name="Content" type="VBoxContainer" parent="Center/MainPanel"]
+[node name="Columns" type="HBoxContainer" parent="Center/MainPanel"]
+layout_mode = 2
+theme_override_constants/separation = 36
+
+[node name="Left" type="VBoxContainer" parent="Center/MainPanel/Columns"]
+custom_minimum_size = Vector2(320, 0)
 layout_mode = 2
 theme_override_constants/separation = 14
 
-[node name="Title" type="Label" parent="Center/MainPanel/Content"]
+[node name="Seal" type="TextureRect" parent="Center/MainPanel/Columns/Left"]
+custom_minimum_size = Vector2(0, 110)
+layout_mode = 2
+texture = ExtResource("4_seal")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Title" type="Label" parent="Center/MainPanel/Columns/Left"]
 layout_mode = 2
 theme_type_variation = &"HeadingLabel"
-text = "Pausa"
+text = "Contrato pausado"
 horizontal_alignment = 1
 
-[node name="ResumeButton" type="Button" parent="Center/MainPanel/Content"]
+[node name="CoopNote" type="Label" parent="Center/MainPanel/Columns/Left"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Em grupo o mundo não para."
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="ResumeButton" type="Button" parent="Center/MainPanel/Columns/Left"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"PrimaryButton"
 text = "Continuar"
 
-[node name="SettingsButton" type="Button" parent="Center/MainPanel/Content"]
+[node name="GuideButton" type="Button" parent="Center/MainPanel/Columns/Left"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Controles e habilidades"
+
+[node name="SettingsButton" type="Button" parent="Center/MainPanel/Columns/Left"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Configurações"
 
-[node name="AbandonButton" type="Button" parent="Center/MainPanel/Content"]
+[node name="AbandonButton" type="Button" parent="Center/MainPanel/Columns/Left"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"DangerButton"
 text = "Abandonar contrato"
+
+[node name="Divider" type="VSeparator" parent="Center/MainPanel/Columns"]
+layout_mode = 2
+
+[node name="Right" type="VBoxContainer" parent="Center/MainPanel/Columns"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+theme_override_constants/separation = 10
+
+[node name="ContractTitle" type="Label" parent="Center/MainPanel/Columns/Right"]
+layout_mode = 2
+theme_type_variation = &"HeadingLabel"
+theme_override_font_sizes/font_size = 20
+text = "O contrato"
+
+[node name="AttemptLabel" type="Label" parent="Center/MainPanel/Columns/Right"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Tentativa I · Knight"
+
+[node name="ObjectiveLabel" type="Label" parent="Center/MainPanel/Columns/Right"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Grupos restantes: 5"
+
+[node name="BuffTitle" type="Label" parent="Center/MainPanel/Columns/Right"]
+layout_mode = 2
+theme_type_variation = &"HeadingLabel"
+theme_override_font_sizes/font_size = 20
+text = "Bênçãos"
+
+[node name="BuffList" type="Label" parent="Center/MainPanel/Columns/Right"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(380, 0)
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Nenhuma ainda."
+autowrap_mode = 3
+
+[node name="BuffRule" type="Label" parent="Center/MainPanel/Columns/Right"]
+layout_mode = 2
+theme_type_variation = &"DangerLabel"
+theme_override_font_sizes/font_size = 14
+text = "Valem também para os mortos-vivos."
+
+[node name="GuidePanel" type="PanelContainer" parent="Center"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(980, 0)
+layout_mode = 2
+
+[node name="Content" type="VBoxContainer" parent="Center/GuidePanel"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Title" type="Label" parent="Center/GuidePanel/Content"]
+layout_mode = 2
+theme_type_variation = &"HeadingLabel"
+text = "Controles e habilidades"
+horizontal_alignment = 1
+
+[node name="Columns" type="HBoxContainer" parent="Center/GuidePanel/Content"]
+layout_mode = 2
+theme_override_constants/separation = 36
+
+[node name="Controls" type="VBoxContainer" parent="Center/GuidePanel/Content/Columns"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="ControlsTitle" type="Label" parent="Center/GuidePanel/Content/Columns/Controls"]
+layout_mode = 2
+theme_type_variation = &"HeadingLabel"
+theme_override_font_sizes/font_size = 20
+text = "Controles"
+
+[node name="Grid" type="GridContainer" parent="Center/GuidePanel/Content/Columns/Controls"]
+layout_mode = 2
+theme_override_constants/h_separation = 24
+theme_override_constants/v_separation = 4
+columns = 2
+
+[node name="Action0" type="Label" parent="Center/GuidePanel/Content/Columns/Controls/Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"MutedLabel"
+text = "Mover"
+
+[node name="Key0" type="Label" parent="Center/GuidePanel/Content/Columns/Controls/Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+script = ExtResource("3_hint")
+theme_override_font_sizes/font_size = 17
+text = "W A S D"
+keyboard_text = "W A S D"
+gamepad_text = "Analógico esquerdo"
+
+[node name="Action1" type="Label" parent="Center/GuidePanel/Content/Columns/Controls/Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"MutedLabel"
+text = "Correr"
+
+[node name="Key1" type="Label" parent="Center/GuidePanel/Content/Columns/Controls/Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+script = ExtResource("3_hint")
+theme_override_font_sizes/font_size = 17
+text = "Segurar Espaço"
+keyboard_text = "Segurar Espaço"
+gamepad_text = "Clicar no analógico esquerdo"
+
+[node name="Action2" type="Label" parent="Center/GuidePanel/Content/Columns/Controls/Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"MutedLabel"
+text = "Câmera"
+
+[node name="Key2" type="Label" parent="Center/GuidePanel/Content/Columns/Controls/Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+script = ExtResource("3_hint")
+theme_override_font_sizes/font_size = 17
+text = "Mouse"
+keyboard_text = "Mouse"
+gamepad_text = "Analógico direito"
+
+[node name="Action3" type="Label" parent="Center/GuidePanel/Content/Columns/Controls/Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"MutedLabel"
+text = "Atacar"
+
+[node name="Key3" type="Label" parent="Center/GuidePanel/Content/Columns/Controls/Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+script = ExtResource("3_hint")
+theme_override_font_sizes/font_size = 17
+text = "Botão esquerdo (segure: pesado)"
+keyboard_text = "Botão esquerdo (segure: pesado)"
+gamepad_text = "RT (segure: pesado)"
+
+[node name="Action4" type="Label" parent="Center/GuidePanel/Content/Columns/Controls/Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"MutedLabel"
+text = "Habilidade"
+
+[node name="Key4" type="Label" parent="Center/GuidePanel/Content/Columns/Controls/Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+script = ExtResource("3_hint")
+theme_override_font_sizes/font_size = 17
+text = "Botão direito"
+keyboard_text = "Botão direito"
+gamepad_text = "LT"
+
+[node name="Action5" type="Label" parent="Center/GuidePanel/Content/Columns/Controls/Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"MutedLabel"
+text = "Trocar habilidade ou item"
+
+[node name="Key5" type="Label" parent="Center/GuidePanel/Content/Columns/Controls/Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+script = ExtResource("3_hint")
+theme_override_font_sizes/font_size = 17
+text = "Roda do mouse"
+keyboard_text = "Roda do mouse"
+gamepad_text = "Direcional"
+
+[node name="Action6" type="Label" parent="Center/GuidePanel/Content/Columns/Controls/Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"MutedLabel"
+text = "Interagir"
+
+[node name="Key6" type="Label" parent="Center/GuidePanel/Content/Columns/Controls/Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+script = ExtResource("3_hint")
+theme_override_font_sizes/font_size = 17
+text = "E (segure: beber)"
+keyboard_text = "E (segure: beber)"
+gamepad_text = "X (segure: beber)"
+
+[node name="Action7" type="Label" parent="Center/GuidePanel/Content/Columns/Controls/Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"MutedLabel"
+text = "Placar"
+
+[node name="Key7" type="Label" parent="Center/GuidePanel/Content/Columns/Controls/Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+script = ExtResource("3_hint")
+theme_override_font_sizes/font_size = 17
+text = "Segurar Tab"
+keyboard_text = "Segurar Tab"
+gamepad_text = "Segurar Back"
+
+[node name="Action8" type="Label" parent="Center/GuidePanel/Content/Columns/Controls/Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"MutedLabel"
+text = "Pausar"
+
+[node name="Key8" type="Label" parent="Center/GuidePanel/Content/Columns/Controls/Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+script = ExtResource("3_hint")
+theme_override_font_sizes/font_size = 17
+text = "Esc"
+keyboard_text = "Esc"
+gamepad_text = "Start"
+
+[node name="Divider" type="VSeparator" parent="Center/GuidePanel/Content/Columns"]
+layout_mode = 2
+
+[node name="Class" type="VBoxContainer" parent="Center/GuidePanel/Content/Columns"]
+custom_minimum_size = Vector2(380, 0)
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="ClassTitle" type="Label" parent="Center/GuidePanel/Content/Columns/Class"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"HeadingLabel"
+theme_override_font_sizes/font_size = 20
+text = "Knight · Corpo a corpo"
+
+[node name="ClassDescription" type="Label" parent="Center/GuidePanel/Content/Columns/Class"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(380, 0)
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+autowrap_mode = 3
+
+[node name="AbilityList" type="Label" parent="Center/GuidePanel/Content/Columns/Class"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(380, 0)
+layout_mode = 2
+autowrap_mode = 3
+
+[node name="GuideBackButton" type="Button" parent="Center/GuidePanel/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Voltar"
 
 [node name="ConfirmPanel" type="PanelContainer" parent="Center"]
 unique_name_in_owner = true

@@ -147,7 +147,11 @@ func test_tired_adventurer_runs_again_only_after_refilling() -> void:
 	await arena.wait_seconds(0.4)
 	assert_bool(runner.wants_to_run()).is_false()
 
-	runner.stamina.current = runner.stamina.maximum * Adventurer.RUN_RECOVER_FRACTION
+	runner.stamina.current = runner.stamina.maximum * 0.95
+	await arena.wait_physics(2)
+	assert_bool(runner.wants_to_run()).is_false()
+
+	runner.stamina.refill()
 	await arena.wait_physics(2)
 	assert_bool(runner.wants_to_run()).is_true()
 
@@ -228,3 +232,42 @@ func _action_event(action: String) -> InputEventAction:
 	event.action = action
 	event.pressed = true
 	return event
+
+
+func test_emptying_the_stamina_locks_attacks_until_it_is_full_again() -> void:
+	knight.stamina.spend(knight.stamina.maximum)
+	knight.stamina.current = knight.stamina.maximum * 0.9
+
+	assert_bool(knight.attack_toward_camera()).is_false()
+	assert_bool(knight.stamina.is_exhausted()).is_true()
+
+	knight.stamina.current = knight.stamina.maximum
+	await arena.wait_seconds(knight.attack.cooldown + 0.1)
+	assert_bool(knight.attack_toward_camera()).is_true()
+
+
+func test_spending_without_emptying_does_not_lock() -> void:
+	knight.stamina.spend(knight.stamina.maximum - 20.0)
+
+	assert_bool(knight.stamina.is_exhausted()).is_false()
+	assert_bool(knight.attack_toward_camera()).is_true()
+
+
+func test_mana_does_not_lock_when_empty() -> void:
+	var mage := arena.spawn(TestArena.MAGE, Vector3(6, 0, 0)) as Adventurer
+	await arena.wait_physics(2)
+
+	mage.mana.spend(mage.mana.maximum)
+	mage.mana.current = 50.0
+
+	assert_bool(mage.mana.is_exhausted()).is_false()
+
+
+func test_an_exhausted_knight_cannot_raise_the_shield() -> void:
+	knight.stamina.spend(knight.stamina.maximum)
+	knight.stamina.current = knight.stamina.maximum * 0.6
+
+	knight.use_secondary()
+	await arena.wait_physics(2)
+
+	assert_bool(knight.is_blocking).is_false()

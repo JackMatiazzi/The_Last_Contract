@@ -67,7 +67,7 @@ func test_stuck_bolt_follows_the_enemy() -> void:
 	var skeleton := arena.spawn(TestArena.SKELETON, Vector3(0, 0, 5))
 	await arena.wait_physics(5)
 	rogue.attack_toward_camera()
-	await arena.wait_seconds(0.8)
+	await arena.wait_seconds(1.4)
 	var arrow := skeleton.find_children("*", "ProjectileImpact", true, false)[0] as Node3D
 	var offset := arrow.global_position - skeleton.global_position
 

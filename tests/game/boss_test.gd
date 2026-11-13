@@ -124,7 +124,8 @@ func test_clearing_every_group_summons_the_necromancer_on_the_square() -> void:
 	var level := await _level_with_patrols(2)
 	var session := level.get_node("GameSession") as GameSession
 	var hud := level.get_node("Hud") as Hud
-	assert_str(hud.objective_label.text).is_equal("Grupos restantes: 2")
+	assert_str(hud.objective_summary()).is_equal("Grupos restantes: 2")
+	assert_int(hud.pips.get_child_count()).is_equal(2)
 
 	for group: EnemyGroup in level.get_node("Encounters").find_children("*", "EnemyGroup", false, false):
 		for member in group.members():
@@ -159,4 +160,4 @@ func test_defeating_the_necromancer_wins_the_contract() -> void:
 	session.boss.take_damage(99.0)
 	assert_bool(victory.visible).is_false()
 	assert_bool(await _until(func() -> bool: return victory.visible, GameSession.VICTORY_DELAY + 3.0)).is_true()
-	assert_str(victory.summary_label.text).contains("tentativa 1")
+	assert_str(victory.summary_label.text).contains("tentativa I")

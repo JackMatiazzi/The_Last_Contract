@@ -68,6 +68,18 @@ func current_adventurer() -> AdventurerInfo:
 		adventurer = load(ADVENTURERS[0])
 	return adventurer
 
+## Uma linha por bênção: título, acúmulos e efeito.
+func buff_lines() -> PackedStringArray:
+	var lines := PackedStringArray()
+	var seen: Array[Buff] = []
+	for buff in buffs:
+		if buff in seen:
+			continue
+		seen.append(buff)
+		var stacks := stacks_of(buff)
+		lines.append("%s%s: %s" % [buff.title, " ×%d" % stacks if stacks > 1 else "", buff.describe().replace("\n", ", ")])
+	return lines
+
 ## Retorna a quantidade de vezes que o buff especificado já foi acumulado.
 func stacks_of(buff: Buff) -> int:
 	return buffs.count(buff)

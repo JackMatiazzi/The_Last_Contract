@@ -2,19 +2,32 @@ class_name Hud
 extends CanvasLayer
 
 const ANNOUNCE_HOLD := 3.0
+## o chefe nasce longe de quem esta lutando: o aviso fica mais tempo e tem som
+const BOSS_ANNOUNCE_HOLD := 5.0
+const START_HINT_KEYBOARD := "Esc: pausa e controles"
+const START_HINT_GAMEPAD := "Start: pausa e controles"
 const ANNOUNCE_FADE := 0.6
 const FEED_HOLD := 5.0
 const FEED_MAX := 5
 const SCORE_HEADERS := 5
 const SHORT_FLASH := Color(1.0, 0.35, 0.3)
+## exausto: a barra fica apagada ate encher, para o jogador entender por que nao ataca
+const EXHAUSTED_TINT := Color(0.45, 0.4, 0.4, 0.75)
+## o rastro claro espera um instante e desce ate a vida nova: da para ler quanto o golpe tirou
+const TRAIL_DELAY := 0.35
+const TRAIL_TIME := 0.4
+const ROMAN := [[10, "X"], [9, "IX"], [5, "V"], [4, "IV"], [1, "I"]]
 
 @export var player: Character
 @export var feed_entry_scene: PackedScene
 @export var score_cell_scene: PackedScene
+@export var buff_chip_scene: PackedScene
+@export var objective_pip_scene: PackedScene
 
 @onready var attempt_label: Label = %AttemptLabel
 @onready var health_bar: ProgressBar = %HealthBar
 @onready var health_label: Label = %HealthLabel
+@onready var health_trail: ProgressBar = %HealthTrail
 @onready var stamina_bar: ProgressBar = %StaminaBar
 @onready var mana_bar: ProgressBar = %ManaBar
 @onready var stamina_ticks: CostTicks = %StaminaTicks
@@ -29,22 +42,27 @@ const SHORT_FLASH := Color(1.0, 0.35, 0.3)
 @onready var item_hint: Label = %ItemHint
 @onready var ability_progress: TextureProgressBar = %AbilityProgress
 @onready var item_progress: TextureProgressBar = %ItemProgress
-@onready var buff_list: VBoxContainer = %BuffList
+@onready var buff_list: HBoxContainer = %BuffList
 @onready var crosshair: Control = %Crosshair
 @onready var objective_label: Label = %ObjectiveLabel
+@onready var pips: HBoxContainer = %Pips
 @onready var boss_panel: Control = %BossPanel
 @onready var boss_bar: ProgressBar = %BossBar
 @onready var announcement: Label = %Announcement
+@onready var boss_cue: AudioStreamPlayer = %BossCue
 @onready var feed: VBoxContainer = %Feed
 @onready var score_layer: CanvasLayer = %ScoreLayer
 @onready var score_grid: GridContainer = %ScoreGrid
 
 var _bound_player: Character
+var _announce_fade: Tween
+var _trail_fall: Tween
+var _remaining := -1
 
 
 func _ready() -> void:
-	assert(feed_entry_scene and score_cell_scene, "Hud: aponte as cenas do aviso e do placar")
-	attempt_label.text = "Tentativa %d" % RunState.attempt
+	assert(feed_entry_scene and score_cell_scene and buff_chip_scene and objective_pip_scene, "Hud: aponte as cenas do aviso, do placar, da bênção e do marcador")
+	attempt_label.text = "Tentativa %s" % roman(RunState.attempt)
 	_show_buffs()
 	if player:
 		bind(player)
@@ -76,8 +94,31 @@ func bind(new_player: Character) -> void:
 	_bind_quickbar(player as Adventurer)
 
 
-func set_objective(text: String) -> void:
+## com remaining, um losango por grupo: aceso enquanto o grupo vive
+func set_objective(text: String, remaining := -1, total := 0) -> void:
 	objective_label.text = text
+	_remaining = remaining
+	for pip in pips.get_children():
+		pip.free()
+	for i in total if remaining >= 0 else 0:
+		var pip := objective_pip_scene.instantiate() as Control
+		pip.modulate.a = 1.0 if i < remaining else 0.25
+		pips.add_child(pip)
+
+
+func objective_summary() -> String:
+	return "%s: %d" % [objective_label.text, _remaining] if _remaining >= 0 else objective_label.text
+
+
+static func roman(number: int) -> String:
+	if number <= 0 or number >= 40:
+		return str(number)
+	var text := ""
+	for pair: Array in ROMAN:
+		while number >= pair[0]:
+			text += pair[1]
+			number -= pair[0]
+	return text
 
 
 func show_boss(boss: Character) -> void:
@@ -90,12 +131,23 @@ func show_boss(boss: Character) -> void:
 	boss.died.connect(boss_panel.hide)
 
 
-func announce(text: String) -> void:
+func announce(text: String, hold := ANNOUNCE_HOLD) -> void:
 	announcement.text = text
-	var fade := create_tween()
-	fade.tween_property(announcement, "modulate:a", 1.0, ANNOUNCE_FADE)
-	fade.tween_interval(ANNOUNCE_HOLD)
-	fade.tween_property(announcement, "modulate:a", 0.0, ANNOUNCE_FADE)
+	if _announce_fade:
+		_announce_fade.kill()
+	_announce_fade = create_tween()
+	_announce_fade.tween_property(announcement, "modulate:a", 1.0, ANNOUNCE_FADE)
+	_announce_fade.tween_interval(hold)
+	_announce_fade.tween_property(announcement, "modulate:a", 0.0, ANNOUNCE_FADE)
+
+
+func announce_boss(text: String) -> void:
+	announce(text, BOSS_ANNOUNCE_HOLD)
+	boss_cue.play()
+
+
+func show_start_hint() -> void:
+	announce(START_HINT_GAMEPAD if Settings.uses_gamepad() else START_HINT_KEYBOARD)
 
 
 func _bind_energy(adventurer: Adventurer) -> void:
@@ -121,13 +173,12 @@ func _bind_quickbar(adventurer: Adventurer) -> void:
 # o custo aparece em % da barra, e a barra marca um bloco por golpe
 func _show_ability(adventurer: Adventurer) -> void:
 	var pool := adventurer.attack_pool()
-	var source := "mana" if pool == adventurer.mana else "estamina"
 	ability_icon.texture = adventurer.attack.icon
 	var step := adventurer.cost_of(adventurer.attack) / pool.maximum
 	ability_cost.text = "%d%%" % roundi(step * 100.0)
 	stamina_ticks.set_step(step if pool == adventurer.stamina else 0.0)
 	mana_ticks.set_step(step if pool == adventurer.mana else 0.0)
-	ability_name.text = "%s\n%s" % [adventurer.attack.title, source]
+	ability_name.text = adventurer.attack.title
 	crosshair.visible = adventurer.attack is RangedAttack or adventurer.attack is PortalSpell
 
 
@@ -136,7 +187,7 @@ func _show_item(adventurer: Adventurer) -> void:
 	item_icon.texture = item.icon if item else null
 	item_count.text = "×%d" % adventurer.inventory.count_of(item) if item else ""
 	var hold := "segure X" if Settings.uses_gamepad() else "segure E"
-	item_hint.text = "%s\n%s" % [item.title, hold] if item else "Sem itens"
+	item_hint.text = "%s\n%s" % [item.title, hold] if item else ""
 
 
 # sem botao direito (Rogue e Mage) o slot some, mas continua ocupando a celula: a cruz nao muda de lugar
@@ -156,7 +207,8 @@ func _bind_pool(pool: EnergyPool, bar: ProgressBar) -> void:
 	bar.value = pool.current
 	pool.changed.connect(func(current: float, maximum: float) -> void:
 		bar.max_value = maximum
-		bar.value = current)
+		bar.value = current
+		bar.self_modulate = EXHAUSTED_TINT if pool.is_exhausted() else Color.WHITE)
 
 
 func _flash(bar: ProgressBar) -> void:
@@ -167,21 +219,29 @@ func _flash(bar: ProgressBar) -> void:
 func _on_health_changed(current: float, maximum: float) -> void:
 	health_bar.max_value = maximum
 	health_bar.value = current
+	health_trail.max_value = maximum
+	if _trail_fall:
+		_trail_fall.kill()
+	if current >= health_trail.value:
+		health_trail.value = current
+	else:
+		_trail_fall = create_tween()
+		_trail_fall.tween_interval(TRAIL_DELAY)
+		_trail_fall.tween_property(health_trail, "value", current, TRAIL_TIME)
 	health_label.text = "%d / %d" % [roundi(current), roundi(maximum)]
 
 
+## so o nome e os acumulos; o efeito de cada uma fica na pausa
 func _show_buffs() -> void:
-	%BuffTitle.visible = not RunState.buffs.is_empty()
 	var seen: Array[Buff] = []
 	for buff in RunState.buffs:
 		if buff in seen:
 			continue
 		seen.append(buff)
-		var entry := Label.new()
+		var chip := buff_chip_scene.instantiate() as Label
 		var stacks := RunState.stacks_of(buff)
-		entry.text = "%s%s: %s" % [buff.title, " ×%d" % stacks if stacks > 1 else "", buff.describe().replace("\n", ", ")]
-		entry.theme_type_variation = &"MutedLabel"
-		buff_list.add_child(entry)
+		chip.text = buff.title + (" ×%d" % stacks if stacks > 1 else "")
+		buff_list.add_child(chip)
 
 
 func _post_feed(text: String) -> void:

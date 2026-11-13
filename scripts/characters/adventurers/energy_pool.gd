@@ -10,8 +10,11 @@ var regen_per_second: float
 var regen_delay: float
 ## zerada, recarrega sem esperar a pausa
 var recovers_when_empty := false
+## zerada, fica exausta: nada pode ser pago ate a barra encher de novo
+var locks_when_empty := false
 
 var _wait := 0.0
+var _exhausted := false
 
 
 func _init(max_value: float, regen: float, delay: float) -> void:
@@ -23,6 +26,8 @@ func _init(max_value: float, regen: float, delay: float) -> void:
 
 func spend(amount: float) -> void:
 	current = maxf(current - amount, 0.0)
+	if locks_when_empty and current == 0.0:
+		_exhausted = true
 	_wait = 0.0 if recovers_when_empty and current == 0.0 else regen_delay
 	changed.emit(current, maximum)
 
@@ -50,4 +55,10 @@ func refill() -> void:
 
 ## da para pagar o custo inteiro agora
 func can_afford(cost: float) -> bool:
-	return current >= cost
+	return not is_exhausted() and current >= cost
+
+
+func is_exhausted() -> bool:
+	if _exhausted and current >= maximum:
+		_exhausted = false
+	return _exhausted

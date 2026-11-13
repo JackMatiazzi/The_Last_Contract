@@ -1,5 +1,9 @@
 [gd_resource type="Theme" format=3 uid="uid://btxrvb0nf0vn1"]
 
+[ext_resource type="FontFile" uid="uid://ccfqa8tc4p3wu" path="res://assets/fonts/Cinzel-wght.ttf" id="1_cinzel"]
+[ext_resource type="Texture2D" uid="uid://ctqcjb0knmnsb" path="res://assets/ui/slider_grabber.svg" id="2_grabber"]
+[ext_resource type="Texture2D" uid="uid://v3tu6pv11mpm" path="res://assets/ui/slider_grabber_focus.svg" id="3_grabber_focus"]
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_yaifl"]
 content_margin_left = 28.0
 content_margin_top = 14.0
@@ -146,10 +150,10 @@ corner_radius_bottom_left = 4
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0g3lb"]
 content_margin_left = 0.0
-content_margin_top = 0.0
+content_margin_top = 4.0
 content_margin_right = 0.0
-content_margin_bottom = 0.0
-bg_color = Color(0.55, 0.38, 0.17, 1)
+content_margin_bottom = 4.0
+bg_color = Color(0.722, 0.537, 0.247, 1)
 border_color = Color(0, 0, 0, 0)
 corner_radius_top_left = 3
 corner_radius_top_right = 3
@@ -158,10 +162,10 @@ corner_radius_bottom_left = 3
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6le0r"]
 content_margin_left = 0.0
-content_margin_top = 0.0
+content_margin_top = 4.0
 content_margin_right = 0.0
-content_margin_bottom = 0.0
-bg_color = Color(0.75, 0.55, 0.27, 1)
+content_margin_bottom = 4.0
+bg_color = Color(0.965, 0.835, 0.549, 1)
 border_color = Color(0, 0, 0, 0)
 corner_radius_top_left = 3
 corner_radius_top_right = 3
@@ -170,23 +174,25 @@ corner_radius_bottom_left = 3
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_yskbe"]
 content_margin_left = 0.0
-content_margin_top = 0.0
+content_margin_top = 4.0
 content_margin_right = 0.0
-content_margin_bottom = 0.0
-bg_color = Color(0.05, 0.04, 0.035, 1)
+content_margin_bottom = 4.0
+bg_color = Color(0.18, 0.15, 0.11, 1)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
-border_color = Color(0.3, 0.24, 0.16, 1)
+border_color = Color(0.45, 0.36, 0.24, 1)
 corner_radius_top_left = 3
 corner_radius_top_right = 3
 corner_radius_bottom_right = 3
 corner_radius_bottom_left = 3
 
-[sub_resource type="SystemFont" id="SystemFont_q0agm"]
-font_names = PackedStringArray("Cinzel", "Trajan Pro", "Georgia", "Times New Roman", "serif")
-font_weight = 600
+[sub_resource type="FontVariation" id="FontVariation_cinzel"]
+base_font = ExtResource("1_cinzel")
+variation_opentype = {
+2003265652: 600
+}
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6ec43"]
 content_margin_left = 24.0
@@ -398,13 +404,15 @@ DangerButton/styles/normal = SubResource("StyleBoxFlat_jjtn0")
 DangerButton/styles/pressed = SubResource("StyleBoxFlat_awt0x")
 DangerLabel/base_type = &"Label"
 DangerLabel/colors/font_color = Color(0.92, 0.42, 0.35, 1)
+HSlider/icons/grabber = ExtResource("2_grabber")
+HSlider/icons/grabber_highlight = ExtResource("3_grabber_focus")
 HSlider/styles/grabber_area = SubResource("StyleBoxFlat_0g3lb")
 HSlider/styles/grabber_area_highlight = SubResource("StyleBoxFlat_6le0r")
 HSlider/styles/slider = SubResource("StyleBoxFlat_yskbe")
 HeadingLabel/base_type = &"Label"
 HeadingLabel/colors/font_color = Color(0.98, 0.84, 0.55, 1)
 HeadingLabel/font_sizes/font_size = 30
-HeadingLabel/fonts/font = SubResource("SystemFont_q0agm")
+HeadingLabel/fonts/font = SubResource("FontVariation_cinzel")
 Label/colors/font_color = Color(0.93, 0.89, 0.82, 1)
 MutedLabel/base_type = &"Label"
 MutedLabel/colors/font_color = Color(0.7, 0.64, 0.56, 1)
@@ -434,4 +442,4 @@ TitleLabel/colors/font_color = Color(0.98, 0.84, 0.55, 1)
 TitleLabel/colors/font_outline_color = Color(0, 0, 0, 1)
 TitleLabel/constants/outline_size = 10
 TitleLabel/font_sizes/font_size = 64
-TitleLabel/fonts/font = SubResource("SystemFont_q0agm")
+TitleLabel/fonts/font = SubResource("FontVariation_cinzel")
