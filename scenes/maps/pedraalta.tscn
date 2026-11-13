@@ -1,0 +1,1708 @@
+[gd_scene format=3]
+
+[ext_resource type="MeshLibrary" path="res://resources/mesh_libraries/ground.res" id="ground_lib"]
+[ext_resource type="MeshLibrary" path="res://resources/mesh_libraries/village_structure.res" id="structure_lib"]
+[ext_resource type="MeshLibrary" path="res://resources/mesh_libraries/props.res" id="props_lib"]
+[ext_resource type="Script" path="res://scripts/world/breakable_props.gd" id="breakable_script"]
+[ext_resource type="PackedScene" path="res://scenes/world/prop_debris.tscn" id="debris_scene"]
+[ext_resource type="PackedScene" path="res://scenes/world/chest.tscn" id="chest"]
+[ext_resource type="Texture2D" path="res://assets/quaternius_village/models/T_RockTrim_BaseColor.png" id="rock_color"]
+[ext_resource type="Texture2D" path="res://assets/quaternius_village/models/T_RockTrim_ORM.png" id="rock_orm"]
+[ext_resource type="Texture2D" path="res://assets/quaternius_village/models/T_RockTrim_Normal.png" id="rock_normal"]
+[ext_resource type="Texture2D" path="res://assets/quaternius_village/models/T_UnevenBrick_BaseColor.png" id="brick_color"]
+[ext_resource type="Texture2D" path="res://assets/quaternius_village/models/T_UnevenBrick_Normal.png" id="brick_normal"]
+[ext_resource type="Texture2D" path="res://assets/quaternius_village/models/T_UnevenBrick_Roughness.png" id="brick_rough"]
+[ext_resource type="PackedScene" path="res://assets/quaternius_village/models/Prop_Wagon.gltf" id="deco_wagon"]
+[ext_resource type="PackedScene" path="res://assets/quaternius_village/models/Prop_Chimney.gltf" id="deco_chimney"]
+[ext_resource type="PackedScene" path="res://assets/quaternius_village/models/Prop_Support.gltf" id="deco_support"]
+[ext_resource type="PackedScene" path="res://assets/kaykit_dungeon/models/rubble_large.gltf" id="deco_rubble"]
+[ext_resource type="PackedScene" path="res://assets/kaykit_dungeon/models/rubble_half.gltf" id="deco_rubble_half"]
+[ext_resource type="PackedScene" path="res://assets/kaykit_dungeon/models/wall_doorway.gltf" id="deco_doorway"]
+[ext_resource type="PackedScene" path="res://assets/kaykit_dungeon/models/wall_gated.gltf" id="deco_gated"]
+[ext_resource type="PackedScene" path="res://assets/kaykit_dungeon/models/banner_red.gltf" id="deco_banner_red"]
+[ext_resource type="PackedScene" path="res://assets/kaykit_dungeon/models/banner_thin_white.gltf" id="deco_banner_white"]
+[ext_resource type="PackedScene" path="res://assets/kaykit_dungeon/models/bed_floor.gltf" id="deco_bed"]
+[ext_resource type="PackedScene" path="res://assets/kaykit_dungeon/models/bed_frame.gltf" id="deco_bed_frame"]
+[ext_resource type="PackedScene" path="res://assets/kaykit_dungeon/models/table_long_broken.gltf" id="deco_table_broken"]
+[ext_resource type="PackedScene" path="res://assets/kaykit_dungeon/models/box_small.gltf" id="deco_box"]
+[ext_resource type="PackedScene" path="res://assets/kaykit_dungeon/models/barrel_small.gltf" id="deco_barrel"]
+[ext_resource type="PackedScene" path="res://assets/kaykit_dungeon/models/keg.gltf" id="deco_keg"]
+[ext_resource type="PackedScene" path="res://assets/kaykit_dungeon/models/crates_stacked.gltf" id="deco_crates"]
+[ext_resource type="PackedScene" path="res://assets/kaykit_dungeon/models/candle_lit.gltf" id="deco_candle"]
+[ext_resource type="PackedScene" path="res://assets/kaykit_dungeon/models/candle_triple.gltf" id="deco_candles"]
+[ext_resource type="PackedScene" path="res://assets/kaykit_dungeon/models/candle_melted.gltf" id="deco_candle_melted"]
+[ext_resource type="PackedScene" path="res://assets/kaykit_dungeon/models/chair.gltf" id="deco_chair"]
+[ext_resource type="PackedScene" path="res://assets/kaykit_dungeon/models/table_small.gltf" id="deco_table"]
+[ext_resource type="PackedScene" path="res://assets/kaykit_dungeon/models/bottle_A_brown.gltf" id="deco_bottle"]
+[ext_resource type="PackedScene" path="res://assets/kaykit_dungeon/models/sword_shield_broken.gltf" id="deco_sword_broken"]
+[ext_resource type="PackedScene" path="res://assets/kaykit_dungeon/models/trunk_small_A.gltf" id="deco_trunk"]
+[ext_resource type="PackedScene" path="res://assets/kaykit_dungeon/models/floor_dirt_large_rocky.gltf" id="deco_dirt"]
+[ext_resource type="PackedScene" path="res://assets/kaykit_adventurers/accessories/axe_2handed.gltf" id="deco_axe2"]
+[ext_resource type="PackedScene" path="res://assets/kaykit_adventurers/accessories/axe_1handed.gltf" id="deco_axe1"]
+[ext_resource type="PackedScene" path="res://assets/kaykit_adventurers/accessories/quiver.gltf" id="deco_quiver"]
+[ext_resource type="PackedScene" path="res://assets/kaykit_adventurers/accessories/arrow_bundle.gltf" id="deco_arrows"]
+[ext_resource type="PackedScene" path="res://scenes/props/scaffold.tscn" id="deco_scaffold"]
+
+
+[sub_resource type="Gradient" id="Ramp_rock"]
+colors = PackedColorArray(0.2, 0.23, 0.28, 1, 0.38, 0.42, 0.48, 1)
+
+[sub_resource type="FastNoiseLite" id="Noise_rock"]
+frequency = 0.08
+
+[sub_resource type="NoiseTexture2D" id="Tex_rock"]
+seamless = true
+color_ramp = SubResource("Ramp_rock")
+noise = SubResource("Noise_rock")
+
+[sub_resource type="ORMMaterial3D" id="Mat_rock"]
+albedo_color = Color(0.92, 0.86, 0.8, 1)
+albedo_texture = ExtResource("rock_color")
+orm_texture = ExtResource("rock_orm")
+normal_enabled = true
+normal_texture = ExtResource("rock_normal")
+uv1_triplanar = true
+uv1_scale = Vector3(0.35, 0.35, 0.35)
+
+[sub_resource type="StandardMaterial3D" id="Mat_ground"]
+albedo_color = Color(0.16, 0.15, 0.13, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="Mat_ramp"]
+albedo_texture = ExtResource("brick_color")
+normal_enabled = true
+normal_texture = ExtResource("brick_normal")
+roughness_texture = ExtResource("brick_rough")
+uv1_triplanar = true
+uv1_scale = Vector3(0.5, 0.5, 0.5)
+
+[sub_resource type="StandardMaterial3D" id="Mat_wood"]
+albedo_color = Color(0.36, 0.24, 0.14, 1)
+roughness = 0.9
+
+[sub_resource type="StandardMaterial3D" id="Mat_stone"]
+albedo_color = Color(0.42, 0.42, 0.43, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="Mat_water"]
+albedo_color = Color(0.06, 0.12, 0.16, 1)
+metallic = 0.3
+roughness = 0.05
+
+[sub_resource type="StandardMaterial3D" id="Mat_soot"]
+albedo_color = Color(0.03, 0.03, 0.03, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="Mat_ore"]
+albedo_color = Color(0.75, 0.9, 1, 1)
+emission_enabled = true
+emission = Color(0.55, 0.8, 1, 1)
+emission_energy_multiplier = 1.6
+
+[sub_resource type="StandardMaterial3D" id="Mat_iron"]
+albedo_color = Color(0.12, 0.12, 0.13, 1)
+metallic = 0.7
+roughness = 0.5
+
+[sub_resource type="StandardMaterial3D" id="Mat_glass"]
+transparency = 1
+albedo_color = Color(0.9, 0.8, 0.5, 0.35)
+roughness = 0.1
+
+[sub_resource type="StandardMaterial3D" id="Mat_bronze"]
+albedo_color = Color(0.55, 0.38, 0.18, 1)
+metallic = 0.85
+roughness = 0.35
+
+[sub_resource type="StandardMaterial3D" id="Mat_cloth"]
+albedo_color = Color(0.85, 0.82, 0.74, 1)
+roughness = 1.0
+cull_mode = 2
+
+[sub_resource type="StandardMaterial3D" id="Mat_cloth_dark"]
+albedo_color = Color(0.55, 0.42, 0.32, 1)
+roughness = 1.0
+cull_mode = 2
+
+[sub_resource type="StandardMaterial3D" id="Mat_arena"]
+albedo_color = Color(0.32, 0.12, 0.12, 1)
+roughness = 1.0
+
+[sub_resource type="CylinderMesh" id="Arena_mesh"]
+material = SubResource("Mat_arena")
+top_radius = 8.5
+bottom_radius = 8.5
+height = 0.04
+radial_segments = 48
+
+[sub_resource type="StandardMaterial3D" id="Mat_flame"]
+shading_mode = 0
+albedo_color = Color(1, 0.55, 0.15, 1)
+
+[sub_resource type="SphereMesh" id="Flame_mesh"]
+material = SubResource("Mat_flame")
+radius = 0.25
+height = 0.5
+
+[sub_resource type="CylinderMesh" id="Bell_mesh"]
+material = SubResource("Mat_bronze")
+top_radius = 0.32
+bottom_radius = 0.75
+height = 1.2
+
+[sub_resource type="BoxMesh" id="Box_1"]
+material = SubResource("Mat_ground")
+size = Vector3(48.000, 1.000, 126.000)
+
+[sub_resource type="BoxShape3D" id="Shape_1"]
+size = Vector3(48.000, 1.000, 126.000)
+
+[sub_resource type="BoxMesh" id="Box_2"]
+material = SubResource("Mat_rock")
+size = Vector3(44.000, 2.980, 30.000)
+
+[sub_resource type="BoxShape3D" id="Shape_2"]
+size = Vector3(44.000, 2.980, 30.000)
+
+[sub_resource type="BoxMesh" id="Box_3"]
+material = SubResource("Mat_rock")
+size = Vector3(44.000, 5.980, 22.000)
+
+[sub_resource type="BoxShape3D" id="Shape_3"]
+size = Vector3(44.000, 5.980, 22.000)
+
+[sub_resource type="BoxMesh" id="Box_4"]
+material = SubResource("Mat_rock")
+size = Vector3(24.000, 8.980, 20.000)
+
+[sub_resource type="BoxShape3D" id="Shape_4"]
+size = Vector3(24.000, 8.980, 20.000)
+
+[sub_resource type="BoxMesh" id="Box_5"]
+material = SubResource("Mat_rock")
+size = Vector3(16.000, 8.980, 20.000)
+
+[sub_resource type="BoxShape3D" id="Shape_5"]
+size = Vector3(16.000, 8.980, 20.000)
+
+[sub_resource type="BoxMesh" id="Box_6"]
+material = SubResource("Mat_rock")
+size = Vector3(44.000, 11.980, 18.000)
+
+[sub_resource type="BoxShape3D" id="Shape_6"]
+size = Vector3(44.000, 11.980, 18.000)
+
+[sub_resource type="BoxMesh" id="Box_7"]
+material = SubResource("Mat_rock")
+size = Vector3(4.000, 5.000, 20.000)
+
+[sub_resource type="BoxShape3D" id="Shape_7"]
+size = Vector3(4.000, 5.000, 20.000)
+
+[sub_resource type="BoxMesh" id="Box_8"]
+material = SubResource("Mat_rock")
+size = Vector3(3.000, 18.000, 126.000)
+
+[sub_resource type="BoxShape3D" id="Shape_8"]
+size = Vector3(3.000, 18.000, 126.000)
+
+[sub_resource type="BoxMesh" id="Box_9"]
+material = SubResource("Mat_rock")
+size = Vector3(48.000, 20.000, 3.000)
+
+[sub_resource type="BoxShape3D" id="Shape_9"]
+size = Vector3(48.000, 20.000, 3.000)
+
+[sub_resource type="BoxMesh" id="Box_10"]
+material = SubResource("Mat_rock")
+size = Vector3(48.000, 5.000, 3.000)
+
+[sub_resource type="BoxShape3D" id="Shape_10"]
+size = Vector3(48.000, 5.000, 3.000)
+
+[sub_resource type="BoxMesh" id="Box_11"]
+material = SubResource("Mat_ramp")
+size = Vector3(4.000, 0.400, 9.144)
+
+[sub_resource type="BoxShape3D" id="Shape_11"]
+size = Vector3(4.000, 0.400, 9.144)
+
+[sub_resource type="BoxMesh" id="Box_12"]
+material = SubResource("Mat_ramp")
+size = Vector3(4.000, 0.400, 9.144)
+
+[sub_resource type="BoxShape3D" id="Shape_12"]
+size = Vector3(4.000, 0.400, 9.144)
+
+[sub_resource type="BoxMesh" id="Box_13"]
+material = SubResource("Mat_ramp")
+size = Vector3(4.000, 0.400, 9.144)
+
+[sub_resource type="BoxShape3D" id="Shape_13"]
+size = Vector3(4.000, 0.400, 9.144)
+
+[sub_resource type="BoxMesh" id="Box_14"]
+material = SubResource("Mat_ramp")
+size = Vector3(4.000, 0.400, 9.144)
+
+[sub_resource type="BoxShape3D" id="Shape_14"]
+size = Vector3(4.000, 0.400, 9.144)
+
+[sub_resource type="BoxMesh" id="Box_15"]
+material = SubResource("Mat_wood")
+size = Vector3(4.400, 0.400, 3.000)
+
+[sub_resource type="BoxShape3D" id="Shape_15"]
+size = Vector3(4.400, 0.400, 3.000)
+
+[sub_resource type="BoxMesh" id="Box_16"]
+material = SubResource("Mat_wood")
+size = Vector3(4.400, 1.200, 0.200)
+
+[sub_resource type="BoxShape3D" id="Shape_16"]
+size = Vector3(4.400, 1.200, 0.200)
+
+[sub_resource type="BoxMesh" id="Box_17"]
+material = SubResource("Mat_wood")
+size = Vector3(4.400, 1.200, 0.200)
+
+[sub_resource type="BoxShape3D" id="Shape_17"]
+size = Vector3(4.400, 1.200, 0.200)
+
+[sub_resource type="BoxMesh" id="Box_18"]
+material = SubResource("Mat_wood")
+size = Vector3(0.300, 1.200, 32.000)
+
+[sub_resource type="BoxShape3D" id="Shape_18"]
+size = Vector3(0.300, 1.200, 32.000)
+
+[sub_resource type="BoxMesh" id="Box_19"]
+material = SubResource("Mat_wood")
+size = Vector3(0.120, 0.100, 32.000)
+
+[sub_resource type="BoxMesh" id="Box_20"]
+material = SubResource("Mat_wood")
+size = Vector3(0.120, 0.100, 32.000)
+
+[sub_resource type="BoxMesh" id="Box_21"]
+material = SubResource("Mat_wood")
+size = Vector3(0.300, 4.200, 30.000)
+
+[sub_resource type="BoxShape3D" id="Shape_21"]
+size = Vector3(0.300, 4.200, 30.000)
+
+[sub_resource type="BoxMesh" id="Box_22"]
+material = SubResource("Mat_wood")
+size = Vector3(0.120, 0.100, 30.000)
+
+[sub_resource type="BoxMesh" id="Box_23"]
+material = SubResource("Mat_wood")
+size = Vector3(0.120, 0.100, 30.000)
+
+[sub_resource type="BoxMesh" id="Box_24"]
+material = SubResource("Mat_wood")
+size = Vector3(0.300, 7.200, 22.000)
+
+[sub_resource type="BoxShape3D" id="Shape_24"]
+size = Vector3(0.300, 7.200, 22.000)
+
+[sub_resource type="BoxMesh" id="Box_25"]
+material = SubResource("Mat_wood")
+size = Vector3(0.120, 0.100, 22.000)
+
+[sub_resource type="BoxMesh" id="Box_26"]
+material = SubResource("Mat_wood")
+size = Vector3(0.120, 0.100, 22.000)
+
+[sub_resource type="BoxMesh" id="Box_27"]
+material = SubResource("Mat_wood")
+size = Vector3(0.300, 10.200, 20.000)
+
+[sub_resource type="BoxShape3D" id="Shape_27"]
+size = Vector3(0.300, 10.200, 20.000)
+
+[sub_resource type="BoxMesh" id="Box_28"]
+material = SubResource("Mat_wood")
+size = Vector3(0.120, 0.100, 20.000)
+
+[sub_resource type="BoxMesh" id="Box_29"]
+material = SubResource("Mat_wood")
+size = Vector3(0.120, 0.100, 20.000)
+
+[sub_resource type="BoxMesh" id="Box_30"]
+material = SubResource("Mat_wood")
+size = Vector3(0.300, 13.200, 18.000)
+
+[sub_resource type="BoxShape3D" id="Shape_30"]
+size = Vector3(0.300, 13.200, 18.000)
+
+[sub_resource type="BoxMesh" id="Box_31"]
+material = SubResource("Mat_wood")
+size = Vector3(0.120, 0.100, 18.000)
+
+[sub_resource type="BoxMesh" id="Box_32"]
+material = SubResource("Mat_wood")
+size = Vector3(0.120, 0.100, 18.000)
+
+[sub_resource type="BoxShape3D" id="Deco_A_Porteira_0"]
+size = Vector3(4.0, 4.0, 1.0)
+
+[sub_resource type="BoxShape3D" id="Deco_A_Porteira_1"]
+size = Vector3(8.13, 3.5, 3.18)
+
+[sub_resource type="BoxShape3D" id="Deco_A_Porteira_2"]
+size = Vector3(4.0, 3.5, 3.0)
+
+[sub_resource type="BoxShape3D" id="Deco_B_Fornos_0"]
+size = Vector3(1.5, 0.56, 3.0)
+
+[sub_resource type="BoxShape3D" id="Deco_B_Fornos_1"]
+size = Vector3(1.5, 0.56, 3.0)
+
+[sub_resource type="BoxShape3D" id="Deco_B_Fornos_2"]
+size = Vector3(1.5, 1.06, 3.0)
+
+[sub_resource type="BoxShape3D" id="Deco_B_Fornos_3"]
+size = Vector3(2.41, 1.27, 4.4)
+
+[sub_resource type="BoxShape3D" id="Deco_B_Fornos_4"]
+size = Vector3(0.95, 3.18, 1.0)
+
+[sub_resource type="BoxShape3D" id="Deco_B_Fornos_5"]
+size = Vector3(0.95, 3.18, 1.0)
+
+[sub_resource type="BoxShape3D" id="Deco_C_Pedreira_3"]
+size = Vector3(8.13, 3.5, 3.18)
+
+[sub_resource type="BoxShape3D" id="Deco_C_Pedreira_4"]
+size = Vector3(8.13, 3.5, 3.18)
+
+[sub_resource type="BoxShape3D" id="Deco_C_Pedreira_5"]
+size = Vector3(4.0, 3.5, 3.0)
+
+[sub_resource type="BoxShape3D" id="Deco_C_Pedreira_9"]
+size = Vector3(2.09, 2.14, 2.25)
+
+[sub_resource type="BoxShape3D" id="Deco_C_Pedreira_12"]
+size = Vector3(4.0, 4.0, 1.0)
+
+[sub_resource type="BoxShape3D" id="Deco_E_Vigia_0"]
+size = Vector3(0.75, 1.23, 0.75)
+
+[sub_resource type="BoxShape3D" id="Deco_E_Vigia_1"]
+size = Vector3(1.0, 1.0, 1.0)
+
+[sub_resource type="BoxShape3D" id="Deco_E_Vigia_4"]
+size = Vector3(1.8, 2.05, 2.0)
+
+[sub_resource type="BoxShape3D" id="Deco_F_Mirante_4"]
+size = Vector3(2.09, 2.14, 2.25)
+
+[sub_resource type="BoxShape3D" id="Shape_33"]
+size = Vector3(3.000, 1.400, 2.000)
+
+[sub_resource type="BoxShape3D" id="Shape_34"]
+size = Vector3(3.000, 1.400, 2.000)
+
+[sub_resource type="BoxMesh" id="Box_35"]
+material = SubResource("Mat_stone")
+size = Vector3(3.200, 0.700, 3.200)
+
+[sub_resource type="BoxShape3D" id="Shape_35"]
+size = Vector3(3.200, 0.700, 3.200)
+
+[sub_resource type="BoxMesh" id="Box_36"]
+material = SubResource("Mat_water")
+size = Vector3(2.700, 0.040, 2.700)
+
+[sub_resource type="BoxMesh" id="Box_37"]
+material = SubResource("Mat_stone")
+size = Vector3(0.500, 1.900, 0.500)
+
+[sub_resource type="BoxShape3D" id="Shape_37"]
+size = Vector3(0.500, 1.900, 0.500)
+
+[sub_resource type="BoxMesh" id="Box_38"]
+material = SubResource("Mat_wood")
+size = Vector3(0.180, 2.600, 0.180)
+
+[sub_resource type="BoxShape3D" id="Shape_38"]
+size = Vector3(0.180, 2.600, 0.180)
+
+[sub_resource type="BoxMesh" id="Box_39"]
+material = SubResource("Mat_wood")
+size = Vector3(0.180, 2.600, 0.180)
+
+[sub_resource type="BoxShape3D" id="Shape_39"]
+size = Vector3(0.180, 2.600, 0.180)
+
+[sub_resource type="BoxMesh" id="Box_40"]
+material = SubResource("Mat_wood")
+size = Vector3(10.000, 0.060, 0.060)
+
+[sub_resource type="BoxMesh" id="Box_41"]
+material = SubResource("Mat_cloth")
+size = Vector3(0.900, 1.100, 0.030)
+
+[sub_resource type="BoxMesh" id="Box_42"]
+material = SubResource("Mat_cloth_dark")
+size = Vector3(0.900, 1.400, 0.030)
+
+[sub_resource type="BoxMesh" id="Box_43"]
+material = SubResource("Mat_cloth")
+size = Vector3(0.900, 0.900, 0.030)
+
+[sub_resource type="BoxMesh" id="Box_44"]
+material = SubResource("Mat_cloth_dark")
+size = Vector3(0.900, 1.300, 0.030)
+
+[sub_resource type="BoxMesh" id="Box_45"]
+material = SubResource("Mat_cloth")
+size = Vector3(0.900, 1.000, 0.030)
+
+[sub_resource type="BoxMesh" id="Box_46"]
+material = SubResource("Mat_stone")
+size = Vector3(2.200, 1.500, 1.800)
+
+[sub_resource type="BoxShape3D" id="Shape_46"]
+size = Vector3(2.200, 1.500, 1.800)
+
+[sub_resource type="BoxMesh" id="Box_47"]
+material = SubResource("Mat_soot")
+size = Vector3(1.000, 0.700, 0.050)
+
+[sub_resource type="BoxMesh" id="Box_48"]
+material = SubResource("Mat_ore")
+size = Vector3(0.700, 0.350, 0.250)
+
+[sub_resource type="BoxMesh" id="Box_49"]
+material = SubResource("Mat_ore")
+size = Vector3(0.700, 0.350, 0.250)
+
+[sub_resource type="BoxMesh" id="Box_50"]
+material = SubResource("Mat_ore")
+size = Vector3(0.700, 0.350, 0.250)
+
+[sub_resource type="BoxMesh" id="Box_51"]
+material = SubResource("Mat_ore")
+size = Vector3(0.700, 0.350, 0.250)
+
+[sub_resource type="BoxMesh" id="Box_52"]
+material = SubResource("Mat_ore")
+size = Vector3(0.700, 0.350, 0.250)
+
+[sub_resource type="BoxMesh" id="Box_53"]
+material = SubResource("Mat_iron")
+size = Vector3(0.320, 0.450, 0.320)
+
+[sub_resource type="BoxMesh" id="Box_54"]
+material = SubResource("Mat_glass")
+size = Vector3(0.260, 0.300, 0.260)
+
+[sub_resource type="BoxMesh" id="Box_55"]
+material = SubResource("Mat_soot")
+size = Vector3(1.000, 0.030, 2.000)
+
+[sub_resource type="BoxMesh" id="Box_56"]
+material = SubResource("Mat_stone")
+size = Vector3(0.250, 0.500, 2.000)
+
+[sub_resource type="BoxMesh" id="Box_57"]
+material = SubResource("Mat_soot")
+size = Vector3(1.000, 0.030, 2.000)
+
+[sub_resource type="BoxMesh" id="Box_58"]
+material = SubResource("Mat_stone")
+size = Vector3(0.250, 0.500, 2.000)
+
+[sub_resource type="BoxMesh" id="Box_59"]
+material = SubResource("Mat_soot")
+size = Vector3(1.000, 0.030, 2.000)
+
+[sub_resource type="BoxMesh" id="Box_60"]
+material = SubResource("Mat_stone")
+size = Vector3(0.250, 0.500, 2.000)
+
+[sub_resource type="BoxMesh" id="Box_61"]
+material = SubResource("Mat_soot")
+size = Vector3(1.000, 0.030, 2.000)
+
+[sub_resource type="BoxMesh" id="Box_62"]
+material = SubResource("Mat_stone")
+size = Vector3(0.250, 0.500, 2.000)
+
+[sub_resource type="BoxMesh" id="Box_63"]
+material = SubResource("Mat_soot")
+size = Vector3(1.000, 0.030, 2.000)
+
+[sub_resource type="BoxMesh" id="Box_64"]
+material = SubResource("Mat_stone")
+size = Vector3(0.250, 0.500, 2.000)
+
+[sub_resource type="BoxMesh" id="Box_65"]
+material = SubResource("Mat_soot")
+size = Vector3(1.000, 0.030, 2.000)
+
+[sub_resource type="BoxMesh" id="Box_66"]
+material = SubResource("Mat_stone")
+size = Vector3(0.250, 0.500, 2.000)
+
+[sub_resource type="BoxMesh" id="Box_67"]
+material = SubResource("Mat_stone")
+size = Vector3(0.500, 5.200, 0.500)
+
+[sub_resource type="BoxShape3D" id="Shape_67"]
+size = Vector3(0.500, 5.200, 0.500)
+
+[sub_resource type="BoxMesh" id="Box_68"]
+material = SubResource("Mat_stone")
+size = Vector3(0.500, 5.200, 0.500)
+
+[sub_resource type="BoxShape3D" id="Shape_68"]
+size = Vector3(0.500, 5.200, 0.500)
+
+[sub_resource type="BoxMesh" id="Box_69"]
+material = SubResource("Mat_wood")
+size = Vector3(4.600, 0.400, 0.500)
+
+[sub_resource type="BoxShape3D" id="Shape_69"]
+size = Vector3(4.600, 0.400, 0.500)
+
+[sub_resource type="BoxMesh" id="Box_70"]
+material = SubResource("Mat_soot")
+size = Vector3(0.060, 0.900, 0.040)
+
+[sub_resource type="BoxMesh" id="Box_71"]
+material = SubResource("Mat_stone")
+size = Vector3(0.600, 1.200, 0.600)
+
+[sub_resource type="BoxShape3D" id="Shape_71"]
+size = Vector3(0.600, 1.200, 0.600)
+
+[sub_resource type="BoxMesh" id="Box_72"]
+material = SubResource("Mat_stone")
+size = Vector3(0.600, 1.200, 0.600)
+
+[sub_resource type="BoxShape3D" id="Shape_72"]
+size = Vector3(0.600, 1.200, 0.600)
+
+[sub_resource type="BoxMesh" id="Box_73"]
+material = SubResource("Mat_stone")
+size = Vector3(0.600, 1.200, 0.600)
+
+[sub_resource type="BoxShape3D" id="Shape_73"]
+size = Vector3(0.600, 1.200, 0.600)
+
+[sub_resource type="BoxMesh" id="Box_74"]
+material = SubResource("Mat_stone")
+size = Vector3(0.600, 1.200, 0.600)
+
+[sub_resource type="BoxShape3D" id="Shape_74"]
+size = Vector3(0.600, 1.200, 0.600)
+
+[sub_resource type="BoxMesh" id="Box_75"]
+material = SubResource("Mat_stone")
+size = Vector3(0.600, 1.200, 0.600)
+
+[sub_resource type="BoxShape3D" id="Shape_75"]
+size = Vector3(0.600, 1.200, 0.600)
+
+[sub_resource type="BoxMesh" id="Box_76"]
+material = SubResource("Mat_stone")
+size = Vector3(0.600, 1.200, 0.600)
+
+[sub_resource type="BoxShape3D" id="Shape_76"]
+size = Vector3(0.600, 1.200, 0.600)
+
+[node name="Pedraalta" type="Node3D"]
+
+[node name="Chao" type="GridMap" parent="."]
+mesh_library = ExtResource("ground_lib")
+cell_size = Vector3(2, 1, 2)
+cell_center_y = false
+data = {
+"cells": PackedInt32Array(65525, 10, 2, 65525, 11, 2, 65525, 12, 2, 65525, 13, 2, 65525, 14, 2, 65525, 15, 2, 65525, 16, 2, 65525, 17, 2, 65525, 18, 2, 65525, 19, 2, 65525, 20, 2, 65525, 21, 2, 65525, 22, 2, 65525, 23, 2, 65525, 24, 2, 65525, 25, 2, 65526, 10, 2, 65526, 11, 2, 65526, 12, 2, 65526, 13, 2, 65526, 14, 2, 65526, 15, 2, 65526, 16, 2, 65526, 17, 2, 65526, 18, 2, 65526, 19, 2, 65526, 20, 2, 65526, 21, 2, 65526, 22, 2, 65526, 23, 2, 65526, 24, 2, 65526, 25, 2, 65527, 10, 2, 65527, 11, 2, 65527, 12, 2, 65527, 13, 2, 65527, 14, 2, 65527, 15, 2, 65527, 16, 2, 65527, 17, 2, 65527, 18, 2, 65527, 19, 2, 65527, 20, 2, 65527, 21, 2, 65527, 22, 2, 65527, 23, 2, 65527, 24, 2, 65527, 25, 2, 65528, 10, 2, 65528, 11, 2, 65528, 12, 2, 65528, 13, 2, 65528, 14, 2, 65528, 15, 2, 65528, 16, 2, 65528, 17, 2, 65528, 18, 2, 65528, 19, 2, 65528, 20, 2, 65528, 21, 2, 65528, 22, 2, 65528, 23, 2, 65528, 24, 2, 65528, 25, 2, 65529, 10, 2, 65529, 11, 2, 65529, 12, 2, 65529, 13, 2, 65529, 14, 2, 65529, 15, 2, 65529, 16, 2, 65529, 17, 2, 65529, 18, 2, 65529, 19, 2, 65529, 20, 2, 65529, 21, 2, 65529, 22, 2, 65529, 23, 2, 65529, 24, 2, 65529, 25, 2, 65530, 10, 2, 65530, 11, 2, 65530, 12, 2, 65530, 13, 2, 65530, 14, 2, 65530, 15, 2, 65530, 16, 2, 65530, 17, 2, 65530, 18, 2, 65530, 19, 2, 65530, 20, 2, 65530, 21, 2, 65530, 22, 2, 65530, 23, 2, 65530, 24, 2, 65530, 25, 2, 65531, 10, 2, 65531, 11, 2, 65531, 12, 2, 65531, 13, 2, 65531, 14, 2, 65531, 15, 2, 65531, 16, 2, 65531, 17, 2, 65531, 18, 2, 65531, 19, 2, 65531, 20, 2, 65531, 21, 2, 65531, 22, 2, 65531, 23, 2, 65531, 24, 2, 65531, 25, 2, 65532, 10, 2, 65532, 11, 2, 65532, 12, 2, 65532, 13, 2, 65532, 14, 2, 65532, 15, 2, 65532, 16, 2, 65532, 17, 2, 65532, 18, 2, 65532, 19, 2, 65532, 20, 2, 65532, 21, 2, 65532, 22, 2, 65532, 23, 2, 65532, 24, 2, 65532, 25, 2, 65533, 10, 2, 65533, 11, 2, 65533, 12, 2, 65533, 13, 2, 65533, 14, 2, 65533, 15, 2, 65533, 16, 2, 65533, 17, 2, 65533, 18, 2, 65533, 19, 2, 65533, 20, 2, 65533, 21, 2, 65533, 22, 2, 65533, 23, 2, 65533, 24, 2, 65533, 25, 2, 65534, 10, 2, 65534, 11, 2, 65534, 12, 2, 65534, 13, 2, 65534, 14, 2, 65534, 15, 2, 65534, 16, 2, 65534, 17, 2, 65534, 18, 2, 65534, 19, 2, 65534, 20, 2, 65534, 21, 2, 65534, 22, 2, 65534, 23, 2, 65534, 24, 2, 65534, 25, 2, 65535, 10, 2, 65535, 11, 2, 65535, 12, 2, 65535, 13, 2, 65535, 14, 2, 65535, 15, 2, 65535, 16, 2, 65535, 17, 2, 65535, 18, 2, 65535, 19, 2, 65535, 20, 2, 65535, 21, 2, 65535, 22, 2, 65535, 23, 2, 65535, 24, 2, 65535, 25, 2, 0, 10, 2, 0, 11, 2, 0, 12, 2, 0, 13, 2, 0, 14, 2, 0, 15, 2, 0, 16, 2, 0, 17, 2, 0, 18, 2, 0, 19, 2, 0, 20, 2, 0, 21, 2, 0, 22, 2, 0, 23, 2, 0, 24, 2, 0, 25, 2, 1, 10, 2, 1, 11, 2, 1, 12, 2, 1, 13, 2, 1, 14, 2, 1, 15, 2, 1, 16, 2, 1, 17, 2, 1, 18, 2, 1, 19, 2, 1, 20, 2, 1, 21, 2, 1, 22, 2, 1, 23, 2, 1, 24, 2, 1, 25, 2, 2, 10, 2, 2, 11, 2, 2, 12, 2, 2, 13, 2, 2, 14, 2, 2, 15, 2, 2, 16, 2, 2, 17, 2, 2, 18, 2, 2, 19, 2, 2, 20, 2, 2, 21, 2, 2, 22, 2, 2, 23, 2, 2, 24, 2, 2, 25, 2, 3, 10, 2, 3, 11, 2, 3, 12, 2, 3, 13, 2, 3, 14, 2, 3, 15, 2, 3, 16, 2, 3, 17, 2, 3, 18, 2, 3, 19, 2, 3, 20, 2, 3, 21, 2, 3, 22, 2, 3, 23, 2, 3, 24, 2, 3, 25, 2, 4, 10, 2, 4, 11, 2, 4, 12, 2, 4, 13, 2, 4, 14, 2, 4, 15, 2, 4, 16, 2, 4, 17, 2, 4, 18, 2, 4, 19, 2, 4, 20, 2, 4, 21, 2, 4, 22, 2, 4, 23, 2, 4, 24, 2, 4, 25, 2, 5, 10, 2, 5, 11, 2, 5, 12, 2, 5, 13, 2, 5, 14, 2, 5, 15, 2, 5, 16, 2, 5, 17, 2, 5, 18, 2, 5, 19, 2, 5, 20, 2, 5, 21, 2, 5, 22, 2, 5, 23, 2, 5, 24, 2, 5, 25, 2, 6, 10, 2, 6, 11, 2, 6, 12, 2, 6, 13, 2, 6, 14, 2, 6, 15, 2, 6, 16, 2, 6, 17, 2, 6, 18, 2, 6, 19, 2, 6, 20, 2, 6, 21, 2, 6, 22, 2, 6, 23, 2, 6, 24, 2, 6, 25, 2, 7, 10, 2, 7, 11, 2, 7, 12, 2, 7, 13, 2, 7, 14, 2, 7, 15, 2, 7, 16, 2, 7, 17, 2, 7, 18, 2, 7, 19, 2, 7, 20, 2, 7, 21, 2, 7, 22, 2, 7, 23, 2, 7, 24, 2, 7, 25, 2, 8, 10, 2, 8, 11, 2, 8, 12, 2, 8, 13, 2, 8, 14, 2, 8, 15, 2, 8, 16, 2, 8, 17, 2, 8, 18, 2, 8, 19, 2, 8, 20, 2, 8, 21, 2, 8, 22, 2, 8, 23, 2, 8, 24, 2, 8, 25, 2, 9, 10, 2, 9, 11, 2, 9, 12, 2, 9, 13, 2, 9, 14, 2, 9, 15, 2, 9, 16, 2, 9, 17, 2, 9, 18, 2, 9, 19, 2, 9, 20, 2, 9, 21, 2, 9, 22, 2, 9, 23, 2, 9, 24, 2, 9, 25, 2, 10, 10, 2, 10, 11, 2, 10, 12, 2, 10, 13, 2, 10, 14, 2, 10, 15, 2, 10, 16, 2, 10, 17, 2, 10, 18, 2, 10, 19, 2, 10, 20, 2, 10, 21, 2, 10, 22, 2, 10, 23, 2, 10, 24, 2, 10, 25, 2, 262133, 65531, 0, 262133, 65532, 0, 262133, 65533, 0, 262133, 65534, 0, 262133, 65535, 0, 262133, 0, 0, 262133, 1, 0, 262133, 2, 0, 262133, 3, 0, 262133, 4, 0, 262133, 5, 0, 262133, 6, 0, 262133, 7, 0, 262133, 8, 0, 262133, 9, 0, 262134, 65531, 0, 262134, 65532, 0, 262134, 65533, 0, 262134, 65534, 0, 262134, 65535, 0, 262134, 0, 0, 262134, 1, 0, 262134, 2, 0, 262134, 3, 0, 262134, 4, 0, 262134, 5, 0, 262134, 6, 0, 262134, 7, 0, 262134, 8, 0, 262134, 9, 0, 262135, 65531, 0, 262135, 65532, 0, 262135, 65533, 0, 262135, 65534, 0, 262135, 65535, 0, 262135, 0, 0, 262135, 1, 0, 262135, 2, 0, 262135, 3, 0, 262135, 4, 0, 262135, 5, 0, 262135, 6, 0, 262135, 7, 0, 262135, 8, 0, 262135, 9, 0, 262136, 65531, 0, 262136, 65532, 0, 262136, 65533, 0, 262136, 65534, 0, 262136, 65535, 0, 262136, 0, 0, 262136, 1, 0, 262136, 2, 0, 262136, 3, 0, 262136, 4, 0, 262136, 5, 0, 262136, 6, 0, 262136, 7, 0, 262136, 8, 0, 262136, 9, 0, 262137, 65531, 0, 262137, 65532, 0, 262137, 65533, 0, 262137, 65534, 0, 262137, 65535, 0, 262137, 0, 0, 262137, 1, 0, 262137, 2, 0, 262137, 3, 0, 262137, 4, 0, 262137, 5, 0, 262137, 6, 0, 262137, 7, 0, 262137, 8, 0, 262137, 9, 0, 262138, 65531, 0, 262138, 65532, 0, 262138, 65533, 0, 262138, 65534, 0, 262138, 65535, 0, 262138, 0, 0, 262138, 1, 0, 262138, 2, 0, 262138, 3, 0, 262138, 4, 0, 262138, 5, 0, 262138, 6, 0, 262138, 7, 0, 262138, 8, 0, 262138, 9, 0, 262139, 65531, 0, 262139, 65532, 0, 262139, 65533, 0, 262139, 65534, 0, 262139, 65535, 0, 262139, 0, 0, 262139, 1, 0, 262139, 2, 0, 262139, 3, 0, 262139, 4, 0, 262139, 5, 0, 262139, 6, 0, 262139, 7, 0, 262139, 8, 0, 262139, 9, 0, 262140, 65531, 0, 262140, 65532, 0, 262140, 65533, 0, 262140, 65534, 0, 262140, 65535, 0, 262140, 0, 0, 262140, 1, 0, 262140, 2, 0, 262140, 3, 0, 262140, 4, 0, 262140, 5, 0, 262140, 6, 0, 262140, 7, 0, 262140, 8, 0, 262140, 9, 0, 262141, 65531, 0, 262141, 65532, 0, 262141, 65533, 0, 262141, 65534, 0, 262141, 65535, 0, 262141, 0, 0, 262141, 1, 0, 262141, 2, 0, 262141, 3, 0, 262141, 4, 0, 262141, 5, 0, 262141, 6, 0, 262141, 7, 0, 262141, 8, 0, 262141, 9, 0, 262142, 65531, 0, 262142, 65532, 0, 262142, 65533, 0, 262142, 65534, 0, 262142, 65535, 0, 262142, 0, 0, 262142, 1, 0, 262142, 2, 0, 262142, 3, 0, 262142, 4, 0, 262142, 5, 0, 262142, 6, 0, 262142, 7, 0, 262142, 8, 0, 262142, 9, 0, 262143, 65531, 0, 262143, 65532, 0, 262143, 65533, 0, 262143, 65534, 0, 262143, 65535, 0, 262143, 0, 0, 262143, 1, 0, 262143, 2, 0, 262143, 3, 0, 262143, 4, 0, 262143, 5, 0, 262143, 6, 0, 262143, 7, 0, 262143, 8, 0, 262143, 9, 0, 196608, 65531, 0, 196608, 65532, 0, 196608, 65533, 0, 196608, 65534, 0, 196608, 65535, 0, 196608, 0, 0, 196608, 1, 0, 196608, 2, 0, 196608, 3, 0, 196608, 4, 0, 196608, 5, 0, 196608, 6, 0, 196608, 7, 0, 196608, 8, 0, 196608, 9, 0, 196609, 65531, 0, 196609, 65532, 0, 196609, 65533, 0, 196609, 65534, 0, 196609, 65535, 0, 196609, 0, 0, 196609, 1, 0, 196609, 2, 0, 196609, 3, 0, 196609, 4, 0, 196609, 5, 0, 196609, 6, 0, 196609, 7, 0, 196609, 8, 0, 196609, 9, 0, 196610, 65531, 0, 196610, 65532, 0, 196610, 65533, 0, 196610, 65534, 0, 196610, 65535, 0, 196610, 0, 0, 196610, 1, 0, 196610, 2, 0, 196610, 3, 0, 196610, 4, 0, 196610, 5, 0, 196610, 6, 0, 196610, 7, 0, 196610, 8, 0, 196610, 9, 0, 196611, 65531, 0, 196611, 65532, 0, 196611, 65533, 0, 196611, 65534, 0, 196611, 65535, 0, 196611, 0, 0, 196611, 1, 0, 196611, 2, 0, 196611, 3, 0, 196611, 4, 0, 196611, 5, 0, 196611, 6, 0, 196611, 7, 0, 196611, 8, 0, 196611, 9, 0, 196612, 65531, 0, 196612, 65532, 0, 196612, 65533, 0, 196612, 65534, 0, 196612, 65535, 0, 196612, 0, 0, 196612, 1, 0, 196612, 2, 0, 196612, 3, 0, 196612, 4, 0, 196612, 5, 0, 196612, 6, 0, 196612, 7, 0, 196612, 8, 0, 196612, 9, 0, 196613, 65531, 0, 196613, 65532, 0, 196613, 65533, 0, 196613, 65534, 0, 196613, 65535, 0, 196613, 0, 0, 196613, 1, 0, 196613, 2, 0, 196613, 3, 0, 196613, 4, 0, 196613, 5, 0, 196613, 6, 0, 196613, 7, 0, 196613, 8, 0, 196613, 9, 0, 196614, 65531, 0, 196614, 65532, 0, 196614, 65533, 0, 196614, 65534, 0, 196614, 65535, 0, 196614, 0, 0, 196614, 1, 0, 196614, 2, 0, 196614, 3, 0, 196614, 4, 0, 196614, 5, 0, 196614, 6, 0, 196614, 7, 0, 196614, 8, 0, 196614, 9, 0, 196615, 65531, 0, 196615, 65532, 0, 196615, 65533, 0, 196615, 65534, 0, 196615, 65535, 0, 196615, 0, 0, 196615, 1, 0, 196615, 2, 0, 196615, 3, 0, 196615, 4, 0, 196615, 5, 0, 196615, 6, 0, 196615, 7, 0, 196615, 8, 0, 196615, 9, 0, 196616, 65531, 0, 196616, 65532, 0, 196616, 65533, 0, 196616, 65534, 0, 196616, 65535, 0, 196616, 0, 0, 196616, 1, 0, 196616, 2, 0, 196616, 3, 0, 196616, 4, 0, 196616, 5, 0, 196616, 6, 0, 196616, 7, 0, 196616, 8, 0, 196616, 9, 0, 196617, 65531, 0, 196617, 65532, 0, 196617, 65533, 0, 196617, 65534, 0, 196617, 65535, 0, 196617, 0, 0, 196617, 1, 0, 196617, 2, 0, 196617, 3, 0, 196617, 4, 0, 196617, 5, 0, 196617, 6, 0, 196617, 7, 0, 196617, 8, 0, 196617, 9, 0, 196618, 65531, 0, 196618, 65532, 0, 196618, 65533, 0, 196618, 65534, 0, 196618, 65535, 0, 196618, 0, 0, 196618, 1, 0, 196618, 2, 0, 196618, 3, 0, 196618, 4, 0, 196618, 5, 0, 196618, 6, 0, 196618, 7, 0, 196618, 8, 0, 196618, 9, 0, 458741, 65520, 2, 458741, 65521, 2, 458741, 65522, 2, 458741, 65523, 2, 458741, 65524, 2, 458741, 65525, 2, 458741, 65526, 2, 458741, 65527, 2, 458741, 65528, 2, 458741, 65529, 2, 458741, 65530, 2, 458742, 65520, 2, 458742, 65521, 2, 458742, 65522, 2, 458742, 65523, 2, 458742, 65524, 2, 458742, 65525, 2, 458742, 65526, 2, 458742, 65527, 2, 458742, 65528, 2, 458742, 65529, 2, 458742, 65530, 2, 458743, 65520, 2, 458743, 65521, 2, 458743, 65522, 2, 458743, 65523, 2, 458743, 65524, 2, 458743, 65525, 2, 458743, 65526, 2, 458743, 65527, 2, 458743, 65528, 2, 458743, 65529, 2, 458743, 65530, 2, 458744, 65520, 2, 458744, 65521, 2, 458744, 65522, 2, 458744, 65523, 2, 458744, 65524, 2, 458744, 65525, 2, 458744, 65526, 2, 458744, 65527, 2, 458744, 65528, 2, 458744, 65529, 2, 458744, 65530, 2, 458745, 65520, 2, 458745, 65521, 2, 458745, 65522, 2, 458745, 65523, 2, 458745, 65524, 2, 458745, 65525, 2, 458745, 65526, 2, 458745, 65527, 2, 458745, 65528, 2, 458745, 65529, 2, 458745, 65530, 2, 458746, 65520, 2, 458746, 65521, 2, 458746, 65522, 2, 458746, 65523, 2, 458746, 65524, 2, 458746, 65525, 2, 458746, 65526, 2, 458746, 65527, 2, 458746, 65528, 2, 458746, 65529, 2, 458746, 65530, 2, 458747, 65520, 2, 458747, 65521, 2, 458747, 65522, 2, 458747, 65523, 2, 458747, 65524, 2, 458747, 65525, 2, 458747, 65526, 2, 458747, 65527, 2, 458747, 65528, 2, 458747, 65529, 2, 458747, 65530, 2, 458748, 65520, 2, 458748, 65521, 2, 458748, 65522, 2, 458748, 65523, 2, 458748, 65524, 2, 458748, 65525, 2, 458748, 65526, 2, 458748, 65527, 2, 458748, 65528, 2, 458748, 65529, 2, 458748, 65530, 2, 458749, 65520, 2, 458749, 65521, 2, 458749, 65522, 2, 458749, 65523, 2, 458749, 65524, 2, 458749, 65525, 2, 458749, 65526, 2, 458749, 65527, 2, 458749, 65528, 2, 458749, 65529, 2, 458749, 65530, 2, 458750, 65520, 2, 458750, 65521, 2, 458750, 65522, 2, 458750, 65523, 2, 458750, 65524, 2, 458750, 65525, 2, 458750, 65526, 2, 458750, 65527, 2, 458750, 65528, 2, 458750, 65529, 2, 458750, 65530, 2, 458751, 65520, 2, 458751, 65521, 2, 458751, 65522, 2, 458751, 65523, 2, 458751, 65524, 2, 458751, 65525, 2, 458751, 65526, 2, 458751, 65527, 2, 458751, 65528, 2, 458751, 65529, 2, 458751, 65530, 2, 393216, 65520, 2, 393216, 65521, 2, 393216, 65522, 2, 393216, 65523, 2, 393216, 65524, 2, 393216, 65525, 2, 393216, 65526, 2, 393216, 65527, 2, 393216, 65528, 2, 393216, 65529, 2, 393216, 65530, 2, 393217, 65520, 2, 393217, 65521, 2, 393217, 65522, 2, 393217, 65523, 2, 393217, 65524, 2, 393217, 65525, 2, 393217, 65526, 2, 393217, 65527, 2, 393217, 65528, 2, 393217, 65529, 2, 393217, 65530, 2, 393218, 65520, 2, 393218, 65521, 2, 393218, 65522, 2, 393218, 65523, 2, 393218, 65524, 2, 393218, 65525, 2, 393218, 65526, 2, 393218, 65527, 2, 393218, 65528, 2, 393218, 65529, 2, 393218, 65530, 2, 393219, 65520, 2, 393219, 65521, 2, 393219, 65522, 2, 393219, 65523, 2, 393219, 65524, 2, 393219, 65525, 2, 393219, 65526, 2, 393219, 65527, 2, 393219, 65528, 2, 393219, 65529, 2, 393219, 65530, 2, 393220, 65520, 2, 393220, 65521, 2, 393220, 65522, 2, 393220, 65523, 2, 393220, 65524, 2, 393220, 65525, 2, 393220, 65526, 2, 393220, 65527, 2, 393220, 65528, 2, 393220, 65529, 2, 393220, 65530, 2, 393221, 65520, 2, 393221, 65521, 2, 393221, 65522, 2, 393221, 65523, 2, 393221, 65524, 2, 393221, 65525, 2, 393221, 65526, 2, 393221, 65527, 2, 393221, 65528, 2, 393221, 65529, 2, 393221, 65530, 2, 393222, 65520, 2, 393222, 65521, 2, 393222, 65522, 2, 393222, 65523, 2, 393222, 65524, 2, 393222, 65525, 2, 393222, 65526, 2, 393222, 65527, 2, 393222, 65528, 2, 393222, 65529, 2, 393222, 65530, 2, 393223, 65520, 2, 393223, 65521, 2, 393223, 65522, 2, 393223, 65523, 2, 393223, 65524, 2, 393223, 65525, 2, 393223, 65526, 2, 393223, 65527, 2, 393223, 65528, 2, 393223, 65529, 2, 393223, 65530, 2, 393224, 65520, 2, 393224, 65521, 2, 393224, 65522, 2, 393224, 65523, 2, 393224, 65524, 2, 393224, 65525, 2, 393224, 65526, 2, 393224, 65527, 2, 393224, 65528, 2, 393224, 65529, 2, 393224, 65530, 2, 393225, 65520, 2, 393225, 65521, 2, 393225, 65522, 2, 393225, 65523, 2, 393225, 65524, 2, 393225, 65525, 2, 393225, 65526, 2, 393225, 65527, 2, 393225, 65528, 2, 393225, 65529, 2, 393225, 65530, 2, 393226, 65520, 2, 393226, 65521, 2, 393226, 65522, 2, 393226, 65523, 2, 393226, 65524, 2, 393226, 65525, 2, 393226, 65526, 2, 393226, 65527, 2, 393226, 65528, 2, 393226, 65529, 2, 393226, 65530, 2, 655349, 65510, 0, 655349, 65511, 0, 655349, 65512, 0, 655349, 65513, 0, 655349, 65514, 0, 655349, 65515, 0, 655349, 65516, 0, 655349, 65517, 0, 655349, 65518, 0, 655349, 65519, 0, 655350, 65510, 0, 655350, 65511, 0, 655350, 65512, 0, 655350, 65513, 0, 655350, 65514, 0, 655350, 65515, 0, 655350, 65516, 0, 655350, 65517, 0, 655350, 65518, 0, 655350, 65519, 0, 655351, 65510, 0, 655351, 65511, 0, 655351, 65512, 0, 655351, 65513, 0, 655351, 65514, 0, 655351, 65515, 0, 655351, 65516, 0, 655351, 65517, 0, 655351, 65518, 0, 655351, 65519, 0, 655352, 65510, 0, 655352, 65511, 0, 655352, 65512, 0, 655352, 65513, 0, 655352, 65514, 0, 655352, 65515, 0, 655352, 65516, 0, 655352, 65517, 0, 655352, 65518, 0, 655352, 65519, 0, 655353, 65510, 0, 655353, 65511, 0, 655353, 65512, 0, 655353, 65513, 0, 655353, 65514, 0, 655353, 65515, 0, 655353, 65516, 0, 655353, 65517, 0, 655353, 65518, 0, 655353, 65519, 0, 655354, 65510, 0, 655354, 65511, 0, 655354, 65512, 0, 655354, 65513, 0, 655354, 65514, 0, 655354, 65515, 0, 655354, 65516, 0, 655354, 65517, 0, 655354, 65518, 0, 655354, 65519, 0, 655355, 65510, 0, 655355, 65511, 0, 655355, 65512, 0, 655355, 65513, 0, 655355, 65514, 0, 655355, 65515, 0, 655355, 65516, 0, 655355, 65517, 0, 655355, 65518, 0, 655355, 65519, 0, 655356, 65510, 0, 655356, 65511, 0, 655356, 65512, 0, 655356, 65513, 0, 655356, 65514, 0, 655356, 65515, 0, 655356, 65516, 0, 655356, 65517, 0, 655356, 65518, 0, 655356, 65519, 0, 655357, 65510, 0, 655357, 65511, 0, 655357, 65512, 0, 655357, 65513, 0, 655357, 65514, 0, 655357, 65515, 0, 655357, 65516, 0, 655357, 65517, 0, 655357, 65518, 0, 655357, 65519, 0, 655358, 65510, 0, 655358, 65511, 0, 655358, 65512, 0, 655358, 65513, 0, 655358, 65514, 0, 655358, 65515, 0, 655358, 65516, 0, 655358, 65517, 0, 655358, 65518, 0, 655358, 65519, 0, 655359, 65510, 0, 655359, 65511, 0, 655359, 65512, 0, 655359, 65513, 0, 655359, 65514, 0, 655359, 65515, 0, 655359, 65516, 0, 655359, 65517, 0, 655359, 65518, 0, 655359, 65519, 0, 589824, 65510, 0, 589824, 65511, 0, 589824, 65512, 0, 589824, 65513, 0, 589824, 65514, 0, 589824, 65515, 0, 589824, 65516, 0, 589824, 65517, 0, 589824, 65518, 0, 589824, 65519, 0, 589827, 65510, 1, 589827, 65511, 1, 589827, 65512, 1, 589827, 65513, 1, 589827, 65514, 1, 589827, 65515, 1, 589827, 65516, 1, 589827, 65517, 1, 589827, 65518, 1, 589827, 65519, 1, 589828, 65510, 1, 589828, 65511, 1, 589828, 65512, 1, 589828, 65513, 1, 589828, 65514, 1, 589828, 65515, 1, 589828, 65516, 1, 589828, 65517, 1, 589828, 65518, 1, 589828, 65519, 1, 589829, 65510, 1, 589829, 65511, 1, 589829, 65512, 1, 589829, 65513, 1, 589829, 65514, 1, 589829, 65515, 1, 589829, 65516, 1, 589829, 65517, 1, 589829, 65518, 1, 589829, 65519, 1, 589830, 65510, 1, 589830, 65511, 1, 589830, 65512, 1, 589830, 65513, 1, 589830, 65514, 1, 589830, 65515, 1, 589830, 65516, 1, 589830, 65517, 1, 589830, 65518, 1, 589830, 65519, 1, 589831, 65510, 1, 589831, 65511, 1, 589831, 65512, 1, 589831, 65513, 1, 589831, 65514, 1, 589831, 65515, 1, 589831, 65516, 1, 589831, 65517, 1, 589831, 65518, 1, 589831, 65519, 1, 589832, 65510, 1, 589832, 65511, 1, 589832, 65512, 1, 589832, 65513, 1, 589832, 65514, 1, 589832, 65515, 1, 589832, 65516, 1, 589832, 65517, 1, 589832, 65518, 1, 589832, 65519, 1, 589833, 65510, 1, 589833, 65511, 1, 589833, 65512, 1, 589833, 65513, 1, 589833, 65514, 1, 589833, 65515, 1, 589833, 65516, 1, 589833, 65517, 1, 589833, 65518, 1, 589833, 65519, 1, 589834, 65510, 1, 589834, 65511, 1, 589834, 65512, 1, 589834, 65513, 1, 589834, 65514, 1, 589834, 65515, 1, 589834, 65516, 1, 589834, 65517, 1, 589834, 65518, 1, 589834, 65519, 1, 851957, 65501, 1, 851957, 65502, 1, 851957, 65503, 1, 851957, 65504, 1, 851957, 65505, 1, 851957, 65506, 1, 851957, 65507, 1, 851957, 65508, 1, 851957, 65509, 1, 851958, 65501, 1, 851958, 65502, 1, 851958, 65503, 1, 851958, 65504, 1, 851958, 65505, 1, 851958, 65506, 1, 851958, 65507, 1, 851958, 65508, 1, 851958, 65509, 1, 851959, 65501, 1, 851959, 65502, 1, 851959, 65503, 1, 851959, 65504, 1, 851959, 65505, 1, 851959, 65506, 1, 851959, 65507, 1, 851959, 65508, 1, 851959, 65509, 1, 851960, 65501, 1, 851960, 65502, 1, 851960, 65503, 1, 851960, 65504, 1, 851960, 65505, 1, 851960, 65506, 1, 851960, 65507, 1, 851960, 65508, 1, 851960, 65509, 1, 851961, 65501, 1, 851961, 65502, 1, 851961, 65503, 1, 851961, 65504, 1, 851961, 65505, 1, 851961, 65506, 1, 851961, 65507, 1, 851961, 65508, 1, 851961, 65509, 1, 851962, 65501, 1, 851962, 65502, 1, 851962, 65503, 1, 851962, 65504, 1, 851962, 65505, 1, 851962, 65506, 1, 851962, 65507, 1, 851962, 65508, 1, 851962, 65509, 1, 851963, 65501, 1, 851963, 65502, 1, 851963, 65503, 1, 851963, 65504, 1, 851963, 65505, 1, 851963, 65506, 1, 851963, 65507, 1, 851963, 65508, 1, 851963, 65509, 1, 851964, 65501, 1, 851964, 65502, 1, 851964, 65503, 1, 851964, 65504, 1, 851964, 65505, 1, 851964, 65506, 1, 851964, 65507, 1, 851964, 65508, 1, 851964, 65509, 1, 851965, 65501, 1, 851965, 65502, 1, 851965, 65503, 1, 851965, 65504, 1, 851965, 65505, 1, 851965, 65506, 1, 851965, 65507, 1, 851965, 65508, 1, 851965, 65509, 1, 851966, 65501, 1, 851966, 65502, 1, 851966, 65503, 1, 851966, 65504, 1, 851966, 65505, 1, 851966, 65506, 1, 851966, 65507, 1, 851966, 65508, 1, 851966, 65509, 1, 851967, 65501, 1, 851967, 65502, 1, 851967, 65503, 1, 851967, 65504, 1, 851967, 65505, 1, 851967, 65506, 1, 851967, 65507, 1, 851967, 65508, 1, 851967, 65509, 1, 786432, 65501, 1, 786432, 65502, 1, 786432, 65503, 1, 786432, 65504, 1, 786432, 65505, 1, 786432, 65506, 1, 786432, 65507, 1, 786432, 65508, 1, 786432, 65509, 1, 786433, 65501, 1, 786433, 65502, 1, 786433, 65503, 1, 786433, 65504, 1, 786433, 65505, 1, 786433, 65506, 1, 786433, 65507, 1, 786433, 65508, 1, 786433, 65509, 1, 786434, 65501, 1, 786434, 65502, 1, 786434, 65503, 1, 786434, 65504, 1, 786434, 65505, 1, 786434, 65506, 1, 786434, 65507, 1, 786434, 65508, 1, 786434, 65509, 1, 786435, 65501, 1, 786435, 65502, 1, 786435, 65503, 1, 786435, 65504, 1, 786435, 65505, 1, 786435, 65506, 1, 786435, 65507, 1, 786435, 65508, 1, 786435, 65509, 1, 786436, 65501, 1, 786436, 65502, 1, 786436, 65503, 1, 786436, 65504, 1, 786436, 65505, 1, 786436, 65506, 1, 786436, 65507, 1, 786436, 65508, 1, 786436, 65509, 1, 786437, 65501, 1, 786437, 65502, 1, 786437, 65503, 1, 786437, 65504, 1, 786437, 65505, 1, 786437, 65506, 1, 786437, 65507, 1, 786437, 65508, 1, 786437, 65509, 1, 786438, 65501, 1, 786438, 65502, 1, 786438, 65503, 1, 786438, 65504, 1, 786438, 65505, 1, 786438, 65506, 1, 786438, 65507, 1, 786438, 65508, 1, 786438, 65509, 1, 786439, 65501, 1, 786439, 65502, 1, 786439, 65503, 1, 786439, 65504, 1, 786439, 65505, 1, 786439, 65506, 1, 786439, 65507, 1, 786439, 65508, 1, 786439, 65509, 1, 786440, 65501, 1, 786440, 65502, 1, 786440, 65503, 1, 786440, 65504, 1, 786440, 65505, 1, 786440, 65506, 1, 786440, 65507, 1, 786440, 65508, 1, 786440, 65509, 1, 786441, 65501, 1, 786441, 65502, 1, 786441, 65503, 1, 786441, 65504, 1, 786441, 65505, 1, 786441, 65506, 1, 786441, 65507, 1, 786441, 65508, 1, 786441, 65509, 1, 786442, 65501, 1, 786442, 65502, 1, 786442, 65503, 1, 786442, 65504, 1, 786442, 65505, 1, 786442, 65506, 1, 786442, 65507, 1, 786442, 65508, 1, 786442, 65509, 1)
+}
+
+[node name="Estrutura" type="GridMap" parent="."]
+mesh_library = ExtResource("structure_lib")
+cell_size = Vector3(1, 1, 1)
+cell_center_x = false
+cell_center_y = false
+cell_center_z = false
+data = {
+"cells": PackedInt32Array(262126, 65535, 79, 458734, 65527, 655444, 458734, 65535, 84, 262128, 65527, 655440, 262128, 65535, 83, 262129, 65528, 1048659, 262129, 65530, 1048656, 262129, 65532, 1048657, 262129, 65534, 1048655, 262123, 65528, 1441873, 262123, 65530, 1441871, 262123, 65532, 1441875, 262123, 65534, 1441875, 262124, 65527, 655443, 262124, 65535, 81, 262126, 65527, 655443, 524270, 65531, 90, 196622, 11, 1441872, 196622, 13, 1441873, 196622, 15, 1441871, 196622, 17, 1441875, 196623, 10, 655439, 196623, 18, 80, 196625, 10, 655443, 196625, 18, 81, 393233, 10, 655444, 393233, 18, 84, 196627, 10, 655443, 196627, 18, 79, 196628, 11, 1048659, 196628, 13, 1048659, 196628, 15, 1048656, 196628, 17, 1048657, 458769, 14, 90, 262123, 13, 1441873, 262123, 15, 1441871, 262123, 17, 1441875, 262123, 19, 1441875, 262128, 12, 655443, 262128, 20, 79, 262124, 12, 655439, 262130, 12, 655440, 262130, 20, 83, 262124, 20, 80, 262131, 15, 1048656, 262126, 12, 655443, 262126, 20, 81, 458735, 20, 87, 262131, 13, 1048659, 458735, 12, 655447, 262131, 17, 1048657, 262131, 19, 1048655, 524271, 16, 91, 393229, 65507, 1441875, 393229, 65509, 1441875, 393229, 65511, 1441872, 393229, 65513, 1441873, 589837, 65507, 1441868, 589837, 65509, 1441865, 589837, 65511, 1441868, 589837, 65513, 1441865, 393230, 65506, 655443, 393230, 65514, 79, 589838, 65506, 655436, 589838, 65514, 77, 393232, 65506, 655440, 393232, 65514, 83, 589840, 65506, 655433, 589840, 65514, 77, 786449, 65506, 655447, 786449, 65514, 87, 393234, 65506, 655441, 393234, 65514, 83, 589842, 65506, 655436, 589842, 65514, 77, 393236, 65506, 655439, 393236, 65514, 80, 589844, 65506, 655433, 589844, 65514, 77, 393237, 65507, 1048657, 393237, 65509, 1048655, 393237, 65511, 1048659, 393237, 65513, 1048659, 589845, 65507, 1048653, 589845, 65509, 1048653, 589845, 65511, 1048653, 589845, 65513, 1048653, 851985, 65510, 91, 458736, 65518, 655443, 458736, 65526, 81, 458731, 65519, 1441872, 458732, 65518, 655441, 458738, 65518, 655443, 458738, 65526, 79, 458732, 65526, 83, 655343, 65526, 87, 458734, 65518, 655439, 458739, 65519, 1048659, 458739, 65521, 1048659, 458739, 65523, 1048656, 458739, 65525, 1048657, 458734, 65526, 80, 655343, 65518, 655447, 458731, 65521, 1441873, 458731, 65523, 1441871, 458731, 65525, 1441875, 720879, 65522, 91, 655339, 65487, 1441871, 655339, 65489, 1441875, 655339, 65491, 1441875, 655339, 65493, 1441872, 851947, 65487, 1441865, 851947, 65489, 1441868, 851947, 65491, 1441865, 851947, 65493, 1441868, 655340, 65486, 655443, 655340, 65494, 81, 851948, 65486, 655433, 851948, 65494, 77, 655342, 65486, 655443, 655342, 65494, 79, 851950, 65486, 655436, 851950, 65494, 77, 1048559, 65486, 655447, 1048559, 65494, 87, 655344, 65486, 655440, 655344, 65494, 83, 851952, 65486, 655433, 851952, 65494, 77, 655346, 65486, 655441, 655346, 65494, 83, 851954, 65486, 655436, 851954, 65494, 77, 655347, 65487, 1048656, 655347, 65489, 1048657, 655347, 65491, 1048655, 655347, 65493, 1048659, 851955, 65487, 1048653, 851955, 65489, 1048653, 851955, 65491, 1048653, 851955, 65493, 1048653, 1114095, 65490, 91, 16, 34, 655441, 16, 42, 83, 13, 35, 1441875, 13, 37, 1441872, 13, 39, 1441873, 13, 41, 1441871, 196625, 34, 655447, 21, 35, 1048655, 21, 37, 1048659, 21, 39, 1048659, 21, 41, 1048656, 196625, 42, 87, 18, 34, 655439, 18, 42, 80, 14, 34, 655440, 14, 42, 83, 20, 34, 655443, 20, 42, 81, 262161, 38, 91)
+}
+
+[node name="Objetos" type="GridMap" parent="."]
+script = ExtResource("breakable_script")
+mesh_library = ExtResource("props_lib")
+debris_scene = ExtResource("debris_scene")
+cell_size = Vector3(1, 0.5, 1)
+cell_center_x = false
+cell_center_y = false
+cell_center_z = false
+data = {
+"cells": PackedInt32Array(65522, 40, 1, 6, 30, 1, 16, 46, 9, 65518, 48, 0, 393220, 14, 8, 458748, 10, 9, 393234, 65530, 11, 851962, 65520, 8, 786434, 65516, 0, 851952, 65512, 0, 786450, 65522, 9, 1245180, 65500, 1, 1245168, 65492, 8, 1179658, 65486, 9, 1179668, 65502, 5)
+}
+
+[node name="Relevo" type="Node3D" parent="."]
+
+[node name="Base" type="StaticBody3D" parent="Relevo"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 0.000, -0.520, -9.000)
+
+[node name="Mesh" type="MeshInstance3D" parent="Relevo/Base"]
+mesh = SubResource("Box_1")
+
+[node name="Shape" type="CollisionShape3D" parent="Relevo/Base"]
+shape = SubResource("Shape_1")
+
+[node name="TerracoB" type="StaticBody3D" parent="Relevo"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 0.000, 1.490, 5.000)
+
+[node name="Mesh" type="MeshInstance3D" parent="Relevo/TerracoB"]
+mesh = SubResource("Box_2")
+
+[node name="Shape" type="CollisionShape3D" parent="Relevo/TerracoB"]
+shape = SubResource("Shape_2")
+
+[node name="TerracoC" type="StaticBody3D" parent="Relevo"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 0.000, 2.990, -21.000)
+
+[node name="Mesh" type="MeshInstance3D" parent="Relevo/TerracoC"]
+mesh = SubResource("Box_3")
+
+[node name="Shape" type="CollisionShape3D" parent="Relevo/TerracoC"]
+shape = SubResource("Shape_3")
+
+[node name="TerracoD" type="StaticBody3D" parent="Relevo"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -10.000, 4.490, -42.000)
+
+[node name="Mesh" type="MeshInstance3D" parent="Relevo/TerracoD"]
+mesh = SubResource("Box_4")
+
+[node name="Shape" type="CollisionShape3D" parent="Relevo/TerracoD"]
+shape = SubResource("Shape_4")
+
+[node name="TerracoE" type="StaticBody3D" parent="Relevo"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 14.000, 4.490, -42.000)
+
+[node name="Mesh" type="MeshInstance3D" parent="Relevo/TerracoE"]
+mesh = SubResource("Box_5")
+
+[node name="Shape" type="CollisionShape3D" parent="Relevo/TerracoE"]
+shape = SubResource("Shape_5")
+
+[node name="TerracoF" type="StaticBody3D" parent="Relevo"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 0.000, 5.990, -61.000)
+
+[node name="Mesh" type="MeshInstance3D" parent="Relevo/TerracoF"]
+mesh = SubResource("Box_6")
+
+[node name="Shape" type="CollisionShape3D" parent="Relevo/TerracoF"]
+shape = SubResource("Shape_6")
+
+[node name="Fenda" type="StaticBody3D" parent="Relevo"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 4.000, 2.500, -42.000)
+
+[node name="Mesh" type="MeshInstance3D" parent="Relevo/Fenda"]
+mesh = SubResource("Box_7")
+
+[node name="Shape" type="CollisionShape3D" parent="Relevo/Fenda"]
+shape = SubResource("Shape_7")
+
+[node name="Paredao" type="StaticBody3D" parent="Relevo"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -23.500, 9.000, -9.000)
+
+[node name="Mesh" type="MeshInstance3D" parent="Relevo/Paredao"]
+mesh = SubResource("Box_8")
+
+[node name="Shape" type="CollisionShape3D" parent="Relevo/Paredao"]
+shape = SubResource("Shape_8")
+
+[node name="ParedaoNorte" type="StaticBody3D" parent="Relevo"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 0.000, 10.000, -71.500)
+
+[node name="Mesh" type="MeshInstance3D" parent="Relevo/ParedaoNorte"]
+mesh = SubResource("Box_9")
+
+[node name="Shape" type="CollisionShape3D" parent="Relevo/ParedaoNorte"]
+shape = SubResource("Shape_9")
+
+[node name="PortaoDesmoronado" type="StaticBody3D" parent="Relevo"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 0.000, 2.500, 53.500)
+
+[node name="Mesh" type="MeshInstance3D" parent="Relevo/PortaoDesmoronado"]
+mesh = SubResource("Box_10")
+
+[node name="Shape" type="CollisionShape3D" parent="Relevo/PortaoDesmoronado"]
+shape = SubResource("Shape_10")
+
+[node name="Rampas" type="Node3D" parent="."]
+
+[node name="Rampa1" type="StaticBody3D" parent="Rampas"]
+transform = Transform3D(1, 0, 0, 0, 0.936329, -0.351123, 0, 0.351123, 0.936329, -8.000, 1.286, 24.000)
+
+[node name="Mesh" type="MeshInstance3D" parent="Rampas/Rampa1"]
+mesh = SubResource("Box_11")
+
+[node name="Shape" type="CollisionShape3D" parent="Rampas/Rampa1"]
+shape = SubResource("Shape_11")
+
+[node name="Rampa2" type="StaticBody3D" parent="Rampas"]
+transform = Transform3D(1, 0, 0, 0, 0.936329, -0.351123, 0, 0.351123, 0.936329, 10.000, 4.286, -6.000)
+
+[node name="Mesh" type="MeshInstance3D" parent="Rampas/Rampa2"]
+mesh = SubResource("Box_12")
+
+[node name="Shape" type="CollisionShape3D" parent="Rampas/Rampa2"]
+shape = SubResource("Shape_12")
+
+[node name="Rampa3" type="StaticBody3D" parent="Rampas"]
+transform = Transform3D(1, 0, 0, 0, 0.936329, -0.351123, 0, 0.351123, 0.936329, -10.000, 7.286, -28.000)
+
+[node name="Mesh" type="MeshInstance3D" parent="Rampas/Rampa3"]
+mesh = SubResource("Box_13")
+
+[node name="Shape" type="CollisionShape3D" parent="Rampas/Rampa3"]
+shape = SubResource("Shape_13")
+
+[node name="Rampa4" type="StaticBody3D" parent="Rampas"]
+transform = Transform3D(1, 0, 0, 0, 0.936329, -0.351123, 0, 0.351123, 0.936329, 0.000, 10.286, -48.000)
+
+[node name="Mesh" type="MeshInstance3D" parent="Rampas/Rampa4"]
+mesh = SubResource("Box_14")
+
+[node name="Shape" type="CollisionShape3D" parent="Rampas/Rampa4"]
+shape = SubResource("Shape_14")
+
+[node name="Ponte" type="Node3D" parent="."]
+
+[node name="Tabuado" type="StaticBody3D" parent="Ponte"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 4.000, 8.800, -42.000)
+
+[node name="Mesh" type="MeshInstance3D" parent="Ponte/Tabuado"]
+mesh = SubResource("Box_15")
+
+[node name="Shape" type="CollisionShape3D" parent="Ponte/Tabuado"]
+shape = SubResource("Shape_15")
+
+[node name="GuardaNorte" type="StaticBody3D" parent="Ponte"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 4.000, 9.600, -43.400)
+
+[node name="Mesh" type="MeshInstance3D" parent="Ponte/GuardaNorte"]
+mesh = SubResource("Box_16")
+
+[node name="Shape" type="CollisionShape3D" parent="Ponte/GuardaNorte"]
+shape = SubResource("Shape_16")
+
+[node name="GuardaSul" type="StaticBody3D" parent="Ponte"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 4.000, 9.600, -40.600)
+
+[node name="Mesh" type="MeshInstance3D" parent="Ponte/GuardaSul"]
+mesh = SubResource("Box_17")
+
+[node name="Shape" type="CollisionShape3D" parent="Ponte/GuardaSul"]
+shape = SubResource("Shape_17")
+
+[node name="Cerca" type="Node3D" parent="."]
+
+[node name="BarreiraA" type="StaticBody3D" parent="Cerca"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 22.150, 0.600, 36.000)
+
+[node name="Mesh" type="MeshInstance3D" parent="Cerca/BarreiraA"]
+mesh = SubResource("Box_18")
+
+[node name="Shape" type="CollisionShape3D" parent="Cerca/BarreiraA"]
+shape = SubResource("Shape_18")
+
+[node name="CorrimaoA_50" type="MeshInstance3D" parent="Cerca"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 22.150, 0.500, 36.000)
+mesh = SubResource("Box_19")
+
+[node name="CorrimaoA_105" type="MeshInstance3D" parent="Cerca"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 22.150, 1.050, 36.000)
+mesh = SubResource("Box_20")
+
+[node name="BarreiraB" type="StaticBody3D" parent="Cerca"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 22.150, 2.100, 5.000)
+
+[node name="Mesh" type="MeshInstance3D" parent="Cerca/BarreiraB"]
+mesh = SubResource("Box_21")
+
+[node name="Shape" type="CollisionShape3D" parent="Cerca/BarreiraB"]
+shape = SubResource("Shape_21")
+
+[node name="CorrimaoB_50" type="MeshInstance3D" parent="Cerca"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 22.150, 3.500, 5.000)
+mesh = SubResource("Box_22")
+
+[node name="CorrimaoB_105" type="MeshInstance3D" parent="Cerca"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 22.150, 4.050, 5.000)
+mesh = SubResource("Box_23")
+
+[node name="BarreiraC" type="StaticBody3D" parent="Cerca"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 22.150, 3.600, -21.000)
+
+[node name="Mesh" type="MeshInstance3D" parent="Cerca/BarreiraC"]
+mesh = SubResource("Box_24")
+
+[node name="Shape" type="CollisionShape3D" parent="Cerca/BarreiraC"]
+shape = SubResource("Shape_24")
+
+[node name="CorrimaoC_50" type="MeshInstance3D" parent="Cerca"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 22.150, 6.500, -21.000)
+mesh = SubResource("Box_25")
+
+[node name="CorrimaoC_105" type="MeshInstance3D" parent="Cerca"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 22.150, 7.050, -21.000)
+mesh = SubResource("Box_26")
+
+[node name="BarreiraE" type="StaticBody3D" parent="Cerca"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 22.150, 5.100, -42.000)
+
+[node name="Mesh" type="MeshInstance3D" parent="Cerca/BarreiraE"]
+mesh = SubResource("Box_27")
+
+[node name="Shape" type="CollisionShape3D" parent="Cerca/BarreiraE"]
+shape = SubResource("Shape_27")
+
+[node name="CorrimaoE_50" type="MeshInstance3D" parent="Cerca"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 22.150, 9.500, -42.000)
+mesh = SubResource("Box_28")
+
+[node name="CorrimaoE_105" type="MeshInstance3D" parent="Cerca"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 22.150, 10.050, -42.000)
+mesh = SubResource("Box_29")
+
+[node name="BarreiraF" type="StaticBody3D" parent="Cerca"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 22.150, 6.600, -61.000)
+
+[node name="Mesh" type="MeshInstance3D" parent="Cerca/BarreiraF"]
+mesh = SubResource("Box_30")
+
+[node name="Shape" type="CollisionShape3D" parent="Cerca/BarreiraF"]
+shape = SubResource("Shape_30")
+
+[node name="CorrimaoF_50" type="MeshInstance3D" parent="Cerca"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 22.150, 12.500, -61.000)
+mesh = SubResource("Box_31")
+
+[node name="CorrimaoF_105" type="MeshInstance3D" parent="Cerca"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 22.150, 13.050, -61.000)
+mesh = SubResource("Box_32")
+
+[node name="Luzes" type="Node3D" parent="."]
+
+[node name="Tocha1" type="OmniLight3D" parent="Luzes"]
+position = Vector3(18, 2.9, 40)
+light_color = Color(1, 0.6, 0.3, 1)
+light_energy = 1.8
+omni_range = 9.0
+
+[node name="Tocha2" type="OmniLight3D" parent="Luzes"]
+position = Vector3(18, 2.9, 26)
+light_color = Color(1, 0.6, 0.3, 1)
+light_energy = 1.8
+omni_range = 9.0
+
+[node name="Tocha3" type="OmniLight3D" parent="Luzes"]
+position = Vector3(-4, 2.9, 22)
+light_color = Color(1, 0.6, 0.3, 1)
+light_energy = 1.8
+omni_range = 9.0
+
+[node name="Tocha4" type="OmniLight3D" parent="Luzes"]
+position = Vector3(18, 5.9, 12)
+light_color = Color(1, 0.6, 0.3, 1)
+light_energy = 1.8
+omni_range = 9.0
+
+[node name="Tocha5" type="OmniLight3D" parent="Luzes"]
+position = Vector3(18, 5.9, -2)
+light_color = Color(1, 0.6, 0.3, 1)
+light_energy = 1.8
+omni_range = 9.0
+
+[node name="Tocha6" type="OmniLight3D" parent="Luzes"]
+position = Vector3(6, 5.9, -8)
+light_color = Color(1, 0.6, 0.3, 1)
+light_energy = 1.8
+omni_range = 9.0
+
+[node name="Tocha7" type="OmniLight3D" parent="Luzes"]
+position = Vector3(18, 8.9, -16)
+light_color = Color(1, 0.6, 0.3, 1)
+light_energy = 1.8
+omni_range = 9.0
+
+[node name="Tocha8" type="OmniLight3D" parent="Luzes"]
+position = Vector3(-6, 8.9, -24)
+light_color = Color(1, 0.6, 0.3, 1)
+light_energy = 1.8
+omni_range = 9.0
+
+[node name="Tocha9" type="OmniLight3D" parent="Luzes"]
+position = Vector3(18, 8.9, -28)
+light_color = Color(1, 0.6, 0.3, 1)
+light_energy = 1.8
+omni_range = 9.0
+
+[node name="Tocha10" type="OmniLight3D" parent="Luzes"]
+position = Vector3(-2, 11.9, -36)
+light_color = Color(1, 0.6, 0.3, 1)
+light_energy = 1.8
+omni_range = 9.0
+
+[node name="Tocha11" type="OmniLight3D" parent="Luzes"]
+position = Vector3(-18, 11.9, -40)
+light_color = Color(1, 0.6, 0.3, 1)
+light_energy = 1.8
+omni_range = 9.0
+
+[node name="Tocha12" type="OmniLight3D" parent="Luzes"]
+position = Vector3(4, 11.9, -46)
+light_color = Color(1, 0.6, 0.3, 1)
+light_energy = 1.8
+omni_range = 9.0
+
+[node name="Tocha13" type="OmniLight3D" parent="Luzes"]
+position = Vector3(18, 11.9, -48)
+light_color = Color(1, 0.6, 0.3, 1)
+light_energy = 1.8
+omni_range = 9.0
+
+[node name="Tocha14" type="OmniLight3D" parent="Luzes"]
+position = Vector3(-8, 14.9, -56)
+light_color = Color(1, 0.6, 0.3, 1)
+light_energy = 1.8
+omni_range = 9.0
+
+[node name="Tocha15" type="OmniLight3D" parent="Luzes"]
+position = Vector3(8, 14.9, -56)
+light_color = Color(1, 0.6, 0.3, 1)
+light_energy = 1.8
+omni_range = 9.0
+
+[node name="Tocha16" type="OmniLight3D" parent="Luzes"]
+position = Vector3(0, 14.9, -68)
+light_color = Color(1, 0.6, 0.3, 1)
+light_energy = 1.8
+omni_range = 9.0
+
+[node name="LuzDaArena" type="OmniLight3D" parent="Luzes"]
+position = Vector3(0, 16, -61)
+light_color = Color(0.9, 0.25, 0.25, 1)
+light_energy = 1.4
+omni_range = 14.0
+
+[node name="PlayerSpots" type="Node3D" parent="."]
+
+[node name="Player1" type="Marker3D" parent="PlayerSpots"]
+position = Vector3(-6, 0.2, 46)
+
+[node name="Player2" type="Marker3D" parent="PlayerSpots"]
+position = Vector3(0, 0.2, 47)
+
+[node name="Player3" type="Marker3D" parent="PlayerSpots"]
+position = Vector3(6, 0.2, 46)
+
+[node name="Player4" type="Marker3D" parent="PlayerSpots"]
+position = Vector3(-3, 0.2, 43)
+
+[node name="GroupSpots" type="Node3D" parent="."]
+
+[node name="A1" type="Marker3D" parent="GroupSpots"]
+position = Vector3(-16, 0.1, 27)
+metadata/zone = &"A"
+
+[node name="A2" type="Marker3D" parent="GroupSpots"]
+position = Vector3(13, 0.1, 24)
+metadata/zone = &"A"
+
+[node name="B1" type="Marker3D" parent="GroupSpots"]
+position = Vector3(-12, 3.1, 6)
+metadata/zone = &"B"
+
+[node name="B2" type="Marker3D" parent="GroupSpots"]
+position = Vector3(10, 3.1, 4)
+metadata/zone = &"B"
+
+[node name="B3" type="Marker3D" parent="GroupSpots"]
+position = Vector3(0, 3.1, -4)
+metadata/zone = &"B"
+
+[node name="C1" type="Marker3D" parent="GroupSpots"]
+position = Vector3(-12, 6.1, -20)
+metadata/zone = &"C"
+
+[node name="C2" type="Marker3D" parent="GroupSpots"]
+position = Vector3(6, 6.1, -26)
+metadata/zone = &"C"
+
+[node name="C3" type="Marker3D" parent="GroupSpots"]
+position = Vector3(-2, 6.1, -29)
+metadata/zone = &"C"
+
+[node name="D1" type="Marker3D" parent="GroupSpots"]
+position = Vector3(-8, 9.1, -38)
+metadata/zone = &"D"
+
+[node name="D2" type="Marker3D" parent="GroupSpots"]
+position = Vector3(-9, 9.1, -48)
+metadata/zone = &"D"
+
+[node name="D3" type="Marker3D" parent="GroupSpots"]
+position = Vector3(-17, 9.1, -36)
+metadata/zone = &"D"
+
+[node name="E1" type="Marker3D" parent="GroupSpots"]
+position = Vector3(14, 9.1, -38)
+metadata/zone = &"E"
+
+[node name="E2" type="Marker3D" parent="GroupSpots"]
+position = Vector3(16, 9.1, -46)
+metadata/zone = &"E"
+
+[node name="Chests" type="Node3D" parent="."]
+
+[node name="Chest1" parent="Chests" instance=ExtResource("chest")]
+position = Vector3(-10, 3, 14)
+rotation = Vector3(0, 0.0, 0)
+
+[node name="Chest2" parent="Chests" instance=ExtResource("chest")]
+position = Vector3(-18, 6, -28)
+rotation = Vector3(0, 1.5708, 0)
+
+[node name="Chest3" parent="Chests" instance=ExtResource("chest")]
+position = Vector3(20, 9, -42)
+rotation = Vector3(0, -1.5708, 0)
+
+[node name="Chest4" parent="Chests" instance=ExtResource("chest")]
+position = Vector3(14, 12, -60)
+rotation = Vector3(0, 3.1416, 0)
+
+[node name="BossSpot" type="Marker3D" parent="."]
+position = Vector3(0, 12.1, -63)
+
+[node name="Historia" type="Node3D" parent="."]
+
+[node name="A_Porteira" type="Node3D" parent="Historia"]
+
+[node name="doorway0" parent="Historia/A_Porteira" instance=ExtResource("deco_doorway")]
+transform = Transform3D(1.00000, 0.00000, 0.00000, 0.00000, 1.00000, 0.00000, 0.00000, -0.00000, 1.00000, 0.000, 0.000, 51.900)
+
+[node name="Colisao" type="StaticBody3D" parent="Historia/A_Porteira/doorway0"]
+
+[node name="Forma" type="CollisionShape3D" parent="Historia/A_Porteira/doorway0/Colisao"]
+position = Vector3(0.000, 2.000, 0.000)
+shape = SubResource("Deco_A_Porteira_0")
+
+[node name="rubble1" parent="Historia/A_Porteira" instance=ExtResource("deco_rubble")]
+transform = Transform3D(1.00000, 0.00000, 0.00000, 0.00000, 1.00000, 0.00000, 0.00000, -0.00000, 1.00000, -7.500, 0.000, 50.200)
+
+[node name="Colisao" type="StaticBody3D" parent="Historia/A_Porteira/rubble1"]
+
+[node name="Forma" type="CollisionShape3D" parent="Historia/A_Porteira/rubble1/Colisao"]
+position = Vector3(-0.005, 1.750, 0.000)
+shape = SubResource("Deco_A_Porteira_1")
+
+[node name="rubble_half2" parent="Historia/A_Porteira" instance=ExtResource("deco_rubble_half")]
+transform = Transform3D(1.00000, 0.00000, 0.00000, 0.00000, 1.00000, 0.00000, 0.00000, -0.00000, 1.00000, 6.500, 0.000, 49.600)
+
+[node name="Colisao" type="StaticBody3D" parent="Historia/A_Porteira/rubble_half2"]
+
+[node name="Forma" type="CollisionShape3D" parent="Historia/A_Porteira/rubble_half2/Colisao"]
+position = Vector3(2.000, 1.750, -0.020)
+shape = SubResource("Deco_A_Porteira_2")
+
+[node name="wagon3" parent="Historia/A_Porteira" instance=ExtResource("deco_wagon")]
+transform = Transform3D(0.13443, 0.99027, -0.03602, -0.95653, 0.13917, 0.25630, 0.25882, -0.00000, 0.96593, -11.000, 0.600, 46.000)
+
+[node name="wagon4" parent="Historia/A_Porteira" instance=ExtResource("deco_wagon")]
+transform = Transform3D(0.08562, -0.99452, 0.05996, 0.81466, 0.10453, 0.57043, -0.57358, -0.00000, 0.81915, 9.000, 0.600, 39.000)
+
+[node name="box5" parent="Historia/A_Porteira" instance=ExtResource("deco_box")]
+transform = Transform3D(0.00000, 1.00000, -0.00000, -0.86603, 0.00000, 0.50000, 0.50000, -0.00000, 0.86603, -8.500, 0.000, 44.500)
+
+[node name="barrel6" parent="Historia/A_Porteira" instance=ExtResource("deco_barrel")]
+transform = Transform3D(0.93969, 0.00000, 0.34202, -0.34202, 0.00000, 0.93969, 0.00000, -1.00000, 0.00000, 10.500, 0.400, 41.500)
+
+[node name="box7" parent="Historia/A_Porteira" instance=ExtResource("deco_box")]
+transform = Transform3D(0.98481, 0.00000, -0.17365, 0.00000, 1.00000, 0.00000, 0.17365, -0.00000, 0.98481, 7.500, 0.000, 42.000)
+
+[node name="banner_red8" parent="Historia/A_Porteira" instance=ExtResource("deco_banner_red")]
+transform = Transform3D(-1.00000, 0.00000, -0.00000, 0.00000, 1.00000, 0.00000, 0.00000, -0.00000, -1.00000, -8.000, 2.400, 51.800)
+
+[node name="banner_red9" parent="Historia/A_Porteira" instance=ExtResource("deco_banner_red")]
+transform = Transform3D(-1.00000, 0.00000, -0.00000, 0.00000, 1.00000, 0.00000, 0.00000, -0.00000, -1.00000, 8.000, 2.400, 51.800)
+
+[node name="B_Fornos" type="Node3D" parent="Historia"]
+
+[node name="bed0" parent="Historia/B_Fornos" instance=ExtResource("deco_bed")]
+transform = Transform3D(0.90631, 0.00000, -0.42262, 0.00000, 1.00000, 0.00000, 0.42262, -0.00000, 0.90631, -4.000, 3.000, 4.000)
+
+[node name="Colisao" type="StaticBody3D" parent="Historia/B_Fornos/bed0"]
+
+[node name="Forma" type="CollisionShape3D" parent="Historia/B_Fornos/bed0/Colisao"]
+position = Vector3(0.000, 0.280, 0.000)
+shape = SubResource("Deco_B_Fornos_0")
+
+[node name="bed1" parent="Historia/B_Fornos" instance=ExtResource("deco_bed")]
+transform = Transform3D(0.34202, 0.00000, 0.93969, -0.00000, 1.00000, 0.00000, -0.93969, -0.00000, 0.34202, 3.000, 3.000, 0.000)
+
+[node name="Colisao" type="StaticBody3D" parent="Historia/B_Fornos/bed1"]
+
+[node name="Forma" type="CollisionShape3D" parent="Historia/B_Fornos/bed1/Colisao"]
+position = Vector3(0.000, 0.280, 0.000)
+shape = SubResource("Deco_B_Fornos_1")
+
+[node name="bed_frame2" parent="Historia/B_Fornos" instance=ExtResource("deco_bed_frame")]
+transform = Transform3D(0.98481, 0.00000, -0.17365, 0.00000, 1.00000, 0.00000, 0.17365, -0.00000, 0.98481, 6.000, 3.000, 9.000)
+
+[node name="Colisao" type="StaticBody3D" parent="Historia/B_Fornos/bed_frame2"]
+
+[node name="Forma" type="CollisionShape3D" parent="Historia/B_Fornos/bed_frame2/Colisao"]
+position = Vector3(0.000, 0.530, 0.000)
+shape = SubResource("Deco_B_Fornos_2")
+
+[node name="table_broken3" parent="Historia/B_Fornos" instance=ExtResource("deco_table_broken")]
+transform = Transform3D(0.76604, 0.00000, -0.64279, 0.00000, 1.00000, 0.00000, 0.64279, -0.00000, 0.76604, -6.000, 3.000, -6.000)
+
+[node name="Colisao" type="StaticBody3D" parent="Historia/B_Fornos/table_broken3"]
+
+[node name="Forma" type="CollisionShape3D" parent="Historia/B_Fornos/table_broken3/Colisao"]
+position = Vector3(-0.185, 0.635, 0.020)
+shape = SubResource("Deco_B_Fornos_3")
+
+[node name="chimney4" parent="Historia/B_Fornos" instance=ExtResource("deco_chimney")]
+transform = Transform3D(1.00000, 0.00000, 0.00000, 0.00000, 1.00000, 0.00000, 0.00000, -0.00000, 1.00000, -17.000, 3.000, 2.000)
+
+[node name="Colisao" type="StaticBody3D" parent="Historia/B_Fornos/chimney4"]
+
+[node name="Forma" type="CollisionShape3D" parent="Historia/B_Fornos/chimney4/Colisao"]
+position = Vector3(-0.025, 1.590, 0.000)
+shape = SubResource("Deco_B_Fornos_4")
+
+[node name="chimney5" parent="Historia/B_Fornos" instance=ExtResource("deco_chimney")]
+transform = Transform3D(0.00000, 0.00000, -1.00000, 0.00000, 1.00000, 0.00000, 1.00000, -0.00000, 0.00000, 18.000, 3.000, 6.000)
+
+[node name="Colisao" type="StaticBody3D" parent="Historia/B_Fornos/chimney5"]
+
+[node name="Forma" type="CollisionShape3D" parent="Historia/B_Fornos/chimney5/Colisao"]
+position = Vector3(-0.025, 1.590, 0.000)
+shape = SubResource("Deco_B_Fornos_5")
+
+[node name="C_Pedreira" type="Node3D" parent="Historia"]
+
+[node name="dirt0" parent="Historia/C_Pedreira" instance=ExtResource("deco_dirt")]
+transform = Transform3D(1.00000, 0.00000, 0.00000, 0.00000, 1.00000, 0.00000, 0.00000, -0.00000, 1.00000, -8.000, 6.010, -18.000)
+
+[node name="dirt1" parent="Historia/C_Pedreira" instance=ExtResource("deco_dirt")]
+transform = Transform3D(0.00000, 0.00000, -1.00000, 0.00000, 1.00000, 0.00000, 1.00000, -0.00000, 0.00000, 4.000, 6.010, -22.000)
+
+[node name="dirt2" parent="Historia/C_Pedreira" instance=ExtResource("deco_dirt")]
+transform = Transform3D(1.00000, 0.00000, 0.00000, 0.00000, 1.00000, 0.00000, 0.00000, -0.00000, 1.00000, -14.000, 6.010, -27.000)
+
+[node name="rubble3" parent="Historia/C_Pedreira" instance=ExtResource("deco_rubble")]
+transform = Transform3D(1.00000, 0.00000, 0.00000, 0.00000, 1.00000, 0.00000, 0.00000, -0.00000, 1.00000, -17.000, 6.000, -14.000)
+
+[node name="Colisao" type="StaticBody3D" parent="Historia/C_Pedreira/rubble3"]
+
+[node name="Forma" type="CollisionShape3D" parent="Historia/C_Pedreira/rubble3/Colisao"]
+position = Vector3(-0.005, 1.750, 0.000)
+shape = SubResource("Deco_C_Pedreira_3")
+
+[node name="rubble4" parent="Historia/C_Pedreira" instance=ExtResource("deco_rubble")]
+transform = Transform3D(0.34202, 0.00000, -0.93969, 0.00000, 1.00000, 0.00000, 0.93969, -0.00000, 0.34202, 16.000, 6.000, -30.000)
+
+[node name="Colisao" type="StaticBody3D" parent="Historia/C_Pedreira/rubble4"]
+
+[node name="Forma" type="CollisionShape3D" parent="Historia/C_Pedreira/rubble4/Colisao"]
+position = Vector3(-0.005, 1.750, 0.000)
+shape = SubResource("Deco_C_Pedreira_4")
+
+[node name="rubble_half5" parent="Historia/C_Pedreira" instance=ExtResource("deco_rubble_half")]
+transform = Transform3D(1.00000, 0.00000, 0.00000, 0.00000, 1.00000, 0.00000, 0.00000, -0.00000, 1.00000, 0.000, 6.000, -31.000)
+
+[node name="Colisao" type="StaticBody3D" parent="Historia/C_Pedreira/rubble_half5"]
+
+[node name="Forma" type="CollisionShape3D" parent="Historia/C_Pedreira/rubble_half5/Colisao"]
+position = Vector3(2.000, 1.750, -0.020)
+shape = SubResource("Deco_C_Pedreira_5")
+
+[node name="axe26" parent="Historia/C_Pedreira" instance=ExtResource("deco_axe2")]
+transform = Transform3D(0.86603, 0.00000, -0.50000, 0.50000, 0.00000, 0.86603, 0.00000, -1.00000, 0.00000, -6.000, 6.100, -15.000)
+
+[node name="axe17" parent="Historia/C_Pedreira" instance=ExtResource("deco_axe1")]
+transform = Transform3D(0.50000, 0.00000, 0.86603, -0.86603, 0.00000, 0.50000, -0.00000, -1.00000, 0.00000, 3.000, 6.100, -18.000)
+
+[node name="axe28" parent="Historia/C_Pedreira" instance=ExtResource("deco_axe2")]
+transform = Transform3D(-0.34202, 0.00000, -0.93969, 0.93969, 0.00000, -0.34202, 0.00000, -1.00000, -0.00000, -15.000, 6.100, -21.000)
+
+[node name="crates9" parent="Historia/C_Pedreira" instance=ExtResource("deco_crates")]
+transform = Transform3D(0.96593, 0.00000, -0.25882, 0.00000, 1.00000, 0.00000, 0.25882, -0.00000, 0.96593, 18.000, 6.000, -20.000)
+
+[node name="Colisao" type="StaticBody3D" parent="Historia/C_Pedreira/crates9"]
+
+[node name="Forma" type="CollisionShape3D" parent="Historia/C_Pedreira/crates9/Colisao"]
+position = Vector3(-0.045, 1.070, -0.035)
+shape = SubResource("Deco_C_Pedreira_9")
+
+[node name="support10" parent="Historia/C_Pedreira" instance=ExtResource("deco_support")]
+transform = Transform3D(0.00000, 0.00000, -1.00000, 0.00000, 1.00000, 0.00000, 1.00000, -0.00000, 0.00000, -20.000, 6.000, -12.000)
+
+[node name="support11" parent="Historia/C_Pedreira" instance=ExtResource("deco_support")]
+transform = Transform3D(0.00000, 0.00000, -1.00000, 0.00000, 1.00000, 0.00000, 1.00000, -0.00000, 0.00000, -20.000, 6.000, -16.000)
+
+[node name="gated12" parent="Historia/C_Pedreira" instance=ExtResource("deco_gated")]
+transform = Transform3D(0.00000, 0.00000, -1.00000, 0.00000, 1.00000, 0.00000, 1.00000, -0.00000, 0.00000, -21.900, 6.000, -24.000)
+
+[node name="Colisao" type="StaticBody3D" parent="Historia/C_Pedreira/gated12"]
+
+[node name="Forma" type="CollisionShape3D" parent="Historia/C_Pedreira/gated12/Colisao"]
+position = Vector3(0.000, 2.000, 0.000)
+shape = SubResource("Deco_C_Pedreira_12")
+
+[node name="candle_melted13" parent="Historia/C_Pedreira" instance=ExtResource("deco_candle_melted")]
+transform = Transform3D(1.00000, 0.00000, 0.00000, 0.00000, 1.00000, 0.00000, 0.00000, -0.00000, 1.00000, -19.400, 6.000, -23.200)
+
+[node name="D_Capela" type="Node3D" parent="Historia"]
+
+[node name="candles0" parent="Historia/D_Capela" instance=ExtResource("deco_candles")]
+transform = Transform3D(1.00000, 0.00000, 0.00000, 0.00000, 1.00000, 0.00000, 0.00000, -0.00000, 1.00000, -14.200, 9.000, -41.200)
+
+[node name="candle1" parent="Historia/D_Capela" instance=ExtResource("deco_candle")]
+transform = Transform3D(1.00000, 0.00000, 0.00000, 0.00000, 1.00000, 0.00000, 0.00000, -0.00000, 1.00000, -12.600, 9.000, -41.400)
+
+[node name="candle2" parent="Historia/D_Capela" instance=ExtResource("deco_candle")]
+transform = Transform3D(1.00000, 0.00000, 0.00000, 0.00000, 1.00000, 0.00000, 0.00000, -0.00000, 1.00000, -19.000, 9.000, -36.200)
+
+[node name="candle3" parent="Historia/D_Capela" instance=ExtResource("deco_candle")]
+transform = Transform3D(1.00000, 0.00000, 0.00000, 0.00000, 1.00000, 0.00000, 0.00000, -0.00000, 1.00000, -14.500, 9.000, -36.400)
+
+[node name="candles4" parent="Historia/D_Capela" instance=ExtResource("deco_candles")]
+transform = Transform3D(1.00000, 0.00000, 0.00000, 0.00000, 1.00000, 0.00000, 0.00000, -0.00000, 1.00000, -11.000, 9.000, -35.200)
+
+[node name="E_Vigia" type="Node3D" parent="Historia"]
+
+[node name="chair0" parent="Historia/E_Vigia" instance=ExtResource("deco_chair")]
+transform = Transform3D(0.00000, 0.00000, 1.00000, -0.00000, 1.00000, 0.00000, -1.00000, -0.00000, 0.00000, 18.000, 9.000, -40.000)
+
+[node name="Colisao" type="StaticBody3D" parent="Historia/E_Vigia/chair0"]
+
+[node name="Forma" type="CollisionShape3D" parent="Historia/E_Vigia/chair0/Colisao"]
+position = Vector3(0.005, 0.615, -0.005)
+shape = SubResource("Deco_E_Vigia_0")
+
+[node name="table1" parent="Historia/E_Vigia" instance=ExtResource("deco_table")]
+transform = Transform3D(1.00000, 0.00000, 0.00000, 0.00000, 1.00000, 0.00000, 0.00000, -0.00000, 1.00000, 19.300, 9.000, -40.300)
+
+[node name="Colisao" type="StaticBody3D" parent="Historia/E_Vigia/table1"]
+
+[node name="Forma" type="CollisionShape3D" parent="Historia/E_Vigia/table1/Colisao"]
+position = Vector3(0.000, 0.500, 0.000)
+shape = SubResource("Deco_E_Vigia_1")
+
+[node name="arrows2" parent="Historia/E_Vigia" instance=ExtResource("deco_arrows")]
+transform = Transform3D(0.93969, 0.00000, -0.34202, 0.34202, 0.00000, 0.93969, 0.00000, -1.00000, 0.00000, 17.500, 9.100, -44.000)
+
+[node name="quiver3" parent="Historia/E_Vigia" instance=ExtResource("deco_quiver")]
+transform = Transform3D(0.76604, 0.00000, 0.64279, -0.64279, 0.00000, 0.76604, -0.00000, -1.00000, 0.00000, 20.500, 9.100, -37.000)
+
+[node name="keg4" parent="Historia/E_Vigia" instance=ExtResource("deco_keg")]
+transform = Transform3D(1.00000, 0.00000, 0.00000, 0.00000, 1.00000, 0.00000, 0.00000, -0.00000, 1.00000, 11.000, 9.000, -34.000)
+
+[node name="Colisao" type="StaticBody3D" parent="Historia/E_Vigia/keg4"]
+
+[node name="Forma" type="CollisionShape3D" parent="Historia/E_Vigia/keg4/Colisao"]
+position = Vector3(0.000, 1.025, 0.020)
+shape = SubResource("Deco_E_Vigia_4")
+
+[node name="sword_broken5" parent="Historia/E_Vigia" instance=ExtResource("deco_sword_broken")]
+transform = Transform3D(0.86603, 0.00000, 0.50000, -0.50000, 0.00000, 0.86603, 0.00000, -1.00000, 0.00000, 12.000, 9.050, -49.000)
+
+[node name="F_Mirante" type="Node3D" parent="Historia"]
+
+[node name="scaffold0" parent="Historia/F_Mirante" instance=ExtResource("deco_scaffold")]
+transform = Transform3D(0.00000, 0.00000, 1.00000, -0.00000, 1.00000, 0.00000, -1.00000, -0.00000, 0.00000, 12.000, 12.000, -66.000)
+
+[node name="banner_red1" parent="Historia/F_Mirante" instance=ExtResource("deco_banner_red")]
+transform = Transform3D(0.00000, 0.00000, -1.20000, 0.00000, 1.20000, 0.00000, 1.20000, -0.00000, 0.00000, -21.800, 13.500, -58.000)
+
+[node name="banner_red2" parent="Historia/F_Mirante" instance=ExtResource("deco_banner_red")]
+transform = Transform3D(0.00000, 0.00000, -1.20000, 0.00000, 1.20000, 0.00000, 1.20000, -0.00000, 0.00000, -21.800, 13.500, -64.000)
+
+[node name="trunk3" parent="Historia/F_Mirante" instance=ExtResource("deco_trunk")]
+transform = Transform3D(0.93969, 0.00000, -0.34202, 0.00000, 1.00000, 0.00000, 0.34202, -0.00000, 0.93969, 16.000, 12.000, -55.000)
+
+[node name="crates4" parent="Historia/F_Mirante" instance=ExtResource("deco_crates")]
+transform = Transform3D(1.00000, 0.00000, 0.00000, 0.00000, 1.00000, 0.00000, 0.00000, -0.00000, 1.00000, -18.000, 12.000, -54.000)
+
+[node name="Colisao" type="StaticBody3D" parent="Historia/F_Mirante/crates4"]
+
+[node name="Forma" type="CollisionShape3D" parent="Historia/F_Mirante/crates4/Colisao"]
+position = Vector3(-0.045, 1.070, -0.035)
+shape = SubResource("Deco_F_Mirante_4")
+
+[node name="Construidos" type="Node3D" parent="Historia"]
+
+[node name="ColisaoCarroca1" type="StaticBody3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -11.000, 0.700, 46.000)
+
+[node name="Shape" type="CollisionShape3D" parent="Historia/Construidos/ColisaoCarroca1"]
+shape = SubResource("Shape_33")
+
+[node name="ColisaoCarroca2" type="StaticBody3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 9.000, 0.700, 39.000)
+
+[node name="Shape" type="CollisionShape3D" parent="Historia/Construidos/ColisaoCarroca2"]
+shape = SubResource("Shape_34")
+
+[node name="FonteBacia" type="StaticBody3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 0.000, 3.350, 10.000)
+
+[node name="Mesh" type="MeshInstance3D" parent="Historia/Construidos/FonteBacia"]
+mesh = SubResource("Box_35")
+
+[node name="Shape" type="CollisionShape3D" parent="Historia/Construidos/FonteBacia"]
+shape = SubResource("Shape_35")
+
+[node name="FonteAgua" type="MeshInstance3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 0.000, 3.710, 10.000)
+mesh = SubResource("Box_36")
+
+[node name="FontePilar" type="StaticBody3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 0.000, 4.300, 10.000)
+
+[node name="Mesh" type="MeshInstance3D" parent="Historia/Construidos/FontePilar"]
+mesh = SubResource("Box_37")
+
+[node name="Shape" type="CollisionShape3D" parent="Historia/Construidos/FontePilar"]
+shape = SubResource("Shape_37")
+
+[node name="VaralPosteA" type="StaticBody3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -6.000, 4.300, 16.000)
+
+[node name="Mesh" type="MeshInstance3D" parent="Historia/Construidos/VaralPosteA"]
+mesh = SubResource("Box_38")
+
+[node name="Shape" type="CollisionShape3D" parent="Historia/Construidos/VaralPosteA"]
+shape = SubResource("Shape_38")
+
+[node name="VaralPosteB" type="StaticBody3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 4.000, 4.300, 16.000)
+
+[node name="Mesh" type="MeshInstance3D" parent="Historia/Construidos/VaralPosteB"]
+mesh = SubResource("Box_39")
+
+[node name="Shape" type="CollisionShape3D" parent="Historia/Construidos/VaralPosteB"]
+shape = SubResource("Shape_39")
+
+[node name="Varal" type="MeshInstance3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -1.000, 5.500, 16.000)
+mesh = SubResource("Box_40")
+
+[node name="Pano0" type="MeshInstance3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -4.200, 4.950, 16.000)
+mesh = SubResource("Box_41")
+
+[node name="Pano1" type="MeshInstance3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -2.400, 4.800, 16.000)
+mesh = SubResource("Box_42")
+
+[node name="Pano2" type="MeshInstance3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -0.600, 5.050, 16.000)
+mesh = SubResource("Box_43")
+
+[node name="Pano3" type="MeshInstance3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 1.300, 4.850, 16.000)
+mesh = SubResource("Box_44")
+
+[node name="Pano4" type="MeshInstance3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 2.900, 5.000, 16.000)
+mesh = SubResource("Box_45")
+
+[node name="Forno" type="StaticBody3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -15.500, 3.750, 4.000)
+
+[node name="Mesh" type="MeshInstance3D" parent="Historia/Construidos/Forno"]
+mesh = SubResource("Box_46")
+
+[node name="Shape" type="CollisionShape3D" parent="Historia/Construidos/Forno"]
+shape = SubResource("Shape_46")
+
+[node name="FornoBoca" type="MeshInstance3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -15.500, 3.550, 4.910)
+mesh = SubResource("Box_47")
+
+[node name="Veio0" type="MeshInstance3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -19.000, 7.100, -32.050)
+mesh = SubResource("Box_48")
+
+[node name="Veio1" type="MeshInstance3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -17.600, 7.800, -32.050)
+mesh = SubResource("Box_49")
+
+[node name="Veio2" type="MeshInstance3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -16.000, 7.300, -32.050)
+mesh = SubResource("Box_50")
+
+[node name="Veio3" type="MeshInstance3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -14.800, 8.200, -32.050)
+mesh = SubResource("Box_51")
+
+[node name="Veio4" type="MeshInstance3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -18.200, 8.600, -32.050)
+mesh = SubResource("Box_52")
+
+[node name="LanternaArmacao" type="MeshInstance3D" parent="Historia/Construidos"]
+transform = Transform3D(0.30998, 0.93969, -0.14454, -0.85165, 0.34202, 0.39713, 0.42262, -0.00000, 0.90631, -19.600, 6.150, -23.600)
+mesh = SubResource("Box_53")
+
+[node name="LanternaVidro" type="MeshInstance3D" parent="Historia/Construidos"]
+transform = Transform3D(0.30998, 0.93969, -0.14454, -0.85165, 0.34202, 0.39713, 0.42262, -0.00000, 0.90631, -19.750, 6.120, -23.550)
+mesh = SubResource("Box_54")
+
+[node name="Cova0" type="MeshInstance3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -19.500, 9.010, -38.000)
+mesh = SubResource("Box_55")
+
+[node name="Lapide0" type="MeshInstance3D" parent="Historia/Construidos"]
+transform = Transform3D(0.57358, -0.81915, -0.00000, 0.81915, 0.57358, 0.00000, 0.00000, -0.00000, 1.00000, -18.750, 9.250, -38.200)
+mesh = SubResource("Box_56")
+
+[node name="Cova1" type="MeshInstance3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -17.000, 9.010, -38.000)
+mesh = SubResource("Box_57")
+
+[node name="Lapide1" type="MeshInstance3D" parent="Historia/Construidos"]
+transform = Transform3D(0.57358, -0.81915, -0.00000, 0.81915, 0.57358, 0.00000, 0.00000, -0.00000, 1.00000, -16.250, 9.250, -38.200)
+mesh = SubResource("Box_58")
+
+[node name="Cova2" type="MeshInstance3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -14.500, 9.010, -38.000)
+mesh = SubResource("Box_59")
+
+[node name="Lapide2" type="MeshInstance3D" parent="Historia/Construidos"]
+transform = Transform3D(0.57358, -0.81915, -0.00000, 0.81915, 0.57358, 0.00000, 0.00000, -0.00000, 1.00000, -13.750, 9.250, -38.200)
+mesh = SubResource("Box_60")
+
+[node name="Cova3" type="MeshInstance3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -19.500, 9.010, -34.800)
+mesh = SubResource("Box_61")
+
+[node name="Lapide3" type="MeshInstance3D" parent="Historia/Construidos"]
+transform = Transform3D(0.57358, -0.81915, -0.00000, 0.81915, 0.57358, 0.00000, 0.00000, -0.00000, 1.00000, -18.750, 9.250, -35.000)
+mesh = SubResource("Box_62")
+
+[node name="Cova4" type="MeshInstance3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -17.000, 9.010, -34.800)
+mesh = SubResource("Box_63")
+
+[node name="Lapide4" type="MeshInstance3D" parent="Historia/Construidos"]
+transform = Transform3D(0.57358, -0.81915, -0.00000, 0.81915, 0.57358, 0.00000, 0.00000, -0.00000, 1.00000, -16.250, 9.250, -35.000)
+mesh = SubResource("Box_64")
+
+[node name="Cova5" type="MeshInstance3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -14.500, 9.010, -34.800)
+mesh = SubResource("Box_65")
+
+[node name="Lapide5" type="MeshInstance3D" parent="Historia/Construidos"]
+transform = Transform3D(0.57358, -0.81915, -0.00000, 0.81915, 0.57358, 0.00000, 0.00000, -0.00000, 1.00000, -13.750, 9.250, -35.000)
+mesh = SubResource("Box_66")
+
+[node name="SinoPosteA" type="StaticBody3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -14.000, 14.600, -66.000)
+
+[node name="Mesh" type="MeshInstance3D" parent="Historia/Construidos/SinoPosteA"]
+mesh = SubResource("Box_67")
+
+[node name="Shape" type="CollisionShape3D" parent="Historia/Construidos/SinoPosteA"]
+shape = SubResource("Shape_67")
+
+[node name="SinoPosteB" type="StaticBody3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -10.000, 14.600, -66.000)
+
+[node name="Mesh" type="MeshInstance3D" parent="Historia/Construidos/SinoPosteB"]
+mesh = SubResource("Box_68")
+
+[node name="Shape" type="CollisionShape3D" parent="Historia/Construidos/SinoPosteB"]
+shape = SubResource("Shape_68")
+
+[node name="SinoTravessa" type="StaticBody3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -12.000, 17.000, -66.000)
+
+[node name="Mesh" type="MeshInstance3D" parent="Historia/Construidos/SinoTravessa"]
+mesh = SubResource("Box_69")
+
+[node name="Shape" type="CollisionShape3D" parent="Historia/Construidos/SinoTravessa"]
+shape = SubResource("Shape_69")
+
+[node name="Sino" type="MeshInstance3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 16.05, -66)
+mesh = SubResource("Bell_mesh")
+
+[node name="SinoRachadura" type="MeshInstance3D" parent="Historia/Construidos"]
+transform = Transform3D(0.97815, 0.20791, 0.00000, -0.20791, 0.97815, 0.00000, 0.00000, -0.00000, 1.00000, -12.000, 15.900, -65.420)
+mesh = SubResource("Box_70")
+
+[node name="LuzVela0" type="OmniLight3D" parent="Historia/Construidos"]
+position = Vector3(-13.4, 10.2, -40.5)
+light_color = Color(1, 0.75, 0.4, 1)
+light_energy = 0.8
+omni_range = 4.0
+
+[node name="LuzVela1" type="OmniLight3D" parent="Historia/Construidos"]
+position = Vector3(-16.5, 9.9, -36.5)
+light_color = Color(1, 0.75, 0.4, 1)
+light_energy = 0.7
+omni_range = 4.0
+
+[node name="LuzVela2" type="OmniLight3D" parent="Historia/Construidos"]
+position = Vector3(-19.6, 6.6, -23.6)
+light_color = Color(1, 0.75, 0.4, 1)
+light_energy = 0.25
+omni_range = 4.0
+
+[node name="Arena" type="MeshInstance3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 12.02, -61)
+mesh = SubResource("Arena_mesh")
+
+[node name="Braseiro0" type="StaticBody3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 7.600, 12.600, -61.000)
+
+[node name="Mesh" type="MeshInstance3D" parent="Historia/Construidos/Braseiro0"]
+mesh = SubResource("Box_71")
+
+[node name="Shape" type="CollisionShape3D" parent="Historia/Construidos/Braseiro0"]
+shape = SubResource("Shape_71")
+
+[node name="Brasa0" type="OmniLight3D" parent="Historia/Construidos"]
+position = Vector3(7.60, 13.6, -61.00)
+light_color = Color(1, 0.45, 0.2, 1)
+light_energy = 1.3
+omni_range = 6.0
+
+[node name="Chama0" type="MeshInstance3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.60, 13.35, -61.00)
+mesh = SubResource("Flame_mesh")
+
+[node name="Braseiro1" type="StaticBody3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 3.800, 12.600, -54.418)
+
+[node name="Mesh" type="MeshInstance3D" parent="Historia/Construidos/Braseiro1"]
+mesh = SubResource("Box_72")
+
+[node name="Shape" type="CollisionShape3D" parent="Historia/Construidos/Braseiro1"]
+shape = SubResource("Shape_72")
+
+[node name="Brasa1" type="OmniLight3D" parent="Historia/Construidos"]
+position = Vector3(3.80, 13.6, -54.42)
+light_color = Color(1, 0.45, 0.2, 1)
+light_energy = 1.3
+omni_range = 6.0
+
+[node name="Chama1" type="MeshInstance3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.80, 13.35, -54.42)
+mesh = SubResource("Flame_mesh")
+
+[node name="Braseiro2" type="StaticBody3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -3.800, 12.600, -54.418)
+
+[node name="Mesh" type="MeshInstance3D" parent="Historia/Construidos/Braseiro2"]
+mesh = SubResource("Box_73")
+
+[node name="Shape" type="CollisionShape3D" parent="Historia/Construidos/Braseiro2"]
+shape = SubResource("Shape_73")
+
+[node name="Brasa2" type="OmniLight3D" parent="Historia/Construidos"]
+position = Vector3(-3.80, 13.6, -54.42)
+light_color = Color(1, 0.45, 0.2, 1)
+light_energy = 1.3
+omni_range = 6.0
+
+[node name="Chama2" type="MeshInstance3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.80, 13.35, -54.42)
+mesh = SubResource("Flame_mesh")
+
+[node name="Braseiro3" type="StaticBody3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -7.600, 12.600, -61.000)
+
+[node name="Mesh" type="MeshInstance3D" parent="Historia/Construidos/Braseiro3"]
+mesh = SubResource("Box_74")
+
+[node name="Shape" type="CollisionShape3D" parent="Historia/Construidos/Braseiro3"]
+shape = SubResource("Shape_74")
+
+[node name="Brasa3" type="OmniLight3D" parent="Historia/Construidos"]
+position = Vector3(-7.60, 13.6, -61.00)
+light_color = Color(1, 0.45, 0.2, 1)
+light_energy = 1.3
+omni_range = 6.0
+
+[node name="Chama3" type="MeshInstance3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.60, 13.35, -61.00)
+mesh = SubResource("Flame_mesh")
+
+[node name="Braseiro4" type="StaticBody3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -3.800, 12.600, -67.582)
+
+[node name="Mesh" type="MeshInstance3D" parent="Historia/Construidos/Braseiro4"]
+mesh = SubResource("Box_75")
+
+[node name="Shape" type="CollisionShape3D" parent="Historia/Construidos/Braseiro4"]
+shape = SubResource("Shape_75")
+
+[node name="Brasa4" type="OmniLight3D" parent="Historia/Construidos"]
+position = Vector3(-3.80, 13.6, -67.58)
+light_color = Color(1, 0.45, 0.2, 1)
+light_energy = 1.3
+omni_range = 6.0
+
+[node name="Chama4" type="MeshInstance3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.80, 13.35, -67.58)
+mesh = SubResource("Flame_mesh")
+
+[node name="Braseiro5" type="StaticBody3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 3.800, 12.600, -67.582)
+
+[node name="Mesh" type="MeshInstance3D" parent="Historia/Construidos/Braseiro5"]
+mesh = SubResource("Box_76")
+
+[node name="Shape" type="CollisionShape3D" parent="Historia/Construidos/Braseiro5"]
+shape = SubResource("Shape_76")
+
+[node name="Brasa5" type="OmniLight3D" parent="Historia/Construidos"]
+position = Vector3(3.80, 13.6, -67.58)
+light_color = Color(1, 0.45, 0.2, 1)
+light_energy = 1.3
+omni_range = 6.0
+
+[node name="Chama5" type="MeshInstance3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.80, 13.35, -67.58)
+mesh = SubResource("Flame_mesh")
+
+[node name="LuzMarco0" type="OmniLight3D" parent="Historia/Construidos"]
+position = Vector3(-12, 15.2, -64.6)
+light_color = Color(1, 0.6, 0.3, 1)
+light_energy = 1.6
+omni_range = 7.0
+
+[node name="LuzMarco1" type="OmniLight3D" parent="Historia/Construidos"]
+position = Vector3(-3.5, 3.2, 50.8)
+light_color = Color(1, 0.6, 0.3, 1)
+light_energy = 1.6
+omni_range = 7.0
+
+[node name="LuzMarco2" type="OmniLight3D" parent="Historia/Construidos"]
+position = Vector3(3.5, 3.2, 50.8)
+light_color = Color(1, 0.6, 0.3, 1)
+light_energy = 1.6
+omni_range = 7.0
+
+[node name="LuzVeio" type="OmniLight3D" parent="Historia/Construidos"]
+position = Vector3(-17, 7.8, -31)
+light_color = Color(0.6, 0.85, 1, 1)
+light_energy = 0.9
+omni_range = 5.0
