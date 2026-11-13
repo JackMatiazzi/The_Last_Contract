@@ -204,6 +204,19 @@ func test_cutting_the_rope_lowers_the_bridge_over_the_middle_blades() -> void:
 	assert_bool((_mechanism("FossoDeLaminas1") as TrapCycle).is_armed).is_true()
 
 
+# o virote do Rogue tem alcance curto: a corda precisa ficar ao alcance de algum ponto do chao
+func test_the_rope_can_be_shot_from_the_floor() -> void:
+	var rope := _mechanism("PonteDoAbismo/Corda") as Node3D
+	var bolt := (load("res://scenes/combat/crossbow_bolt.tscn") as PackedScene).instantiate() as Projectile
+	var bolt_range := bolt.max_distance
+	bolt.free()
+	await get_tree().physics_frame
+
+	var floor_point := NavigationServer3D.map_get_closest_point(rope.get_world_3d().navigation_map, rope.global_position)
+
+	assert_float(floor_point.distance_to(rope.global_position)).is_less(bolt_range - 1.0)
+
+
 func test_the_cellar_and_the_secret_room_hide_behind_cracked_walls() -> void:
 	assert_object(_mechanism("ParedeDaAdega")).is_instanceof(CrackedWall)
 	assert_object(_mechanism("ParedeDaSalaSecreta")).is_instanceof(CrackedWall)

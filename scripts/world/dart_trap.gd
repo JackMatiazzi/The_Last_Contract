@@ -11,6 +11,8 @@ const TARGETS := 2 | 4
 ## Estalo antes do disparo; com 0 dispara na hora.
 @export var fire_delay := 0.0
 @export var dart_scene: PackedScene
+## Alcance do dardo; o virote do Rogue tem alcance curto, a armadilha cobre o corredor inteiro.
+@export var dart_range := 25.0
 @export var plates: Array[Area3D] = []
 ## Cada Marker3D filho dispara um dardo para o proprio -Z.
 @export var muzzles: Node3D
@@ -54,5 +56,6 @@ func _fire() -> void:
 	animation_player.play("disparo")
 	for muzzle: Marker3D in muzzles.get_children():
 		var dart := dart_scene.instantiate() as Projectile
+		dart.max_distance = dart_range
 		get_parent().add_child(dart)
 		dart.launch(null, muzzle.global_position, -muzzle.global_basis.z, damage, TARGETS, self)

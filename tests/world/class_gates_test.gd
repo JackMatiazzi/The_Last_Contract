@@ -116,13 +116,13 @@ func test_the_grate_holds_bodies_but_lets_aim_and_shots_through() -> void:
 	(gate.get_node("Grade") as CollisionObject3D).collision_layer = GRATES_LAYER
 	var knight := arena.spawn(TestArena.KNIGHT, Vector3.ZERO, 180)
 	var rogue := arena.spawn(TestArena.ROGUE, Vector3(1.5, 0, 0), 180)
-	var skeleton := arena.spawn(TestArena.SKELETON, Vector3(1.5, 0, -7))
+	var skeleton := arena.spawn(TestArena.SKELETON, Vector3(1.5, 0, -5.5))
 	await arena.wait_physics(3)
 
 	await arena.send_action("move_forward")
 	await arena.wait_seconds(1.5)
 	await arena.send_action("move_forward", false)
-	_shoot(BOLT, rogue, Vector3(1.5, 1.2, -0.8), Vector3(1.5, 1.0, -7))
+	_shoot(BOLT, rogue, Vector3(1.5, 1.2, -0.8), Vector3(1.5, 1.0, -5.5))
 	await arena.wait_seconds(0.6)
 
 	assert_float(knight.global_position.z).is_greater(-3.0)
@@ -137,7 +137,7 @@ func test_a_crossbow_bolt_cuts_the_rope_and_lowers_the_bridge() -> void:
 	var rogue := arena.spawn(TestArena.ROGUE, Vector3.ZERO, 180)
 	await arena.wait_physics(3)
 
-	_shoot(BOLT, rogue, Vector3(0, 1.5, -1), rope.global_position)
+	_shoot(BOLT, rogue, rope.global_position + Vector3(0, 0.3, 4.0), rope.global_position)
 	await arena.wait_seconds(0.8)
 
 	assert_bool(rope.is_cut).is_true()
