@@ -1,6 +1,6 @@
 extends GdUnitTestSuite
 
-const OBJECTS := preload("res://scenes/maps/village/objects.tscn")
+const VILLAGE := preload("res://scenes/maps/village.tscn")
 
 var arena: TestArena
 var props: BreakableProps
@@ -11,8 +11,9 @@ var knight: Adventurer
 func before_test() -> void:
 	RunState.reset()
 	arena = TestArena.new(self)
-	props = OBJECTS.instantiate() as BreakableProps
-	arena.root.add_child(props)
+	var village := VILLAGE.instantiate()
+	arena.root.add_child(village)
+	props = village.get_node("Objetos") as BreakableProps
 	for cell in props.get_used_cells():
 		if props.mesh_library.get_item_name(props.get_cell_item(cell)) == "barrel_large":
 			barrel_cell = cell
