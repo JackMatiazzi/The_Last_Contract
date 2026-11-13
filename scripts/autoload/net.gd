@@ -18,7 +18,7 @@ enum Transport { ENET, WEBSOCKET, RELAY }
 const PORT := 7777
 ## endereco da sala online (repositorio the-last-contract-api) depois do deploy; --relay=ws://... troca,
 ## para testar com a API rodando local
-const RELAY_URL := "wss://the-last-contract-api.workers.dev"
+const RELAY_URL := "wss://the-last-contract-api.last-contract.workers.dev"
 const ROOM_CODE_LETTERS := "ABCDEFGHJKMNPQRSTUVWXYZ23456789"
 const ROOM_CODE_LENGTH := 6
 const WEB_SCHEMES := {"https://": "wss://", "http://": "ws://", "wss://": "wss://", "ws://": "ws://"}
