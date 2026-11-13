@@ -1,10 +1,11 @@
 class_name Lobby
 extends Control
+## Contrato em grupo: sala online por código; rede local e túnel em "Outras formas".
 
 const MAIN_MENU := "res://scenes/ui/main_menu.tscn"
 const LOCAL_ADDRESS := "127.0.0.1"
 const TUNNEL_COMMAND := "cloudflared tunnel --url http://127.0.0.1:%d"
-## --host, --host=ws ou --host=relay escolhem o modo, como o seletor de hospedar
+## Na linha de comando (testes e2e), --host, --host=ws ou --host=relay escolhem como hospedar.
 const HOST_ARGS := {"--host": Net.Transport.ENET, "--host=ws": Net.Transport.WEBSOCKET, "--host=relay": Net.Transport.RELAY}
 
 @export var address_button_scene: PackedScene
@@ -15,8 +16,13 @@ var _adventurer_buttons: Array[Button] = []
 
 @onready var name_input: LineEdit = %NameInput
 @onready var friendly_fire_toggle: CheckButton = %FriendlyFireToggle
+@onready var create_online_button: Button = %CreateOnlineButton
+@onready var room_code_input: LineEdit = %RoomCodeInput
+@onready var join_online_button: Button = %JoinOnlineButton
+@onready var other_ways_toggle: Button = %OtherWaysToggle
+@onready var other_ways: Control = %OtherWays
 @onready var address_input: LineEdit = %AddressInput
-## os ids dos itens sao os valores de Net.Transport
+## Os ids dos itens são os valores de Net.Transport (rede local e túnel).
 @onready var host_mode: OptionButton = %HostMode
 @onready var status_label: Label = %StatusLabel
 @onready var connect_panel: Control = %ConnectPanel
@@ -28,7 +34,11 @@ var _adventurer_buttons: Array[Button] = []
 func _ready() -> void:
 	assert(address_button_scene, "Lobby: aponte address_button_scene")
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-	%HostButton.pressed.connect(_host)
+	create_online_button.pressed.connect(_host_with.bind(Net.Transport.RELAY))
+	join_online_button.pressed.connect(_join_online)
+	room_code_input.text_changed.connect(_on_room_code_changed)
+	other_ways_toggle.toggled.connect(_show_other_ways)
+	%HostButton.pressed.connect(func() -> void: _host_with(host_mode.get_selected_id() as Net.Transport))
 	%JoinButton.pressed.connect(_join)
 	%BackButton.pressed.connect(_back)
 	start_button.pressed.connect(Net.start_match)
@@ -60,15 +70,35 @@ func _apply_command_line() -> void:
 			name_input.text = arg.get_slice("=", 1)
 	for arg: String in args:
 		if HOST_ARGS.has(arg):
-			host_mode.select(host_mode.get_item_index(HOST_ARGS[arg]))
-			_host()
+			_host_with(HOST_ARGS[arg])
 		elif arg.begins_with("--join"):
-			address_input.text = arg.get_slice("=", 1) if "=" in arg else LOCAL_ADDRESS
-			_join()
+			var address := arg.get_slice("=", 1) if "=" in arg else LOCAL_ADDRESS
+			if Net.is_room_code(address):
+				room_code_input.text = address
+				_join_online()
+			else:
+				address_input.text = address
+				_join()
 
 
-func _host() -> void:
-	var transport := host_mode.get_selected_id() as Net.Transport
+func _show_other_ways(open: bool) -> void:
+	other_ways.visible = open
+	other_ways_toggle.text = ("▾ " if open else "▸ ") + other_ways_toggle.text.substr(2)
+
+
+func _on_room_code_changed(text: String) -> void:
+	var caret := room_code_input.caret_column
+	room_code_input.text = text.to_upper()
+	room_code_input.caret_column = caret
+	join_online_button.disabled = not Net.is_room_code(room_code_input.text)
+
+
+func _join_online() -> void:
+	address_input.text = room_code_input.text
+	_join()
+
+
+func _host_with(transport: Net.Transport) -> void:
 	var error := Net.host(Net.PORT, transport)
 	if error != OK:
 		status_label.text = "Não foi possível abrir a sala (%s)." % error_string(error)
@@ -188,7 +218,7 @@ func _show_room(in_room: bool) -> void:
 	if in_room:
 		_refresh()
 	else:
-		%HostButton.grab_focus()
+		create_online_button.grab_focus()
 
 
 func _back() -> void:
