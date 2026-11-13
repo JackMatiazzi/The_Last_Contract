@@ -11,13 +11,14 @@ signal player_left(peer_id: int)
 signal room_ready(code: String)
 signal match_report_sent(accepted: bool)
 
-## ENET e a rede local (UDP); RELAY e a sala online com codigo, na pasta relay/ (Cloudflare);
+## ENET e a rede local (UDP); RELAY e a sala online com codigo, a API no Cloudflare (the-last-contract-api);
 ## WEBSOCKET e o host publicando a propria porta com o tunel do cloudflared
 enum Transport { ENET, WEBSOCKET, RELAY }
 
 const PORT := 7777
-## endereco da sala online depois do deploy (relay/); --relay=ws://... troca, para testar local
-const RELAY_URL := "wss://the-last-contract-relay.workers.dev"
+## endereco da sala online (repositorio the-last-contract-api) depois do deploy; --relay=ws://... troca,
+## para testar com a API rodando local
+const RELAY_URL := "wss://the-last-contract-api.workers.dev"
 const ROOM_CODE_LETTERS := "ABCDEFGHJKMNPQRSTUVWXYZ23456789"
 const ROOM_CODE_LENGTH := 6
 const WEB_SCHEMES := {"https://": "wss://", "http://": "ws://", "wss://": "wss://", "ws://": "ws://"}

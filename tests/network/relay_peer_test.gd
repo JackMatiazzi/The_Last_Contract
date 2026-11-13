@@ -1,6 +1,6 @@
 extends GdUnitTestSuite
 
-# o formato precisa bater com relay/src/protocolo.js: os dois lados leem as mensagens um do outro
+# o formato precisa bater com src/protocolo.js da API (the-last-contract-api): os dois lados leem as mensagens um do outro
 
 
 func _record(peer: int, channel: int, mode: int, bytes: Array) -> PackedByteArray:

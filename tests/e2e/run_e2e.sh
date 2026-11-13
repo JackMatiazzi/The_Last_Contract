@@ -3,13 +3,15 @@
 #   solo       um contrato solo ate a segunda tentativa
 #   coop-enet  partida em grupo pela rede local (ENet, UDP)
 #   coop-ws    a mesma partida por WebSocket, o caminho do tunel Cloudflare
-#   coop-relay a mesma partida pela sala online com codigo (relay/ rodando local)
-# Sem argumento roda os quatro. PLAYERS escolhe o tamanho do grupo (padrao 4).
+#   coop-relay a mesma partida pela sala online com codigo, com a API (the-last-contract-api) rodando local
+# Sem argumento roda os quatro. PLAYERS escolhe o tamanho do grupo (padrao 4). API_DIR aponta a copia da
+# API, com npm ci feito; o padrao e a pasta ao lado do jogo.
 # O Godot pode sair com 0 mesmo com erro de script, entao o log tambem decide
 set -u
 
 GODOT="${GODOT:-godot}"
 PROJECT="$(cd "$(dirname "$0")/../.." && pwd)"
+API_DIR="${API_DIR:-$PROJECT/../the-last-contract-api}"
 LOGS="${LOGS:-${TMPDIR:-/tmp}/the-last-contract-e2e}"
 PLAYERS="${PLAYERS:-4}"
 if [ "$PLAYERS" -lt 2 ] || [ "$PLAYERS" -gt 4 ]; then
@@ -71,10 +73,15 @@ run_coop() {
 	check_log "$flow-host" "$code"
 }
 
-# a sala online roda local com o wrangler dev (relay/); precisa de Node e de npm ci em relay/
+# a sala online roda local com o wrangler dev da API; precisa de Node e de npm ci em API_DIR
 run_relay() {
-	(cd "$PROJECT/relay" && npx wrangler d1 migrations apply DB --local) > "$LOGS/relay-banco.log" 2>&1
-	(cd "$PROJECT/relay" && npx wrangler dev --port 8787 --ip 127.0.0.1 --var SALAS_POR_IP_POR_MINUTO:100 --var MAX_SALAS:100 --var ADMIN_TOKEN:e2e-local) > "$LOGS/relay.log" 2>&1 &
+	if [ ! -f "$API_DIR/wrangler.toml" ]; then
+		echo "== coop-relay precisa da API em $API_DIR (ou API_DIR=...)"
+		failed=1
+		return
+	fi
+	(cd "$API_DIR" && npx wrangler d1 migrations apply DB --local) > "$LOGS/relay-banco.log" 2>&1
+	(cd "$API_DIR" && npx wrangler dev --port 8787 --ip 127.0.0.1 --var SALAS_POR_IP_POR_MINUTO:100 --var MAX_SALAS:100 --var ADMIN_TOKEN:e2e-local) > "$LOGS/relay.log" 2>&1 &
 	for _ in $(seq 90); do
 		grep -q "Ready on" "$LOGS/relay.log" 2>/dev/null && break
 		sleep 1

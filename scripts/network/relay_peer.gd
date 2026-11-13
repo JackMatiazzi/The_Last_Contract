@@ -1,6 +1,6 @@
 class_name RelayPeer
 extends MultiplayerPeerExtension
-## Peer de rede que passa pela sala no Cloudflare (pasta relay/ do projeto). Os pacotes do Godot sao
+## Peer de rede que passa pela sala no Cloudflare (repositorio the-last-contract-api). Os pacotes do Godot sao
 ## juntados e enviados em lotes de FLUSH_INTERVAL: o Cloudflare cobra por mensagem recebida, nao pelo
 ## tamanho, entao luta com muitos inimigos custa o mesmo que andar pela vila. A sala carimba quem
 ## mandou cada pacote; ninguem consegue se passar pelo host.
@@ -13,7 +13,7 @@ const PROTOCOL_VERSION := "1"
 const HOST_ID := 1
 const MAX_ID := 0x7FFFFFFF
 const FLUSH_INTERVAL_MSEC := 100
-## par (int32) | canal (uint8) | modo (uint8) | tamanho (uint32); igual a relay/src/protocolo.js
+## par (int32) | canal (uint8) | modo (uint8) | tamanho (uint32); igual ao src/protocolo.js da API
 const HEADER_SIZE := 10
 ## a sala derruba mensagens acima de 64 KB; o lote sai antes de chegar perto disso
 const MAX_BATCH_BYTES := 60000

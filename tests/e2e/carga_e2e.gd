@@ -2,7 +2,7 @@ extends "res://tests/e2e/e2e_driver.gd"
 
 # partida de carga pela sala online: cada processo e um jogador controlado por um bot que anda, corre,
 # gira a camera, ataca, para como quem le um bilhete, cai e vota, com os inimigos de IA ligada.
-# Serve para medir no log da sala (relay/) quantas requisicoes uma partida inteira gasta antes do deploy.
+# Serve para medir no banco da API (GET /uso) quantas requisicoes uma partida inteira gasta antes do deploy.
 # --minutos=N e a duracao; o resto dos argumentos e o mesmo do teste em grupo
 
 const MOVES: Array[StringName] = [&"move_forward", &"move_back", &"move_left", &"move_right"]
