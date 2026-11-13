@@ -1,7 +1,7 @@
 name: Ponta a ponta
 
-# tres fluxos separados: contrato solo, grupo de 4 pela rede local (ENet) e grupo de 4 por
-# WebSocket, o caminho do tunel Cloudflare; tambem roda pelo botao Run workflow da aba Actions
+# quatro fluxos separados: contrato solo e grupo de 4 pela rede local (ENet), por WebSocket (caminho do
+# tunel Cloudflare) e pela sala online com codigo (relay/ rodando local); tambem roda pelo botao Run workflow
 on:
   push:
     branches: [main, desenvolvimento]
@@ -20,11 +20,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        flow: [solo, coop-enet, coop-ws]
+        flow: [solo, coop-enet, coop-ws, coop-relay]
     steps:
       - uses: actions/checkout@v7
       - name: Fontes do sistema
-        run: apt-get update -qq && apt-get install -y -qq fontconfig > /dev/null
+        run: apt-get update -qq && apt-get install -y -qq fontconfig procps > /dev/null
+      - if: matrix.flow == 'coop-relay'
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - if: matrix.flow == 'coop-relay'
+        run: npm ci --prefix relay
       - run: godot --headless --import
       - run: bash tests/e2e/run_e2e.sh ${{ matrix.flow }}
       - if: failure()
@@ -32,3 +38,18 @@ jobs:
         with:
           name: e2e-logs-${{ matrix.flow }}
           path: /tmp/the-last-contract-e2e
+
+  # a sala online sozinha: formato das mensagens e regras da sala contra o wrangler dev
+  relay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: relay
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - run: npm ci
+      - run: npm test

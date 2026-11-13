@@ -108,6 +108,35 @@ func test_hosting_on_the_local_network_still_uses_enet() -> void:
 	assert_object(multiplayer.multiplayer_peer).is_instanceof(ENetMultiplayerPeer)
 
 
+func test_room_codes_are_six_unambiguous_letters_in_any_case() -> void:
+	assert_bool(Net.is_room_code("abc234")).is_true()
+	assert_bool(Net.is_room_code(" ABC234 ")).is_true()
+	assert_bool(Net.is_room_code("ABC0EF")).is_false()
+	assert_bool(Net.is_room_code("192.168.0.10")).is_false()
+	assert_bool(Net.is_room_code("ABCDEFG")).is_false()
+
+
+func test_hosting_an_online_room_goes_through_the_relay() -> void:
+	Net.relay_url = "ws://127.0.0.1:9"
+
+	assert_int(Net.host(TEST_PORT, Net.Transport.RELAY)).is_equal(OK)
+
+	assert_object(multiplayer.multiplayer_peer).is_instanceof(RelayPeer)
+	assert_bool(multiplayer.is_server()).is_true()
+	assert_dict(Net.roster).contains_keys([1])
+	Net.relay_url = Net.RELAY_URL
+
+
+func test_joining_with_a_room_code_goes_through_the_relay() -> void:
+	Net.relay_url = "ws://127.0.0.1:9"
+
+	assert_int(Net.join("abc234")).is_equal(OK)
+
+	assert_object(multiplayer.multiplayer_peer).is_instanceof(RelayPeer)
+	assert_bool(multiplayer.is_server()).is_false()
+	Net.relay_url = Net.RELAY_URL
+
+
 func test_a_full_party_turns_new_players_away() -> void:
 	Net.roster = {1: 0, 2: 1, 3: 2}
 	assert_bool(Net.admits_new_player()).is_true()

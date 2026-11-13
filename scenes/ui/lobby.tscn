@@ -63,18 +63,30 @@ placeholder_text = "Aventureiro"
 [node name="AddressHint" type="Label" parent="Panel/Scroll/Content/ConnectPanel"]
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
-text = "Endereço do host: IP da rede ou link do túnel (vazio = esta máquina)"
+text = "Para entrar: código da sala, IP da rede ou link do túnel (vazio = esta máquina)"
 autowrap_mode = 3
 
 [node name="AddressInput" type="LineEdit" parent="Panel/Scroll/Content/ConnectPanel"]
 unique_name_in_owner = true
 layout_mode = 2
-placeholder_text = "127.0.0.1 ou https://...trycloudflare.com"
+placeholder_text = "ABC234, 192.168.0.10 ou https://...trycloudflare.com"
 
-[node name="OnlineToggle" type="CheckButton" parent="Panel/Scroll/Content/ConnectPanel"]
+[node name="HostModeHint" type="Label" parent="Panel/Scroll/Content/ConnectPanel"]
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Para hospedar:"
+
+[node name="HostMode" type="OptionButton" parent="Panel/Scroll/Content/ConnectPanel"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Hospedar pela internet (túnel Cloudflare)"
+selected = 0
+item_count = 3
+popup/item_0/text = "Rede local (mesmo Wi-Fi ou cabo)"
+popup/item_0/id = 0
+popup/item_1/text = "Sala online com código (Cloudflare)"
+popup/item_1/id = 2
+popup/item_2/text = "Túnel próprio (cloudflared)"
+popup/item_2/id = 1
 
 [node name="Buttons" type="HBoxContainer" parent="Panel/Scroll/Content/ConnectPanel"]
 layout_mode = 2

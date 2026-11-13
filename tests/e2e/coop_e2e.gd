@@ -18,6 +18,9 @@ func run() -> void:
 	play_with_gamepad()
 	if role == "host" and await wait_until(func() -> bool: return Net.is_online(), "host abrir a porta"):
 		print("E2E host escutando")
+	# pela sala online os clientes so entram com o codigo, que o script de teste le daqui
+	if role == "host" and "--host=relay" in OS.get_cmdline_user_args() and await wait_until(func() -> bool: return not Net.room_code.is_empty(), "sala online criada"):
+		print("E2E sala %s" % Net.room_code)
 	if not await wait_scene("MissionIntro"):
 		return
 	check(_allies_in_cutscene() == players - 1, "a cutscene mostra os %d aliados" % (players - 1))

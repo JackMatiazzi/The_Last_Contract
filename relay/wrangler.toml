@@ -1,0 +1,24 @@
+name = "the-last-contract-relay"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+
+[[durable_objects.bindings]]
+name = "SALA"
+class_name = "Sala"
+
+[[durable_objects.bindings]]
+name = "REGISTRO"
+class_name = "Registro"
+
+# no plano gratuito o Durable Object precisa ser da classe com SQLite
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Sala", "Registro"]
+
+# so o console.log do medidor vai para o log; o log de cada requisicao guardaria IP e codigo da sala
+[observability]
+enabled = true
+
+[observability.logs]
+enabled = true
+invocation_logs = false

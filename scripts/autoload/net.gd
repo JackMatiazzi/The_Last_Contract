@@ -8,11 +8,17 @@ extends Node
 signal roster_changed
 signal connection_failed
 signal player_left(peer_id: int)
+signal room_ready(code: String)
 
-## ENET e a rede local (UDP); WEBSOCKET passa por tunel ou rede que so libera HTTPS
-enum Transport { ENET, WEBSOCKET }
+## ENET e a rede local (UDP); RELAY e a sala online com codigo, na pasta relay/ (Cloudflare);
+## WEBSOCKET e o host publicando a propria porta com o tunel do cloudflared
+enum Transport { ENET, WEBSOCKET, RELAY }
 
 const PORT := 7777
+## endereco da sala online depois do deploy (relay/); --relay=ws://... troca, para testar local
+const RELAY_URL := "wss://the-last-contract-relay.workers.dev"
+const ROOM_CODE_LETTERS := "ABCDEFGHJKMNPQRSTUVWXYZ23456789"
+const ROOM_CODE_LENGTH := 6
 const WEB_SCHEMES := {"https://": "wss://", "http://": "ws://", "wss://": "wss://", "ws://": "ws://"}
 const WEB_BIND_ADDRESS := "127.0.0.1"
 const WEB_MAX_QUEUED_PACKETS := 512
@@ -39,6 +45,9 @@ var match_seed := 0
 ## depois do inicio ninguem troca de aventureiro nem de nome
 var in_match := false
 var last_error := ""
+var relay_url := RELAY_URL
+## codigo da sala online que o host passa para os amigos
+var room_code := ""
 ## solo (offline ou host sozinho) conta 1: reviver aliado, votacao e pausa sem congelar ficam desligados
 var player_count: int:
 	get:
@@ -57,6 +66,9 @@ func _ready() -> void:
 	multiplayer.peer_disconnected.connect(_on_peer_disconnected)
 	multiplayer.connection_failed.connect(_on_connection_failed)
 	multiplayer.server_disconnected.connect(_on_server_disconnected)
+	for arg: String in _command_line:
+		if arg.begins_with("--relay="):
+			relay_url = arg.trim_prefix("--relay=")
 
 
 func is_online() -> bool:
@@ -70,7 +82,14 @@ func is_coop() -> bool:
 func host(port := PORT, transport := Transport.ENET) -> Error:
 	var peer: MultiplayerPeer
 	var error: Error
-	if transport == Transport.WEBSOCKET:
+	if transport == Transport.RELAY:
+		var relay_peer := RelayPeer.new()
+		relay_peer.room_ready.connect(_on_room_ready)
+		# adiado: o aviso sai de dentro do poll do proprio peer, que nao pode ser trocado ali
+		relay_peer.dropped.connect(_on_relay_host_dropped.bind(relay_peer), CONNECT_DEFERRED)
+		error = relay_peer.create_host(relay_url)
+		peer = relay_peer
+	elif transport == Transport.WEBSOCKET:
 		# so o tunel enxerga a porta: na rede local quem quiser entrar sem o link nao consegue
 		var web_peer := WebSocketMultiplayerPeer.new()
 		web_peer.max_queued_packets = WEB_MAX_QUEUED_PACKETS
@@ -89,12 +108,17 @@ func host(port := PORT, transport := Transport.ENET) -> Error:
 	roster_changed.emit()
 	return OK
 
-## Entra na sala: link do tunel (https/wss) vai por WebSocket, IP ou nome vai por ENet.
+## Entra na sala: codigo de 6 letras vai pela sala online, link do tunel (https/wss) por WebSocket,
+## IP ou nome da maquina por ENet.
 func join(address: String, port := PORT) -> Error:
 	var web := web_address(address)
 	var peer: MultiplayerPeer
 	var error: Error
-	if not web.is_empty():
+	if is_room_code(address):
+		var relay_peer := RelayPeer.new()
+		error = relay_peer.create_client(relay_url, address.strip_edges().to_upper())
+		peer = relay_peer
+	elif not web.is_empty():
 		var web_peer := WebSocketMultiplayerPeer.new()
 		error = web_peer.create_client(web)
 		peer = web_peer
@@ -117,6 +141,32 @@ static func web_address(raw: String) -> String:
 	return ""
 
 
+static func is_room_code(raw: String) -> bool:
+	var code := raw.strip_edges().to_upper()
+	return code.length() == ROOM_CODE_LENGTH and Array(code.split("")).all(func(letter: String) -> bool: return letter in ROOM_CODE_LETTERS)
+
+
+func _on_room_ready(code: String) -> void:
+	room_code = code
+	_share_roster()
+	room_ready.emit(code)
+
+
+# sem internet, sala expirada ou relay fora do ar: no lobby volta a tela de conexao, na partida vai ao menu
+## o aviso chega adiado: se o host ja saiu e abriu outra sala, ele e de uma conexao velha
+func _on_relay_host_dropped(relay_peer: RelayPeer) -> void:
+	if multiplayer.multiplayer_peer != relay_peer:
+		return
+	last_error = _relay_refusal("A conexão com a sala online caiu.")
+	var was_in_match := in_match
+	leave()
+	if was_in_match:
+		get_tree().paused = false
+		get_tree().change_scene_to_file(MAIN_MENU)
+	else:
+		connection_failed.emit()
+
+
 ## o WebSocket nao tem limite de clientes como o ENet: o host recusa o quinto e quem chega no meio
 func admits_new_player() -> bool:
 	return not in_match and roster.size() < MAX_PLAYERS
@@ -132,6 +182,7 @@ func leave() -> void:
 	waiting_for_peers = false
 	friendly_fire = true
 	in_match = false
+	room_code = ""
 
 ## Solicita a seleção de um aventureiro. Se for o cliente, envia RPC para o servidor.
 func choose_adventurer(index: int) -> void:
@@ -298,8 +349,10 @@ func _apply_choice(peer_id: int, index: int) -> void:
 	_share_roster()
 
 ## Sincroniza a lista inteira de jogadores e configurações do lobby para todos os clientes.
+## a sala online so aceita mensagens depois de responder; ate la a lista fica so aqui
 func _share_roster() -> void:
-	_sync_roster.rpc(roster, names, friendly_fire)
+	if multiplayer.multiplayer_peer.get_connection_status() == MultiplayerPeer.CONNECTION_CONNECTED:
+		_sync_roster.rpc(roster, names, friendly_fire)
 	roster_changed.emit()
 
 ## RPC de autoridade que substitui o estado do lobby local pelos dados atualizados do host.
@@ -356,9 +409,14 @@ func _on_peer_disconnected(peer_id: int) -> void:
 		_share_roster()
 		_release_when_everyone_loaded()
 
+# a sala online explica por que recusou ou fechou (cheia, codigo errado, versao velha); vale mais que o generico
+func _relay_refusal(fallback: String) -> String:
+	var relay_peer := multiplayer.multiplayer_peer as RelayPeer
+	return relay_peer.refusal if relay_peer and not relay_peer.refusal.is_empty() else fallback
+
 ## Callback de falha ao tentar conectar em um servidor.
 func _on_connection_failed() -> void:
-	last_error = "Não foi possível conectar ao host."
+	last_error = _relay_refusal("Não foi possível conectar ao host.")
 	leave()
 	connection_failed.emit()
 
@@ -366,7 +424,7 @@ func _on_connection_failed() -> void:
 func _on_server_disconnected() -> void:
 	# o host recusa sem explicar; quem nunca recebeu a lista foi barrado na porta
 	var was_in_room := roster.has(multiplayer.get_unique_id())
-	last_error = "O host encerrou a partida." if was_in_room else "A sala está cheia ou a partida já começou."
+	last_error = _relay_refusal("O host encerrou a partida." if was_in_room else "A sala está cheia ou a partida já começou.")
 	leave()
 	get_tree().paused = false
 	get_tree().change_scene_to_file(MAIN_MENU)
