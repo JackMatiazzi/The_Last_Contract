@@ -24,6 +24,7 @@ buses/default_bus_layout="res://resources/audio/default_bus_layout.tres"
 RunState="*res://scripts/autoload/run_state.gd"
 Settings="*res://scripts/autoload/settings.gd"
 Net="*res://scripts/autoload/net.gd"
+Playtest="*res://scripts/autoload/playtest.gd"
 Music="*res://scenes/audio/music.tscn"
 UiSounds="*res://scenes/audio/ui_sounds.tscn"
 
