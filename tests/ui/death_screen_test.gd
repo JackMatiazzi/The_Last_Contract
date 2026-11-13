@@ -39,7 +39,7 @@ func test_shows_attempt_and_accumulated_buffs() -> void:
 
 	await _kill_and_wait_for_screen()
 
-	assert_str(screen.attempt_label.text).is_equal("Tentativa 2")
+	assert_str(screen.attempt_label.text).is_equal("Tentativa II")
 	assert_str(screen.active_buffs_label.text).contains("Couraça")
 
 
