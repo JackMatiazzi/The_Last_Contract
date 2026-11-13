@@ -37,6 +37,12 @@ func _ready() -> void:
 	%AcceptButton.grab_focus()
 
 
+# escondido, o seletor nao viu o analogico voltar ao centro
+func focus_accept() -> void:
+	_stick_direction = 0
+	%AcceptButton.grab_focus()
+
+
 func select(index: int) -> void:
 	selected_index = wrapi(index, 0, options.size())
 	for i in cards.get_child_count():

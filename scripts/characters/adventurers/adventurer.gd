@@ -8,6 +8,12 @@ const ATTACK_BUFFER := 0.2
 const PITCH_MIN := deg_to_rad(-60.0)
 const PITCH_MAX := deg_to_rad(30.0)
 const CAMERA_HEIGHT := 1.5
+## tremor da camera de quem acerta: some sozinho em menos de meio segundo
+const SHAKE_QUICK := 0.35
+const SHAKE_HEAVY := 0.7
+const SHAKE_DECAY := 2.5
+const SHAKE_OFFSET := 0.14
+const HIT_CONFIRM_PITCH_HEAVY := 0.75
 const BASE_MOUSE_SENSITIVITY := 0.003
 const BASE_STICK_SPEED := 2.8
 const MOVE_DEADZONE := 0.1
@@ -15,46 +21,60 @@ const AIM_RANGE := 40.0
 const AIM_LAYERS := 1 | 4
 const REVIVE_RANGE := 2.2
 const REVIVE_HEALTH_FRACTION := 0.5
-# segurar o ataque alem disso vira golpe pesado; soltar antes e golpe rapido
+## segurar o ataque alem disso vira golpe pesado; soltar antes e golpe rapido
 const HEAVY_HOLD_TIME := 0.35
-# segurar interagir bebe o item selecionado; o tempo segurando e o gole, exposto aos golpes
+## segurar interagir bebe o item selecionado; o tempo segurando e o gole, exposto aos golpes
 const DRINK_HOLD_TIME := 0.6
 const REVIVE_READY_COLOR := Color(1.0, 0.88, 0.6)
 const REVIVE_MISSING_COLOR := Color(0.62, 0.6, 0.58)
 const MAX_ENERGY := 100.0
-# ritmo de recarga comum a todos; cada classe ajusta com os multiplicadores
-const BASE_REGEN := 30.0
-# depois de zerar a estamina correndo, so volta a correr com a barra neste ponto
-const RUN_RECOVER_FRACTION := 0.3
+## ritmo de recarga comum a todos; cada classe ajusta com os multiplicadores
+const BASE_REGEN := 24.0
 
+## quao rapido a camera alcanca o aventureiro
 @export var camera_follow_speed := 14.0
+## forca com que empurra barris e caixotes
 @export var push_force := 120.0
+## continuar segurando depois do golpe pesado repete este golpe enquanto houver energia (giro do Barbarian)
+@export var sustained_attack: Attack
+## golpe do botao direito; vazio se a classe nao tem
 @export var secondary_attack: Attack
+## escudo do botao direito; vazio se a classe nao tem
 @export var block: BlockAbility
-# a roda para cima percorre esta lista; vazia = so o ataque principal
+## a roda para cima percorre esta lista; vazia = so o ataque principal
 @export var abilities: Array[Attack] = []
 
-# todos tem estamina (correr, escudo, golpes fisicos); quem usa mana paga os feiticos com ela
+## todos tem estamina (correr, escudo, golpes fisicos); quem usa mana paga os feiticos com ela
 @export_group("Energia")
+## paga os ataques com mana em vez de estamina
 @export var uses_mana := false
+## multiplica a recarga base da estamina
 @export var stamina_regen_multiplier := 1.0
+## multiplica a recarga base da mana
 @export var mana_regen_multiplier := 1.0
-@export var stamina_regen_delay := 0.6
+## pausa depois de gastar estamina, antes de recarregar
+@export var stamina_regen_delay := 0.9
+## pausa depois de gastar mana, antes de recarregar
 @export var mana_regen_delay := 1.0
-# custo do ataque, pago da mana se o aventureiro usa mana, senao da estamina
+## estamina ou mana zerada recarrega sem esperar a pausa
+@export var recovers_when_empty := true
+## custo do ataque, pago da mana se o aventureiro usa mana, senao da estamina
 @export var quick_cost := 15.0
+## custo do golpe pesado (segurar o ataque)
 @export var heavy_cost := 35.0
-# por segundo de corrida
+## por segundo de corrida
 @export var run_cost := 12.0
-# segurar o escudo cansa devagar; cada golpe defendido custa mais; sem estamina a guarda quebra
+## segurar o escudo cansa devagar; cada golpe defendido custa mais; sem estamina a guarda quebra
 @export var block_cost := 6.0
+## estamina gasta a cada golpe defendido
 @export var block_hit_cost := 12.0
 # o urro que o esqueletinho tanto pede (so o Barbarian)
 @export var roars := false
 
 var is_blocking := false
-# menu aberto em grupo: o mundo nao pausa, mas o boneco para de obedecer. Soltar um botao com o
-# menu aberto nao chega ao boneco, entao travar ja solta o escudo e cancela o que estava segurado
+## 0 a 1; o deslocamento cresce com o quadrado para golpe leve tremer pouco
+var shake_trauma := 0.0
+## menu aberto em grupo: o mundo segue, mas o boneco para de obedecer e solta o que estava segurando
 var input_locked := false:
 	set(locked):
 		input_locked = locked
@@ -62,12 +82,12 @@ var input_locked := false:
 			_attack_hold = -1.0
 			_interact_hold = -1.0
 			release_secondary()
-# so existe com pocao no inventario; o aviso aparece mesmo sem pocao
+## aliado caido ao alcance que da para reviver agora (precisa de pocao)
 var revive_target: Adventurer
-# baus e afins ao alcance: tocar E interage com eles em vez de comecar a beber
+## baus e afins ao alcance: tocar E interage com eles em vez de comecar a beber
 var interactables_in_reach := 0
 var stamina: EnergyPool
-# null em quem nao usa mana
+## null em quem nao usa mana
 var mana: EnergyPool
 
 # o clique do analogico liga a corrida ate o boneco parar; no teclado corre enquanto segura Espaco
@@ -75,11 +95,12 @@ var _run_toggled := false
 var _attack_buffer_left := 0.0
 # -1 = botao solto; senao, ha quanto tempo o ataque esta segurado
 var _attack_hold := -1.0
+var _sustaining := false
 var _interact_hold := -1.0
 var _hinted_ally: Adventurer
 var _ability_index := 0
-var _exhausted := false
 var _aim_query := PhysicsRayQueryParameters3D.new()
+var _framing := Vector2.ZERO
 
 @onready var camera_pivot: Node3D = $CameraPivot
 @onready var spring_arm: SpringArm3D = $CameraPivot/SpringArm3D
@@ -89,6 +110,7 @@ var _aim_query := PhysicsRayQueryParameters3D.new()
 @onready var revive_hint: Label3D = $ReviveHint
 @onready var state_machine: AdventurerStateMachine = $StateMachine
 @onready var inventory: QuickInventory = $Inventory
+@onready var hit_confirm: AudioStreamPlayer = $HitConfirm
 
 
 func _ready() -> void:
@@ -98,9 +120,13 @@ func _ready() -> void:
 	if abilities.is_empty() and attack:
 		abilities.append(attack)
 	stamina = EnergyPool.new(MAX_ENERGY, BASE_REGEN * stamina_regen_multiplier, stamina_regen_delay)
+	stamina.recovers_when_empty = recovers_when_empty
+	stamina.locks_when_empty = true
 	if uses_mana:
 		mana = EnergyPool.new(MAX_ENERGY, BASE_REGEN * mana_regen_multiplier, mana_regen_delay)
+		mana.recovers_when_empty = recovers_when_empty
 	_aim_query.collision_mask = AIM_LAYERS
+	_framing = Vector2(camera.h_offset, camera.v_offset)
 	camera_pivot.global_position = global_position + Vector3.UP * CAMERA_HEIGHT
 	if not is_multiplayer_authority():
 		camera.current = false
@@ -121,6 +147,24 @@ func _process(delta: float) -> void:
 	var look := Input.get_vector("look_left", "look_right", "look_up", "look_down")
 	if look != Vector2.ZERO and not is_dead and _has_control():
 		_rotate_camera(look * BASE_STICK_SPEED * Settings.stick_sensitivity * delta)
+	_shake_camera(delta)
+
+
+func on_hit_landed(heavy: bool) -> void:
+	super(heavy)
+	if not is_multiplayer_authority():
+		return
+	shake_trauma = minf(shake_trauma + (SHAKE_HEAVY if heavy else SHAKE_QUICK), 1.0)
+	hit_confirm.pitch_scale = HIT_CONFIRM_PITCH_HEAVY if heavy else 1.0
+	hit_confirm.play()
+
+
+func _shake_camera(delta: float) -> void:
+	shake_trauma = move_toward(shake_trauma, 0.0, SHAKE_DECAY * delta)
+	var strength := shake_trauma * shake_trauma * SHAKE_OFFSET
+	var jitter := Vector2(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)) * strength
+	camera.h_offset = _framing.x + jitter.x
+	camera.v_offset = _framing.y + jitter.y
 
 
 func _physics_process(delta: float) -> void:
@@ -137,6 +181,7 @@ func _physics_process(delta: float) -> void:
 		if mana:
 			mana.regenerate(delta)
 	_track_attack_hold(delta)
+	_keep_sustaining()
 	_track_interact_hold(delta)
 	if _attack_buffer_left > 0.0 and attack_toward_camera():
 		_attack_buffer_left = 0.0
@@ -173,7 +218,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		inventory.select_next()
 
 
-# o aventureiro que o jogador peer_id controla; null se ele saiu ou ainda nao nasceu
+## o aventureiro que o jogador peer_id controla; null se ele saiu ou ainda nao nasceu
 static func of_peer(tree: SceneTree, peer_id: int) -> Adventurer:
 	for adventurer: Adventurer in tree.get_nodes_in_group("players"):
 		if adventurer.get_multiplayer_authority() == peer_id:
@@ -181,8 +226,8 @@ static func of_peer(tree: SceneTree, peer_id: int) -> Adventurer:
 	return null
 
 
-# pedido vindo da rede so vale de quem esta perto do que quer mexer; tiro pode chegar depois de
-# o atirador cair, entao quem confere um tiro passa alive_only = false
+## pedido vindo da rede so vale de quem esta perto do que quer mexer; tiro pode chegar depois de
+## o atirador cair, entao quem confere um tiro passa alive_only = false
 static func peer_can_reach(tree: SceneTree, peer_id: int, point: Vector3, reach: float, alive_only := true) -> bool:
 	var adventurer := of_peer(tree, peer_id)
 	if adventurer == null or (alive_only and adventurer.is_dead):
@@ -229,7 +274,7 @@ func can_use(item: QuickItem) -> bool:
 	return item.heal_amount > 0.0 or (item.mana_amount > 0.0 and mana != null)
 
 
-# com a vida e a mana cheias o item nao e gasto
+## com a vida e a mana cheias o item nao e gasto
 func use_item() -> bool:
 	var item := inventory.selected()
 	if item == null or is_dead:
@@ -246,8 +291,8 @@ func use_item() -> bool:
 	return true
 
 
-# o item so e gasto quando o reviver vale; em grupo quem decide e a maquina do aliado caido,
-# que confirma de volta (outro jogador pode ter revivido antes)
+## o item so e gasto quando o reviver vale; em grupo quem decide e a maquina do aliado caido,
+## que confirma de volta (outro jogador pode ter revivido antes)
 func revive_ally() -> void:
 	if inventory.first_healing() == null or not is_instance_valid(revive_target) or not revive_target.is_dead:
 		return
@@ -313,8 +358,9 @@ func _has_control() -> bool:
 	return not input_locked and (Input.mouse_mode == Input.MOUSE_MODE_CAPTURED or Settings.uses_gamepad())
 
 
+# so guarda o clique recusado porque o golpe anterior nao terminou; sem estamina ele nao espera
 func request_attack() -> void:
-	if not attack_toward_camera():
+	if not attack_toward_camera() and attack_pool().can_afford(cost_of(attack)):
 		_attack_buffer_left = ATTACK_BUFFER
 
 
@@ -336,7 +382,28 @@ func _track_attack_hold(delta: float) -> void:
 	_attack_hold += delta
 	if _attack_hold >= HEAVY_HOLD_TIME:
 		_attack_hold = -1.0
-		heavy_attack()
+		_sustaining = heavy_attack() and sustained_attack != null
+
+
+func _keep_sustaining() -> void:
+	if not _sustaining:
+		return
+	if not (_has_control() and Input.is_action_pressed("attack")) or is_dead:
+		_sustaining = false
+		return
+	if not sustained_attack.can_attack(self):
+		return
+	if not _attack_toward_camera(sustained_attack):
+		_sustaining = false
+
+
+func is_sustaining() -> bool:
+	return _sustaining
+
+
+# apanhar no meio do giro encerra o giro; para girar de novo, solta e segura outra vez
+func _on_flinch() -> void:
+	_sustaining = false
 
 
 func _track_interact_hold(delta: float) -> void:
@@ -352,14 +419,11 @@ func _track_interact_hold(delta: float) -> void:
 
 
 func _drain_for_running(delta: float) -> bool:
-	if _exhausted and stamina.current >= stamina.maximum * RUN_RECOVER_FRACTION:
-		_exhausted = false
 	var running := wants_to_run() and is_on_floor() and _read_move_input().length() >= MOVE_DEADZONE
 	if not running:
 		return false
 	stamina.spend(run_cost * delta)
 	if stamina.current == 0.0:
-		_exhausted = true
 		energy_short.emit(stamina)
 	return true
 
@@ -406,19 +470,21 @@ func _attack_toward_camera(chosen: Attack, heavy := false) -> bool:
 		return false
 	var cost := cost_of(chosen, heavy)
 	var pool := attack_pool()
-	var power := pool.affordable_power(cost)
-	if power == 0.0:
+	if not pool.can_afford(cost):
 		energy_short.emit(pool)
 		return false
 	face_camera()
-	if not chosen.try_attack(self, heavy, power):
+	if not chosen.try_attack(self, heavy):
 		return false
-	pool.spend(cost * power)
+	pool.spend(cost)
 	return true
 
 
 func _start_blocking() -> void:
 	if not can_act():
+		return
+	if stamina.is_exhausted():
+		energy_short.emit(stamina)
 		return
 	face_camera()
 	play_action(block.animation, 1.0, block.move_factor)
@@ -433,14 +499,14 @@ func face_camera() -> void:
 func _blocks(source: Node3D) -> bool:
 	if not (is_blocking and block.covers(self, source)):
 		return false
-	if stamina.current < block_hit_cost:
+	if not stamina.can_afford(block_hit_cost):
 		_break_guard()
 		return false
 	stamina.spend(block_hit_cost)
 	return true
 
 
-# o raio comeca depois do personagem para nao bater em algo entre a camera e ele
+## o raio comeca depois do personagem para nao bater em algo entre a camera e ele
 func get_aim_point() -> Vector3:
 	var center := get_viewport().get_visible_rect().size / 2.0
 	var origin := camera.project_ray_origin(center)
@@ -464,7 +530,7 @@ func _read_move_input() -> Vector2:
 
 
 func wants_to_run() -> bool:
-	if _exhausted or input_locked or not is_multiplayer_authority():
+	if stamina.is_exhausted() or input_locked or not is_multiplayer_authority():
 		return false
 	return _run_toggled or Input.is_action_pressed("run")
 

@@ -1,12 +1,12 @@
 class_name Potion
 extends Area3D
-
-# vai para o inventario de quem passa por cima e consegue usar (a de mana so para quem tem mana) e
-# quebra com golpe ou projetil. Em grupo o host decide quem pegou: dois jogadores na mesma pocao nao
-# levam uma cada
+## vai para o inventario de quem passa por cima e consegue usar (a de mana so para quem tem mana) e
+## quebra com golpe ou projetil. Em grupo o host decide quem pegou: dois jogadores na mesma pocao nao
+## levam uma cada
 
 const PICK_UP_REACH := 3.0
 
+## item guardado no inventario de quem pega
 @export var item: QuickItem
 @export var model: Node3D
 @export var pickup_sound: AudioStreamPlayer3D

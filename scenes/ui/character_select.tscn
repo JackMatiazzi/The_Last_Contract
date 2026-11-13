@@ -1,8 +1,9 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/character_select.gd" id="1_select"]
 [ext_resource type="PackedScene" path="res://scenes/maps/grid_sandbox.tscn" id="2_map"]
 [ext_resource type="PackedScene" path="res://scenes/ui/adventurer_picker.tscn" id="3_picker"]
+[ext_resource type="PackedScene" path="res://scenes/ui/contract_sign.tscn" id="4_contract"]
 [ext_resource type="Script" path="res://scripts/audio/music_cue.gd" id="cue_script"]
 [ext_resource type="AudioStream" path="res://assets/audio/music/menu_medieval_fair.ogg" id="cue_track"]
 
@@ -73,6 +74,9 @@ current = true
 [node name="UI" type="CanvasLayer" parent="."]
 
 [node name="AdventurerPicker" parent="UI" instance=ExtResource("3_picker")]
+unique_name_in_owner = true
+
+[node name="ContractSign" parent="." instance=ExtResource("4_contract")]
 unique_name_in_owner = true
 
 [node name="MusicCue" type="Node" parent="."]

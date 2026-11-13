@@ -25,7 +25,7 @@ func _ready() -> void:
 	%SettingsButton.pressed.connect(_open_settings)
 	%QuitButton.pressed.connect(get_tree().quit)
 	settings_menu.closed.connect(_close_settings)
-	%PlayButton.grab_focus()
+	_focus_for_gamepad(%PlayButton)
 
 
 func _process(delta: float) -> void:
@@ -43,4 +43,19 @@ func _open_settings() -> void:
 
 func _close_settings() -> void:
 	menu_panel.show()
-	%SettingsButton.grab_focus()
+	_focus_for_gamepad(%SettingsButton)
+
+
+## no mouse o clique deixaria o botao marcado; o foco so serve para navegar pelo controle
+func _focus_for_gamepad(button: Control) -> void:
+	if Settings.uses_gamepad():
+		button.grab_focus()
+	else:
+		get_viewport().gui_release_focus()
+
+
+# sem foco, a primeira seta do teclado escolhe o primeiro botao
+func _unhandled_input(event: InputEvent) -> void:
+	if menu_panel.visible and get_viewport().gui_get_focus_owner() == null and (event.is_action_pressed("ui_down") or event.is_action_pressed("ui_up")):
+		%PlayButton.grab_focus()
+		get_viewport().set_input_as_handled()

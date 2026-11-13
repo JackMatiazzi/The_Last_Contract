@@ -80,6 +80,35 @@ func test_summoned_undead_collapse_with_the_necromancer() -> void:
 		assert_bool(minion.is_dead).is_true()
 
 
+func test_a_minion_whose_body_is_gone_no_longer_counts() -> void:
+	arena = TestArena.new(self)
+	var boss := arena.spawn(NECROMANCER, Vector3.ZERO) as Enemy
+	var summoner := boss.get_node("Summoner") as Summoner
+	await arena.wait_physics(2)
+	summoner._raise_minions(PackedVector3Array([Vector3(3, 0, 0), Vector3(-3, 0, 0), Vector3(0, 0, 3)]), 0)
+	await arena.wait_physics(2)
+
+	summoner.minions[0].free()
+
+	assert_int(summoner._alive_count()).is_equal(2)
+	assert_int(summoner.minions.size()).is_equal(2)
+
+
+func test_after_a_body_is_gone_he_summons_up_to_the_limit_again() -> void:
+	arena = TestArena.new(self)
+	var boss := arena.spawn(NECROMANCER, Vector3.ZERO) as Enemy
+	var summoner := boss.get_node("Summoner") as Summoner
+	await arena.wait_physics(2)
+	summoner._raise_minions(PackedVector3Array([Vector3(3, 0, 0), Vector3(-3, 0, 0), Vector3(0, 0, 3)]), 0)
+	await arena.wait_physics(2)
+	summoner.minions[0].free()
+
+	summoner.summon()
+	await arena.wait_seconds(summoner.raise_delay + 0.2)
+
+	assert_int(summoner._alive_count()).is_equal(summoner.max_alive)
+
+
 func _level_with_patrols(count: int) -> Node3D:
 	RunState.adventurer = load("res://resources/adventurers/knight.tres")
 	var level := auto_free(LEVEL.instantiate()) as Node3D
@@ -95,7 +124,8 @@ func test_clearing_every_group_summons_the_necromancer_on_the_square() -> void:
 	var level := await _level_with_patrols(2)
 	var session := level.get_node("GameSession") as GameSession
 	var hud := level.get_node("Hud") as Hud
-	assert_str(hud.objective_label.text).is_equal("Grupos restantes: 2")
+	assert_str(hud.objective_summary()).is_equal("Grupos restantes: 2")
+	assert_int(hud.pips.get_child_count()).is_equal(2)
 
 	for group: EnemyGroup in level.get_node("Encounters").find_children("*", "EnemyGroup", false, false):
 		for member in group.members():
@@ -108,8 +138,7 @@ func test_clearing_every_group_summons_the_necromancer_on_the_square() -> void:
 	assert_bool(hud.boss_panel.visible).is_true()
 
 
-# espera a condicao com limite em tempo de jogo: no CI os quadros atrasam e o jogo anda mais devagar
-# que o relogio, entao um limite pelo relogio desistia antes do timer do jogo terminar
+# espera a condicao, com limite em tempo de jogo (nao de relogio)
 func _until(condition: Callable, seconds: float) -> bool:
 	var waited := 0.0
 	while waited < seconds:
@@ -131,4 +160,4 @@ func test_defeating_the_necromancer_wins_the_contract() -> void:
 	session.boss.take_damage(99.0)
 	assert_bool(victory.visible).is_false()
 	assert_bool(await _until(func() -> bool: return victory.visible, GameSession.VICTORY_DELAY + 3.0)).is_true()
-	assert_str(victory.summary_label.text).contains("tentativa 1")
+	assert_str(victory.summary_label.text).contains("tentativa I")

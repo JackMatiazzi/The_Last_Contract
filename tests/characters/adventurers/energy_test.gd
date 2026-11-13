@@ -51,22 +51,45 @@ func test_heavy_attack_hits_harder_than_quick() -> void:
 	assert_float(skeleton.health).is_equal_approx(5.0 - knight.attack.damage * knight.attack.heavy_damage_multiplier, 0.01)
 
 
-func test_damage_follows_the_energy_actually_spent() -> void:
-	knight.stamina.current = knight.quick_cost * 0.5
+func test_without_the_full_cost_the_attack_does_not_happen() -> void:
+	knight.stamina.current = knight.quick_cost * 0.9
+	var signals := monitor_signals(knight, false)
+
+	assert_bool(knight.attack_toward_camera()).is_false()
+	await arena.wait_seconds(knight.attack.impact_delay + 0.1)
+
+	assert_bool(knight.is_busy).is_false()
+	assert_float(skeleton.health).is_equal(5.0)
+	assert_float(knight.stamina.current).is_greater(0.0)
+	await assert_signal(signals).is_emitted("energy_short", [knight.stamina])
+
+
+func test_a_click_without_stamina_does_not_fire_once_the_bar_refills() -> void:
+	knight.stamina.current = knight.quick_cost * 0.9
+
+	knight.request_attack()
+	knight.stamina.current = knight.stamina.maximum
+	await arena.wait_seconds(Adventurer.ATTACK_BUFFER + 0.1)
+
+	assert_bool(knight.is_busy).is_false()
+	assert_float(knight.stamina.current).is_equal(knight.stamina.maximum)
+
+
+func test_exactly_the_cost_is_enough_for_a_full_attack() -> void:
+	knight.stamina.current = knight.quick_cost
 
 	assert_bool(knight.attack_toward_camera()).is_true()
 	await arena.wait_seconds(knight.attack.impact_delay + 0.1)
 
-	assert_float(skeleton.health).is_equal_approx(5.0 - knight.attack.damage * 0.5, 0.01)
+	assert_float(skeleton.health).is_equal_approx(5.0 - knight.attack.damage, 0.01)
 	assert_float(knight.stamina.current).is_equal_approx(0.0, 0.01)
 
 
-func test_too_little_energy_refuses_the_attack() -> void:
-	knight.stamina.current = knight.quick_cost * (EnergyPool.MIN_FRACTION * 0.5)
-	var signals := monitor_signals(knight, false)
+func test_a_heavy_attack_needs_the_heavy_cost() -> void:
+	knight.stamina.current = knight.heavy_cost - 1.0
 
-	assert_bool(knight.attack_toward_camera()).is_false()
-	await assert_signal(signals).is_emitted("energy_short", [knight.stamina])
+	assert_bool(knight.heavy_attack()).is_false()
+	assert_bool(knight.is_busy).is_false()
 
 
 func test_energy_refills_after_a_pause() -> void:
@@ -124,7 +147,11 @@ func test_tired_adventurer_runs_again_only_after_refilling() -> void:
 	await arena.wait_seconds(0.4)
 	assert_bool(runner.wants_to_run()).is_false()
 
-	runner.stamina.current = runner.stamina.maximum * Adventurer.RUN_RECOVER_FRACTION
+	runner.stamina.current = runner.stamina.maximum * 0.95
+	await arena.wait_physics(2)
+	assert_bool(runner.wants_to_run()).is_false()
+
+	runner.stamina.refill()
 	await arena.wait_physics(2)
 	assert_bool(runner.wants_to_run()).is_true()
 
@@ -205,3 +232,42 @@ func _action_event(action: String) -> InputEventAction:
 	event.action = action
 	event.pressed = true
 	return event
+
+
+func test_emptying_the_stamina_locks_attacks_until_it_is_full_again() -> void:
+	knight.stamina.spend(knight.stamina.maximum)
+	knight.stamina.current = knight.stamina.maximum * 0.9
+
+	assert_bool(knight.attack_toward_camera()).is_false()
+	assert_bool(knight.stamina.is_exhausted()).is_true()
+
+	knight.stamina.current = knight.stamina.maximum
+	await arena.wait_seconds(knight.attack.cooldown + 0.1)
+	assert_bool(knight.attack_toward_camera()).is_true()
+
+
+func test_spending_without_emptying_does_not_lock() -> void:
+	knight.stamina.spend(knight.stamina.maximum - 20.0)
+
+	assert_bool(knight.stamina.is_exhausted()).is_false()
+	assert_bool(knight.attack_toward_camera()).is_true()
+
+
+func test_mana_does_not_lock_when_empty() -> void:
+	var mage := arena.spawn(TestArena.MAGE, Vector3(6, 0, 0)) as Adventurer
+	await arena.wait_physics(2)
+
+	mage.mana.spend(mage.mana.maximum)
+	mage.mana.current = 50.0
+
+	assert_bool(mage.mana.is_exhausted()).is_false()
+
+
+func test_an_exhausted_knight_cannot_raise_the_shield() -> void:
+	knight.stamina.spend(knight.stamina.maximum)
+	knight.stamina.current = knight.stamina.maximum * 0.6
+
+	knight.use_secondary()
+	await arena.wait_physics(2)
+
+	assert_bool(knight.is_blocking).is_false()

@@ -18,6 +18,11 @@ func run() -> void:
 	picker.select(MAGE_INDEX)
 	(picker.get_node("%AcceptButton") as Button).pressed.emit()
 
+	var contract := get_tree().current_scene.get_node("%ContractSign") as ContractSign
+	if not await wait_until(func() -> bool: return contract.visible, "contrato para assinar"):
+		return
+	contract.sign_contract()
+
 	if not await wait_scene("MissionIntro"):
 		return
 	await skip_cutscene()
@@ -29,7 +34,7 @@ func run() -> void:
 	check(game.player.scene_file_path.ends_with("mage.tscn"), "o mago escolhido entrou na fase")
 	check(game.players.size() == 1, "solo e um grupo de um")
 	check(game.player.mana != null and game.player.stamina != null, "mago com mana e estamina")
-	check((get_tree().current_scene.get_node("Hud") as Hud).attempt_label.text == "Tentativa 1", "HUD mostra a tentativa 1")
+	check((get_tree().current_scene.get_node("Hud") as Hud).attempt_label.text == "Tentativa I", "HUD mostra a tentativa 1")
 
 	press_action(&"next_ability")
 	if await wait_until(func() -> bool: return game.player.attack is PortalSpell, "troca de habilidade"):

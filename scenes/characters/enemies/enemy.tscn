@@ -20,6 +20,7 @@
 collision_layer = 4
 max_health = 5.0
 walk_speed = 2.8
+flinch_guard = 1.4
 run_speed = 5.0
 script = ExtResource("2_enemy")
 remains_scene = ExtResource("12_remains")

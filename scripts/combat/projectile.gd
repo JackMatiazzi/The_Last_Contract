@@ -1,23 +1,25 @@
 class_name Projectile
 extends Area3D
-
-# a area so pega personagens; parede e checada por raio para nao atravessar em alta velocidade
+## a area so pega personagens; parede e checada por raio para nao atravessar em alta velocidade
 
 const WORLD_LAYER := 1
 const STICK_DEPTH := 0.15
 const BREAK_RADIUS := 0.9
-# sai um pouco a frente do outro portal para nao contar a passagem de novo
+## sai um pouco a frente do outro portal para nao contar a passagem de novo
 const PORTAL_EXIT_NUDGE := 0.05
 
 @export var speed := 15.0
+## alcance; passou disso, some
 @export var max_distance := 20.0
+## atravessa os inimigos em vez de parar no primeiro
 @export var pierce := false
+## marca deixada onde ele para
 @export var impact_scene: PackedScene
 # so o virote da besta corta corda
 @export var cuts_ropes := false
 
 var damage := 0.0
-# so o disparo pesado quebra barris e caixotes
+## so o disparo pesado quebra barris e caixotes
 var breaks_props := false
 var _shooter: Character
 # sem atirador (dardo de armadilha) o historico de dano mostra esta causa
@@ -34,7 +36,7 @@ func _ready() -> void:
 	_world_query.collision_mask = WORLD_LAYER
 
 
-# a frente da cena do projetil e -Z
+## a frente da cena do projetil e -Z
 func launch(shooter: Character, origin: Vector3, direction: Vector3, hit_damage: float, target_layers: int, cause: Node3D = null) -> void:
 	_shooter = shooter
 	_cause = cause
@@ -100,6 +102,8 @@ func _on_body_entered(body: Node3D) -> void:
 			target.take_damage(damage, _cause)
 	elif _shooter.is_multiplayer_authority():
 		target.take_damage(damage, _shooter)
+		_shooter.on_hit_landed(false)
+	target.freeze_animation(Character.HITSTOP)
 	if not pierce:
 		var point := global_position + _direction * STICK_DEPTH
 		_leave_impact(point, -_direction, _stick_holder(target, point))
