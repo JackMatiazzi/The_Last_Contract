@@ -41,7 +41,7 @@ func open_vote(choices: Array[Buff], can_give_up: bool) -> void:
 
 func open() -> void:
 	await get_tree().create_timer(SHOW_DELAY).timeout
-	attempt_label.text = "Tentativa %d" % RunState.attempt
+	attempt_label.text = "Tentativa %s" % Hud.roman(RunState.attempt)
 	active_buffs_label.text = _active_buffs_text()
 	show()
 	_show_panel(death_panel)
