@@ -1,0 +1,687 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/maps/pedraalta.tscn" id="1_village"]
+[ext_resource type="NavigationMesh" path="res://resources/navigation/pedraalta_navmesh.res" id="2_navmesh"]
+[ext_resource type="Script" path="res://scripts/game/encounter_spawner.gd" id="3_spawner"]
+[ext_resource type="PackedScene" path="res://scenes/characters/enemies/groups/patrol.tscn" id="4_patrol"]
+[ext_resource type="PackedScene" path="res://scenes/characters/enemies/groups/guard_post.tscn" id="5_guard"]
+[ext_resource type="PackedScene" path="res://scenes/characters/enemies/groups/sleepers.tscn" id="6_sleepers"]
+[ext_resource type="PackedScene" path="res://scenes/ui/death_screen.tscn" id="7_death"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="8_hud"]
+[ext_resource type="PackedScene" path="res://scenes/ui/pause_menu.tscn" id="9_pause"]
+[ext_resource type="Script" path="res://scripts/game/game_session.gd" id="10_session"]
+[ext_resource type="Script" path="res://scripts/audio/music_cue.gd" id="cue_script"]
+[ext_resource type="AudioStream" path="res://assets/audio/music/village_night_ambient.ogg" id="cue_track"]
+[ext_resource type="PackedScene" path="res://scenes/characters/enemies/necromancer.tscn" id="boss"]
+[ext_resource type="PackedScene" path="res://scenes/ui/victory_screen.tscn" id="victory"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_night"]
+sky_top_color = Color(0.03, 0.04, 0.09, 1)
+sky_horizon_color = Color(0.14, 0.18, 0.28, 1)
+ground_horizon_color = Color(0.1, 0.12, 0.16, 1)
+ground_bottom_color = Color(0.03, 0.03, 0.04, 1)
+
+[sub_resource type="Sky" id="Sky_night"]
+sky_material = SubResource("ProceduralSkyMaterial_night")
+
+[sub_resource type="Environment" id="Environment_night"]
+background_mode = 2
+sky = SubResource("Sky_night")
+ambient_light_source = 3
+ambient_light_color = Color(0.45, 0.5, 0.65, 1)
+ambient_light_energy = 0.9
+tonemap_mode = 2
+fog_enabled = true
+fog_light_color = Color(0.14, 0.17, 0.26, 1)
+fog_density = 0.015
+volumetric_fog_enabled = true
+volumetric_fog_density = 0.0
+
+[sub_resource type="StandardMaterial3D" id="Mat_peak0"]
+albedo_color = Color(0.06, 0.08, 0.11, 1)
+roughness = 1.0
+
+[sub_resource type="CylinderMesh" id="Peak_0_0"]
+material = SubResource("Mat_peak0")
+top_radius = 0.0
+bottom_radius = 60.8
+height = 56.8
+radial_segments = 5
+rings = 1
+
+[sub_resource type="CylinderMesh" id="Peak_0_1"]
+material = SubResource("Mat_peak0")
+top_radius = 0.0
+bottom_radius = 66.2
+height = 63.6
+radial_segments = 5
+rings = 1
+
+[sub_resource type="CylinderMesh" id="Peak_0_2"]
+material = SubResource("Mat_peak0")
+top_radius = 0.0
+bottom_radius = 37.6
+height = 40.1
+radial_segments = 5
+rings = 1
+
+[sub_resource type="CylinderMesh" id="Peak_0_3"]
+material = SubResource("Mat_peak0")
+top_radius = 0.0
+bottom_radius = 67.1
+height = 68.7
+radial_segments = 5
+rings = 1
+
+[sub_resource type="CylinderMesh" id="Peak_0_4"]
+material = SubResource("Mat_peak0")
+top_radius = 0.0
+bottom_radius = 33.2
+height = 47.0
+radial_segments = 5
+rings = 1
+
+[sub_resource type="CylinderMesh" id="Peak_0_5"]
+material = SubResource("Mat_peak0")
+top_radius = 0.0
+bottom_radius = 51.8
+height = 58.0
+radial_segments = 5
+rings = 1
+
+[sub_resource type="CylinderMesh" id="Peak_0_6"]
+material = SubResource("Mat_peak0")
+top_radius = 0.0
+bottom_radius = 60.4
+height = 59.2
+radial_segments = 5
+rings = 1
+
+[sub_resource type="CylinderMesh" id="Peak_0_7"]
+material = SubResource("Mat_peak0")
+top_radius = 0.0
+bottom_radius = 35.5
+height = 43.1
+radial_segments = 5
+rings = 1
+
+[sub_resource type="CylinderMesh" id="Peak_0_8"]
+material = SubResource("Mat_peak0")
+top_radius = 0.0
+bottom_radius = 50.4
+height = 57.5
+radial_segments = 5
+rings = 1
+
+[sub_resource type="CylinderMesh" id="Peak_0_9"]
+material = SubResource("Mat_peak0")
+top_radius = 0.0
+bottom_radius = 51.6
+height = 65.2
+radial_segments = 5
+rings = 1
+
+[sub_resource type="CylinderMesh" id="Peak_0_10"]
+material = SubResource("Mat_peak0")
+top_radius = 0.0
+bottom_radius = 52.0
+height = 56.9
+radial_segments = 5
+rings = 1
+
+[sub_resource type="CylinderMesh" id="Peak_0_11"]
+material = SubResource("Mat_peak0")
+top_radius = 0.0
+bottom_radius = 67.5
+height = 63.3
+radial_segments = 5
+rings = 1
+
+[sub_resource type="CylinderMesh" id="Peak_0_12"]
+material = SubResource("Mat_peak0")
+top_radius = 0.0
+bottom_radius = 38.2
+height = 42.4
+radial_segments = 5
+rings = 1
+
+[sub_resource type="CylinderMesh" id="Peak_0_13"]
+material = SubResource("Mat_peak0")
+top_radius = 0.0
+bottom_radius = 54.2
+height = 52.1
+radial_segments = 5
+rings = 1
+
+[sub_resource type="StandardMaterial3D" id="Mat_peak1"]
+albedo_color = Color(0.1, 0.13, 0.18, 1)
+roughness = 1.0
+
+[sub_resource type="CylinderMesh" id="Peak_1_0"]
+material = SubResource("Mat_peak1")
+top_radius = 0.0
+bottom_radius = 77.8
+height = 84.4
+radial_segments = 5
+rings = 1
+
+[sub_resource type="CylinderMesh" id="Peak_1_1"]
+material = SubResource("Mat_peak1")
+top_radius = 0.0
+bottom_radius = 77.3
+height = 81.2
+radial_segments = 5
+rings = 1
+
+[sub_resource type="CylinderMesh" id="Peak_1_2"]
+material = SubResource("Mat_peak1")
+top_radius = 0.0
+bottom_radius = 51.8
+height = 58.5
+radial_segments = 5
+rings = 1
+
+[sub_resource type="CylinderMesh" id="Peak_1_3"]
+material = SubResource("Mat_peak1")
+top_radius = 0.0
+bottom_radius = 49.3
+height = 58.9
+radial_segments = 5
+rings = 1
+
+[sub_resource type="CylinderMesh" id="Peak_1_4"]
+material = SubResource("Mat_peak1")
+top_radius = 0.0
+bottom_radius = 59.2
+height = 76.0
+radial_segments = 5
+rings = 1
+
+[sub_resource type="CylinderMesh" id="Peak_1_5"]
+material = SubResource("Mat_peak1")
+top_radius = 0.0
+bottom_radius = 76.9
+height = 78.2
+radial_segments = 5
+rings = 1
+
+[sub_resource type="CylinderMesh" id="Peak_1_6"]
+material = SubResource("Mat_peak1")
+top_radius = 0.0
+bottom_radius = 93.2
+height = 88.3
+radial_segments = 5
+rings = 1
+
+[sub_resource type="CylinderMesh" id="Peak_1_7"]
+material = SubResource("Mat_peak1")
+top_radius = 0.0
+bottom_radius = 69.5
+height = 66.9
+radial_segments = 5
+rings = 1
+
+[sub_resource type="CylinderMesh" id="Peak_1_8"]
+material = SubResource("Mat_peak1")
+top_radius = 0.0
+bottom_radius = 74.5
+height = 74.7
+radial_segments = 5
+rings = 1
+
+[sub_resource type="CylinderMesh" id="Peak_1_9"]
+material = SubResource("Mat_peak1")
+top_radius = 0.0
+bottom_radius = 61.0
+height = 82.8
+radial_segments = 5
+rings = 1
+
+[sub_resource type="CylinderMesh" id="Peak_1_10"]
+material = SubResource("Mat_peak1")
+top_radius = 0.0
+bottom_radius = 67.3
+height = 82.3
+radial_segments = 5
+rings = 1
+
+[sub_resource type="CylinderMesh" id="Peak_1_11"]
+material = SubResource("Mat_peak1")
+top_radius = 0.0
+bottom_radius = 62.6
+height = 84.1
+radial_segments = 5
+rings = 1
+
+[sub_resource type="CylinderMesh" id="Peak_1_12"]
+material = SubResource("Mat_peak1")
+top_radius = 0.0
+bottom_radius = 62.2
+height = 60.7
+radial_segments = 5
+rings = 1
+
+[sub_resource type="CylinderMesh" id="Peak_1_13"]
+material = SubResource("Mat_peak1")
+top_radius = 0.0
+bottom_radius = 83.2
+height = 76.7
+radial_segments = 5
+rings = 1
+
+[sub_resource type="StandardMaterial3D" id="Mat_peak2"]
+albedo_color = Color(0.15, 0.19, 0.25, 1)
+roughness = 1.0
+
+[sub_resource type="CylinderMesh" id="Peak_2_0"]
+material = SubResource("Mat_peak2")
+top_radius = 0.0
+bottom_radius = 81.5
+height = 93.4
+radial_segments = 5
+rings = 1
+
+[sub_resource type="CylinderMesh" id="Peak_2_1"]
+material = SubResource("Mat_peak2")
+top_radius = 0.0
+bottom_radius = 101.5
+height = 104.9
+radial_segments = 5
+rings = 1
+
+[sub_resource type="CylinderMesh" id="Peak_2_2"]
+material = SubResource("Mat_peak2")
+top_radius = 0.0
+bottom_radius = 79.3
+height = 86.5
+radial_segments = 5
+rings = 1
+
+[sub_resource type="CylinderMesh" id="Peak_2_3"]
+material = SubResource("Mat_peak2")
+top_radius = 0.0
+bottom_radius = 100.1
+height = 97.2
+radial_segments = 5
+rings = 1
+
+[sub_resource type="CylinderMesh" id="Peak_2_4"]
+material = SubResource("Mat_peak2")
+top_radius = 0.0
+bottom_radius = 65.8
+height = 84.2
+radial_segments = 5
+rings = 1
+
+[sub_resource type="CylinderMesh" id="Peak_2_5"]
+material = SubResource("Mat_peak2")
+top_radius = 0.0
+bottom_radius = 107.7
+height = 99.4
+radial_segments = 5
+rings = 1
+
+[sub_resource type="CylinderMesh" id="Peak_2_6"]
+material = SubResource("Mat_peak2")
+top_radius = 0.0
+bottom_radius = 106.3
+height = 104.8
+radial_segments = 5
+rings = 1
+
+[sub_resource type="CylinderMesh" id="Peak_2_7"]
+material = SubResource("Mat_peak2")
+top_radius = 0.0
+bottom_radius = 83.9
+height = 98.7
+radial_segments = 5
+rings = 1
+
+[sub_resource type="CylinderMesh" id="Peak_2_8"]
+material = SubResource("Mat_peak2")
+top_radius = 0.0
+bottom_radius = 90.6
+height = 108.9
+radial_segments = 5
+rings = 1
+
+[sub_resource type="CylinderMesh" id="Peak_2_9"]
+material = SubResource("Mat_peak2")
+top_radius = 0.0
+bottom_radius = 63.8
+height = 85.5
+radial_segments = 5
+rings = 1
+
+[sub_resource type="CylinderMesh" id="Peak_2_10"]
+material = SubResource("Mat_peak2")
+top_radius = 0.0
+bottom_radius = 102.1
+height = 109.3
+radial_segments = 5
+rings = 1
+
+[sub_resource type="CylinderMesh" id="Peak_2_11"]
+material = SubResource("Mat_peak2")
+top_radius = 0.0
+bottom_radius = 58.1
+height = 82.6
+radial_segments = 5
+rings = 1
+
+[sub_resource type="CylinderMesh" id="Peak_2_12"]
+material = SubResource("Mat_peak2")
+top_radius = 0.0
+bottom_radius = 85.9
+height = 109.7
+radial_segments = 5
+rings = 1
+
+[sub_resource type="CylinderMesh" id="Peak_2_13"]
+material = SubResource("Mat_peak2")
+top_radius = 0.0
+bottom_radius = 69.5
+height = 75.6
+radial_segments = 5
+rings = 1
+
+[node name="PedraaltaLevel" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_night")
+
+[node name="Moonlight" type="DirectionalLight3D" parent="."]
+rotation = Vector3(-0.85, 0.6, 0)
+light_color = Color(0.62, 0.7, 1, 1)
+light_energy = 0.7
+shadow_enabled = true
+
+[node name="Navigation" type="NavigationRegion3D" parent="."]
+navigation_mesh = ExtResource("2_navmesh")
+
+[node name="Pedraalta" parent="Navigation" instance=ExtResource("1_village")]
+
+
+[node name="Encounters" type="Node3D" parent="." node_paths=PackedStringArray("player_spots", "group_spots", "boss_spot")]
+script = ExtResource("3_spawner")
+player_spots = NodePath("../Navigation/Pedraalta/PlayerSpots")
+group_spots = NodePath("../Navigation/Pedraalta/GroupSpots")
+boss_spot = NodePath("../Navigation/Pedraalta/BossSpot")
+group_scenes = Array[PackedScene]([ExtResource("4_patrol"), ExtResource("5_guard"), ExtResource("6_sleepers")])
+easy_zone = &"A"
+easy_group = ExtResource("6_sleepers")
+
+[node name="DeathScreen" parent="." instance=ExtResource("7_death")]
+
+[node name="Hud" parent="." instance=ExtResource("8_hud")]
+
+[node name="PauseMenu" parent="." instance=ExtResource("9_pause")]
+
+[node name="VictoryScreen" parent="." instance=ExtResource("victory")]
+
+[node name="GameSession" type="Node" parent="." node_paths=PackedStringArray("encounters", "pause_menu", "death_screen", "hud", "victory_screen")]
+script = ExtResource("10_session")
+encounters = NodePath("../Encounters")
+pause_menu = NodePath("../PauseMenu")
+death_screen = NodePath("../DeathScreen")
+hud = NodePath("../Hud")
+boss_scene = ExtResource("boss")
+victory_screen = NodePath("../VictoryScreen")
+
+[node name="MusicCue" type="Node" parent="."]
+script = ExtResource("cue_script")
+track = ExtResource("cue_track")
+
+[node name="Montanhas" type="Node3D" parent="."]
+
+[node name="Pico0_0" type="MeshInstance3D" parent="Montanhas"]
+position = Vector3(109.8, 20.4, -19.1)
+rotation = Vector3(0, 4.83, 0)
+mesh = SubResource("Peak_0_0")
+cast_shadow = 0
+
+[node name="Pico0_1" type="MeshInstance3D" parent="Montanhas"]
+position = Vector3(104.7, 23.8, 38.3)
+rotation = Vector3(0, 0.44, 0)
+mesh = SubResource("Peak_0_1")
+cast_shadow = 0
+
+[node name="Pico0_2" type="MeshInstance3D" parent="Montanhas"]
+position = Vector3(69.0, 12.1, 111.0)
+rotation = Vector3(0, 4.28, 0)
+mesh = SubResource("Peak_0_2")
+cast_shadow = 0
+
+[node name="Pico0_3" type="MeshInstance3D" parent="Montanhas"]
+position = Vector3(25.7, 26.4, 140.7)
+rotation = Vector3(0, 6.01, 0)
+mesh = SubResource("Peak_0_3")
+cast_shadow = 0
+
+[node name="Pico0_4" type="MeshInstance3D" parent="Montanhas"]
+position = Vector3(-38.3, 15.5, 135.4)
+rotation = Vector3(0, 0.40, 0)
+mesh = SubResource("Peak_0_4")
+cast_shadow = 0
+
+[node name="Pico0_5" type="MeshInstance3D" parent="Montanhas"]
+position = Vector3(-76.3, 21.0, 101.9)
+rotation = Vector3(0, 1.62, 0)
+mesh = SubResource("Peak_0_5")
+cast_shadow = 0
+
+[node name="Pico0_6" type="MeshInstance3D" parent="Montanhas"]
+position = Vector3(-101.4, 21.6, 50.9)
+rotation = Vector3(0, 1.75, 0)
+mesh = SubResource("Peak_0_6")
+cast_shadow = 0
+
+[node name="Pico0_7" type="MeshInstance3D" parent="Montanhas"]
+position = Vector3(-109.8, 13.6, -18.6)
+rotation = Vector3(0, 1.81, 0)
+mesh = SubResource("Peak_0_7")
+cast_shadow = 0
+
+[node name="Pico0_8" type="MeshInstance3D" parent="Montanhas"]
+position = Vector3(-91.0, 20.7, -95.5)
+rotation = Vector3(0, 1.70, 0)
+mesh = SubResource("Peak_0_8")
+cast_shadow = 0
+
+[node name="Pico0_9" type="MeshInstance3D" parent="Montanhas"]
+position = Vector3(-68.8, 24.6, -129.2)
+rotation = Vector3(0, 5.34, 0)
+mesh = SubResource("Peak_0_9")
+cast_shadow = 0
+
+[node name="Pico0_10" type="MeshInstance3D" parent="Montanhas"]
+position = Vector3(-35.8, 20.5, -154.6)
+rotation = Vector3(0, 0.89, 0)
+mesh = SubResource("Peak_0_10")
+cast_shadow = 0
+
+[node name="Pico0_11" type="MeshInstance3D" parent="Montanhas"]
+position = Vector3(38.8, 23.7, -153.1)
+rotation = Vector3(0, 0.40, 0)
+mesh = SubResource("Peak_0_11")
+cast_shadow = 0
+
+[node name="Pico0_12" type="MeshInstance3D" parent="Montanhas"]
+position = Vector3(71.1, 13.2, -126.5)
+rotation = Vector3(0, 2.72, 0)
+mesh = SubResource("Peak_0_12")
+cast_shadow = 0
+
+[node name="Pico0_13" type="MeshInstance3D" parent="Montanhas"]
+position = Vector3(97.8, 18.0, -79.6)
+rotation = Vector3(0, 3.74, 0)
+mesh = SubResource("Peak_0_13")
+cast_shadow = 0
+
+[node name="Pico1_0" type="MeshInstance3D" parent="Montanhas"]
+position = Vector3(146.6, 34.2, 35.2)
+rotation = Vector3(0, 0.84, 0)
+mesh = SubResource("Peak_1_0")
+cast_shadow = 0
+
+[node name="Pico1_1" type="MeshInstance3D" parent="Montanhas"]
+position = Vector3(112.9, 32.6, 129.2)
+rotation = Vector3(0, 3.56, 0)
+mesh = SubResource("Peak_1_1")
+cast_shadow = 0
+
+[node name="Pico1_2" type="MeshInstance3D" parent="Montanhas"]
+position = Vector3(66.3, 21.3, 179.4)
+rotation = Vector3(0, 4.59, 0)
+mesh = SubResource("Peak_1_2")
+cast_shadow = 0
+
+[node name="Pico1_3" type="MeshInstance3D" parent="Montanhas"]
+position = Vector3(12.5, 21.4, 200.3)
+rotation = Vector3(0, 5.60, 0)
+mesh = SubResource("Peak_1_3")
+cast_shadow = 0
+
+[node name="Pico1_4" type="MeshInstance3D" parent="Montanhas"]
+position = Vector3(-69.5, 30.0, 177.1)
+rotation = Vector3(0, 0.73, 0)
+mesh = SubResource("Peak_1_4")
+cast_shadow = 0
+
+[node name="Pico1_5" type="MeshInstance3D" parent="Montanhas"]
+position = Vector3(-109.4, 31.1, 134.7)
+rotation = Vector3(0, 1.74, 0)
+mesh = SubResource("Peak_1_5")
+cast_shadow = 0
+
+[node name="Pico1_6" type="MeshInstance3D" parent="Montanhas"]
+position = Vector3(-144.7, 36.2, 46.4)
+rotation = Vector3(0, 1.70, 0)
+mesh = SubResource("Peak_1_6")
+cast_shadow = 0
+
+[node name="Pico1_7" type="MeshInstance3D" parent="Montanhas"]
+position = Vector3(-144.9, 25.5, -63.2)
+rotation = Vector3(0, 2.17, 0)
+mesh = SubResource("Peak_1_7")
+cast_shadow = 0
+
+[node name="Pico1_8" type="MeshInstance3D" parent="Montanhas"]
+position = Vector3(-127.9, 29.4, -118.6)
+rotation = Vector3(0, 0.93, 0)
+mesh = SubResource("Peak_1_8")
+cast_shadow = 0
+
+[node name="Pico1_9" type="MeshInstance3D" parent="Montanhas"]
+position = Vector3(-52.0, 33.4, -206.0)
+rotation = Vector3(0, 4.60, 0)
+mesh = SubResource("Peak_1_9")
+cast_shadow = 0
+
+[node name="Pico1_10" type="MeshInstance3D" parent="Montanhas"]
+position = Vector3(-15.3, 33.2, -217.9)
+rotation = Vector3(0, 1.13, 0)
+mesh = SubResource("Peak_1_10")
+cast_shadow = 0
+
+[node name="Pico1_11" type="MeshInstance3D" parent="Montanhas"]
+position = Vector3(53.4, 34.1, -205.3)
+rotation = Vector3(0, 4.17, 0)
+mesh = SubResource("Peak_1_11")
+cast_shadow = 0
+
+[node name="Pico1_12" type="MeshInstance3D" parent="Montanhas"]
+position = Vector3(102.0, 22.4, -163.0)
+rotation = Vector3(0, 5.28, 0)
+mesh = SubResource("Peak_1_12")
+cast_shadow = 0
+
+[node name="Pico1_13" type="MeshInstance3D" parent="Montanhas"]
+position = Vector3(148.0, 30.3, -42.9)
+rotation = Vector3(0, 0.57, 0)
+mesh = SubResource("Peak_1_13")
+cast_shadow = 0
+
+[node name="Pico2_0" type="MeshInstance3D" parent="Montanhas"]
+position = Vector3(184.3, 38.7, 99.7)
+rotation = Vector3(0, 4.45, 0)
+mesh = SubResource("Peak_2_0")
+cast_shadow = 0
+
+[node name="Pico2_1" type="MeshInstance3D" parent="Montanhas"]
+position = Vector3(130.8, 44.4, 202.9)
+rotation = Vector3(0, 1.03, 0)
+mesh = SubResource("Peak_2_1")
+cast_shadow = 0
+
+[node name="Pico2_2" type="MeshInstance3D" parent="Montanhas"]
+position = Vector3(39.6, 35.2, 265.5)
+rotation = Vector3(0, 4.95, 0)
+mesh = SubResource("Peak_2_2")
+cast_shadow = 0
+
+[node name="Pico2_3" type="MeshInstance3D" parent="Montanhas"]
+position = Vector3(-27.0, 40.6, 268.4)
+rotation = Vector3(0, 2.13, 0)
+mesh = SubResource("Peak_2_3")
+cast_shadow = 0
+
+[node name="Pico2_4" type="MeshInstance3D" parent="Montanhas"]
+position = Vector3(-106.3, 34.1, 228.2)
+rotation = Vector3(0, 2.47, 0)
+mesh = SubResource("Peak_2_4")
+cast_shadow = 0
+
+[node name="Pico2_5" type="MeshInstance3D" parent="Montanhas"]
+position = Vector3(-160.1, 41.7, 158.7)
+rotation = Vector3(0, 4.08, 0)
+mesh = SubResource("Peak_2_5")
+cast_shadow = 0
+
+[node name="Pico2_6" type="MeshInstance3D" parent="Montanhas"]
+position = Vector3(-199.2, 44.4, 16.5)
+rotation = Vector3(0, 0.22, 0)
+mesh = SubResource("Peak_2_6")
+cast_shadow = 0
+
+[node name="Pico2_7" type="MeshInstance3D" parent="Montanhas"]
+position = Vector3(-180.4, 41.4, -129.8)
+rotation = Vector3(0, 3.50, 0)
+mesh = SubResource("Peak_2_7")
+cast_shadow = 0
+
+[node name="Pico2_8" type="MeshInstance3D" parent="Montanhas"]
+position = Vector3(-108.8, 46.5, -243.9)
+rotation = Vector3(0, 3.46, 0)
+mesh = SubResource("Peak_2_8")
+cast_shadow = 0
+
+[node name="Pico2_9" type="MeshInstance3D" parent="Montanhas"]
+position = Vector3(-80.9, 34.8, -265.1)
+rotation = Vector3(0, 1.80, 0)
+mesh = SubResource("Peak_2_9")
+cast_shadow = 0
+
+[node name="Pico2_10" type="MeshInstance3D" parent="Montanhas"]
+position = Vector3(6.2, 46.7, -288.9)
+rotation = Vector3(0, 4.65, 0)
+mesh = SubResource("Peak_2_10")
+cast_shadow = 0
+
+[node name="Pico2_11" type="MeshInstance3D" parent="Montanhas"]
+position = Vector3(134.6, 33.3, -216.1)
+rotation = Vector3(0, 5.90, 0)
+mesh = SubResource("Peak_2_11")
+cast_shadow = 0
+
+[node name="Pico2_12" type="MeshInstance3D" parent="Montanhas"]
+position = Vector3(175.8, 46.8, -142.6)
+rotation = Vector3(0, 4.69, 0)
+mesh = SubResource("Peak_2_12")
+cast_shadow = 0
+
+[node name="Pico2_13" type="MeshInstance3D" parent="Montanhas"]
+position = Vector3(199.8, 29.8, -19.8)
+rotation = Vector3(0, 5.21, 0)
+mesh = SubResource("Peak_2_13")
+cast_shadow = 0

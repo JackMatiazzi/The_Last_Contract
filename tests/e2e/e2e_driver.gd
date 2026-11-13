@@ -62,7 +62,7 @@ func wait_scene(scene_name: String) -> bool:
 
 # a fase so comeca de verdade depois da barreira de carregamento do grupo
 func wait_level() -> bool:
-	if not await wait_scene("VillageLevel"):
+	if not await wait_scene("PedraaltaLevel"):
 		return false
 	return await wait_until(func() -> bool: return not Net.waiting_for_peers and get_tree().current_scene.has_node("GameSession"), "fase carregada")
 

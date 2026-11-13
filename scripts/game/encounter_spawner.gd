@@ -15,6 +15,9 @@ extends Node3D
 @export var group_count := 5
 ## os grupos nascem pelo menos a esta distancia do jogador
 @export var min_distance_from_player := 16.0
+## a zona da entrada sempre recebe o grupo mais facil, para o primeiro encontro ensinar
+@export var easy_zone: StringName
+@export var easy_group: PackedScene
 
 ## Escolhe aleatoriamente um dos marcadores de posição reservados para os jogadores.
 func pick_player_spot() -> Marker3D:
@@ -25,16 +28,34 @@ func spawn_groups(player_position: Vector3) -> Array[EnemyGroup]:
 	var spots := _markers(group_spots).filter(func(spot: Marker3D) -> bool:
 		return spot.global_position.distance_to(player_position) >= min_distance_from_player)
 	spots.shuffle()
+	spots = _one_per_zone(spots)
 	var scenes := group_scenes.duplicate()
 	scenes.shuffle()
 	var spawned: Array[EnemyGroup] = []
 	for i in mini(group_count, spots.size()):
-		var group := scenes[i % scenes.size()].instantiate() as EnemyGroup
+		var scene: PackedScene = scenes[i % scenes.size()]
+		if easy_group and spots[i].get_meta("zone", null) == easy_zone:
+			scene = easy_group
+		var group := scene.instantiate() as EnemyGroup
 		group.name = "Group%d" % i
 		group.transform = global_transform.affine_inverse() * spots[i].global_transform
 		add_child(group)
 		spawned.append(group)
 	return spawned
+
+## pontos com metadata zone: no maximo um grupo por zona, para os grupos nao se amontoarem
+## pontos sem zona (mapas antigos) entram todos, como antes
+func _one_per_zone(spots: Array) -> Array:
+	var used := {}
+	var kept := []
+	for spot: Marker3D in spots:
+		var zone: Variant = spot.get_meta("zone", null)
+		if zone != null and used.has(zone):
+			continue
+		if zone != null:
+			used[zone] = true
+		kept.append(spot)
+	return kept
 
 ## Retorna todos os nós do tipo Marker3D que são filhos diretos do nó pai informado.
 func _markers(parent: Node3D) -> Array[Marker3D]:
