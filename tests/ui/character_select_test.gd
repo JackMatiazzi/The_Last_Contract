@@ -73,3 +73,39 @@ func test_only_the_chosen_name_is_highlighted() -> void:
 	for i in screen.name_tags.size():
 		var highlighted := screen.name_tags[i].modulate.a > 0.9
 		assert_bool(highlighted).is_equal(i == 1)
+
+
+func _click_at(point: Vector2) -> void:
+	var click := InputEventMouseButton.new()
+	click.button_index = MOUSE_BUTTON_LEFT
+	click.pressed = true
+	click.position = point
+	screen._unhandled_input(click)
+
+
+func test_clicking_a_character_selects_it() -> void:
+	var camera := screen.get_viewport().get_camera_3d()
+	var target := 3
+	var point := camera.unproject_position(screen.models[target].global_position + Vector3.UP * CharacterSelect.BODY_HEIGHT)
+
+	_click_at(point)
+
+	assert_int(screen.picker.selected_index).is_equal(target)
+
+
+func test_clicking_the_empty_floor_changes_nothing() -> void:
+	screen.picker.select(1)
+
+	_click_at(Vector2(5, 5))
+
+	assert_int(screen.picker.selected_index).is_equal(1)
+
+
+func test_clicks_are_ignored_while_the_contract_is_open() -> void:
+	var camera := screen.get_viewport().get_camera_3d()
+	screen.picker.select(0)
+	screen._offer_contract(screen.picker.selected)
+
+	_click_at(camera.unproject_position(screen.models[2].global_position + Vector3.UP * CharacterSelect.BODY_HEIGHT))
+
+	assert_int(screen.picker.selected_index).is_equal(0)
