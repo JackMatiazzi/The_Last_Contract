@@ -22,9 +22,9 @@ color = Color(0.05, 0.045, 0.06, 1)
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.08
-anchor_top = 0.06
+anchor_top = 0.03
 anchor_right = 0.92
-anchor_bottom = 0.94
+anchor_bottom = 0.97
 
 [node name="Scroll" type="ScrollContainer" parent="Panel"]
 layout_mode = 2
@@ -34,7 +34,7 @@ horizontal_scroll_mode = 0
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_constants/separation = 14
+theme_override_constants/separation = 8
 
 [node name="Title" type="Label" parent="Panel/Scroll/Content"]
 layout_mode = 2
@@ -47,7 +47,7 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(520, 0)
 layout_mode = 2
 size_flags_horizontal = 4
-theme_override_constants/separation = 10
+theme_override_constants/separation = 8
 
 [node name="NameLabel" type="Label" parent="Panel/Scroll/Content/ConnectPanel"]
 layout_mode = 2
@@ -60,28 +60,94 @@ layout_mode = 2
 max_length = 16
 placeholder_text = "Aventureiro"
 
-[node name="AddressHint" type="Label" parent="Panel/Scroll/Content/ConnectPanel"]
+[node name="OnlineHint" type="Label" parent="Panel/Scroll/Content/ConnectPanel"]
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
-text = "Endereço do host (vazio = esta máquina)"
+text = "Até 4 jogadores pela internet, cada um no seu computador."
+autowrap_mode = 3
 
-[node name="AddressInput" type="LineEdit" parent="Panel/Scroll/Content/ConnectPanel"]
+[node name="CreateOnlineButton" type="Button" parent="Panel/Scroll/Content/ConnectPanel"]
 unique_name_in_owner = true
 layout_mode = 2
-placeholder_text = "127.0.0.1"
+theme_type_variation = &"PrimaryButton"
+text = "Criar sala online"
 
-[node name="Buttons" type="HBoxContainer" parent="Panel/Scroll/Content/ConnectPanel"]
+[node name="CodeRow" type="HBoxContainer" parent="Panel/Scroll/Content/ConnectPanel"]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="HostButton" type="Button" parent="Panel/Scroll/Content/ConnectPanel/Buttons"]
+[node name="RoomCodeInput" type="LineEdit" parent="Panel/Scroll/Content/ConnectPanel/CodeRow"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-theme_type_variation = &"PrimaryButton"
+max_length = 6
+placeholder_text = "Código da sala (ex.: ABC234)"
+
+[node name="JoinOnlineButton" type="Button" parent="Panel/Scroll/Content/ConnectPanel/CodeRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(160, 0)
+layout_mode = 2
+disabled = true
+text = "Entrar na sala"
+
+[node name="PrivacyHint" type="Label" parent="Panel/Scroll/Content/ConnectPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Na sala online, seu apelido aparece no placar público e ele e os dados da partida ficam guardados por 90 dias para avaliar o jogo (servidores do Cloudflare). Não use seu nome real. Para apagar, peça ao grupo do jogo."
+autowrap_mode = 3
+
+[node name="OtherWaysToggle" type="Button" parent="Panel/Scroll/Content/ConnectPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 0
+toggle_mode = true
+flat = true
+text = "▸ Outras formas: rede local ou túnel"
+
+[node name="OtherWays" type="VBoxContainer" parent="Panel/Scroll/Content/ConnectPanel"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="AddressHint" type="Label" parent="Panel/Scroll/Content/ConnectPanel/OtherWays"]
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Para entrar: IP do computador do host ou link do túnel (vazio = esta máquina)"
+autowrap_mode = 3
+
+[node name="AddressInput" type="LineEdit" parent="Panel/Scroll/Content/ConnectPanel/OtherWays"]
+unique_name_in_owner = true
+layout_mode = 2
+placeholder_text = "192.168.0.10 ou https://...trycloudflare.com"
+
+[node name="HostModeHint" type="Label" parent="Panel/Scroll/Content/ConnectPanel/OtherWays"]
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Para hospedar:"
+
+[node name="HostMode" type="OptionButton" parent="Panel/Scroll/Content/ConnectPanel/OtherWays"]
+unique_name_in_owner = true
+layout_mode = 2
+selected = 0
+item_count = 2
+popup/item_0/text = "Rede local (mesmo Wi-Fi ou cabo)"
+popup/item_0/id = 0
+popup/item_1/text = "Túnel próprio (cloudflared)"
+popup/item_1/id = 1
+
+[node name="Buttons" type="HBoxContainer" parent="Panel/Scroll/Content/ConnectPanel/OtherWays"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="HostButton" type="Button" parent="Panel/Scroll/Content/ConnectPanel/OtherWays/Buttons"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
 text = "Hospedar"
 
-[node name="JoinButton" type="Button" parent="Panel/Scroll/Content/ConnectPanel/Buttons"]
+[node name="JoinButton" type="Button" parent="Panel/Scroll/Content/ConnectPanel/OtherWays/Buttons"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3

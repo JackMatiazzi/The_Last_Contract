@@ -19,6 +19,10 @@ const HIT_RECOVERY := 0.3
 const MIN_STAT_FACTOR := 0.2
 ## em rede so quem tem autoridade simula; as outras maquinas seguem o estado enviado
 const NET_SEND_INTERVAL := 0.05
+## parado nao manda nada; de tempos em tempos repete o estado, para ninguem ficar com um antigo
+const NET_IDLE_RESEND := 1.0
+const NET_STILL_DISTANCE := 0.01
+const NET_STILL_ANGLE := 0.01
 const NET_FOLLOW_SPEED := 15.0
 ## salto de posicao maior que isso (portal, reviver longe) aparece de uma vez, sem deslizar pelo mapa
 const NET_SNAP_DISTANCE := 4.0
@@ -84,6 +88,9 @@ var _action_move_factor := 0.0
 var _holding_pose := false
 var _stride := 0.0
 var _net_send_left := 0.0
+var _net_idle_left := 0.0
+## ultimo estado mandado: posicao, giro, velocidade e chao
+var _net_sent := {}
 var _net_position := Vector3.ZERO
 var _net_yaw := 0.0
 var _net_on_floor := true
@@ -452,10 +459,28 @@ func _send_network_state(delta: float) -> void:
 	if not Net.is_online() or Net.waiting_for_peers:
 		return
 	_net_send_left -= delta
+	_net_idle_left -= delta
 	if _net_send_left > 0.0:
 		return
 	_net_send_left = NET_SEND_INTERVAL
+	if not has_new_net_state() and _net_idle_left > 0.0:
+		return
+	_net_idle_left = NET_IDLE_RESEND
+	_remember_net_state()
 	_net_state.rpc(global_position, model.rotation.y, velocity, is_on_floor())
+
+
+func has_new_net_state() -> bool:
+	if _net_sent.is_empty():
+		return true
+	return global_position.distance_to(_net_sent.position) > NET_STILL_DISTANCE \
+		or absf(angle_difference(model.rotation.y, _net_sent.yaw)) > NET_STILL_ANGLE \
+		or not velocity.is_equal_approx(_net_sent.velocity) \
+		or is_on_floor() != _net_sent.on_floor
+
+
+func _remember_net_state() -> void:
+	_net_sent = {"position": global_position, "yaw": model.rotation.y, "velocity": velocity, "on_floor": is_on_floor()}
 
 
 # o corpo morto fica onde caiu; o sumico do cadaver roda em cada maquina

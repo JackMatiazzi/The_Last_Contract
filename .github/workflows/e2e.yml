@@ -1,7 +1,8 @@
 name: Ponta a ponta
 
-# um contrato solo e uma partida em grupo com dois processos ligados pela rede local;
-# tambem roda pelo botao Run workflow da aba Actions
+# quatro fluxos separados: contrato solo e grupo de 4 pela rede local (ENet), por WebSocket (caminho do
+# tunel Cloudflare) e pela sala online com codigo, com a API (repositorio the-last-contract-api) rodando
+# local; tambem roda pelo botao Run workflow
 on:
   push:
     branches: [main, desenvolvimento]
@@ -13,17 +14,37 @@ permissions:
 
 jobs:
   e2e:
+    name: e2e (${{ matrix.flow }})
     runs-on: ubuntu-latest
     container: barichello/godot-ci:4.7.2
     timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        flow: [solo, coop-enet, coop-ws, coop-relay]
     steps:
       - uses: actions/checkout@v7
       - name: Fontes do sistema
-        run: apt-get update -qq && apt-get install -y -qq fontconfig > /dev/null
+        run: apt-get update -qq && apt-get install -y -qq fontconfig procps > /dev/null
+      - if: matrix.flow == 'coop-relay'
+        uses: actions/checkout@v7
+        with:
+          repository: JackMatiazzi/the-last-contract-api
+          path: api
+          # repositorio privado: token fine-grained so com leitura de conteudo da API
+          token: ${{ secrets.API_REPO_TOKEN }}
+      - if: matrix.flow == 'coop-relay'
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - if: matrix.flow == 'coop-relay'
+        run: npm ci --prefix api
       - run: godot --headless --import
-      - run: bash tests/e2e/run_e2e.sh
+      - run: bash tests/e2e/run_e2e.sh ${{ matrix.flow }}
+        env:
+          API_DIR: ${{ github.workspace }}/api
       - if: failure()
         uses: actions/upload-artifact@v7
         with:
-          name: e2e-logs
+          name: e2e-logs-${{ matrix.flow }}
           path: /tmp/the-last-contract-e2e
