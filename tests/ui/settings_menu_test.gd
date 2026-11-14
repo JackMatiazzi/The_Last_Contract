@@ -41,7 +41,8 @@ func test_bumpers_switch_tabs() -> void:
 
 	await _joy_button(JOY_BUTTON_LEFT_SHOULDER)
 	await _joy_button(JOY_BUTTON_LEFT_SHOULDER)
-	assert_int(menu.get_node("%Tabs").current_tab).is_equal(2)
+	var tabs := menu.get_node("%Tabs") as TabContainer
+	assert_int(tabs.current_tab).is_equal(tabs.get_tab_count() - 1)
 
 
 func test_b_closes_the_menu() -> void:

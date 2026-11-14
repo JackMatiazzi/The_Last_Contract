@@ -26,6 +26,10 @@ func _ready() -> void:
 	%QuitButton.pressed.connect(get_tree().quit)
 	settings_menu.closed.connect(_close_settings)
 	_focus_for_gamepad(%PlayButton)
+	var consent := %TelemetryConsent as TelemetryConsent
+	if consent.should_ask():
+		consent.chosen.connect(_focus_for_gamepad.bind(%PlayButton), CONNECT_ONE_SHOT)
+		consent.open()
 
 
 func _process(delta: float) -> void:

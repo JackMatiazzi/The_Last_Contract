@@ -27,6 +27,8 @@ func _take_over() -> void:
 
 func _run_and_report() -> void:
 	await run()
+	# o resumo do playtest pode estar a caminho do servidor: sai depois dele, como o jogo faz ao fechar
+	await Playtest.uplink.wait_until_idle(TelemetryUplink.QUIT_WAIT_SECONDS)
 	if failures.is_empty():
 		print("E2E OK %s" % label)
 		get_tree().quit(0)

@@ -226,3 +226,26 @@ func test_a_roster_larger_than_the_party_is_ignored() -> void:
 	Net._sync_roster(oversized, {}, true)
 
 	assert_dict(Net.roster).is_equal({1: 0})
+
+
+func test_the_group_name_is_cleaned_and_cut_like_the_player_names() -> void:
+	Net.set_group_name("  Os​ Desgarrados da Pedra Alta Muito Longos  ")
+
+	assert_int(Net.group_name.length()).is_less_equal(Net.MAX_GROUP_NAME_LENGTH)
+	assert_bool(Net.group_name.contains("​")).is_false()
+	assert_bool(Net.group_name.begins_with("Os Desgarrados")).is_true()
+	Net.set_group_name("")
+
+
+func test_the_group_name_is_optional() -> void:
+	Net.set_group_name("   ")
+
+	assert_str(Net.group_name).is_empty()
+
+
+func test_leaving_forgets_the_group_name() -> void:
+	Net.set_group_name("Os Desgarrados")
+
+	Net.leave()
+
+	assert_str(Net.group_name).is_empty()

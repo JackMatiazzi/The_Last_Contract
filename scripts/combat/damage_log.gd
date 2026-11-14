@@ -40,6 +40,31 @@ func death_cause() -> String:
 	return UNKNOWN_CAUSE
 
 
+## os ultimos golpes antes da morte, para o painel do playtest: [origem, dano], com golpes seguidos da
+## mesma origem somados, na ordem em que aconteceram
+func last_hits(count: int) -> Array:
+	var hits: Array = []
+	for entry in _entries:
+		if entry.amount >= 0.0:
+			continue
+		if not hits.is_empty() and hits[-1][0] == entry.label:
+			hits[-1][1] -= entry.amount
+		else:
+			hits.append([entry.label, -entry.amount])
+	return hits.slice(maxi(hits.size() - count, 0)).map(func(hit: Array) -> Array: return [hit[0], snappedf(hit[1], 0.1)])
+
+
+func totals() -> Dictionary:
+	var taken := 0.0
+	var healed := 0.0
+	for entry in _entries:
+		if entry.amount < 0.0:
+			taken -= entry.amount
+		else:
+			healed += entry.amount
+	return {"taken": snappedf(taken, 0.1), "healed": snappedf(healed, 0.1)}
+
+
 ## golpes seguidos da mesma origem viram uma linha so
 func recap(max_health: float, ended_dead: bool) -> String:
 	var steps: Array[Dictionary] = []

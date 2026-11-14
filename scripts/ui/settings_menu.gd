@@ -32,6 +32,7 @@ func _ready() -> void:
 	_show_multiplier(sensitivity_slider, sensitivity_value)
 	_show_multiplier(stick_slider, stick_value)
 	%BackButton.pressed.connect(close)
+	_bind_telemetry()
 
 
 func open() -> void:
@@ -56,6 +57,31 @@ func _unhandled_input(event: InputEvent) -> void:
 	else:
 		return
 	get_viewport().set_input_as_handled()
+
+
+func _bind_telemetry() -> void:
+	var check := %TelemetryCheck as CheckButton
+	var available := not Playtest.uplink.contact.is_empty()
+	check.set_pressed_no_signal(Settings.telemetry_consent == Settings.CONSENT_YES)
+	check.disabled = not available
+	%DeleteDataButton.disabled = not available or Settings.player_code.is_empty()
+	%DataStatus.text = "" if available else "O envio de dados está desligado nesta versão."
+	check.toggled.connect(func(enabled: bool) -> void:
+		Settings.accept_telemetry(enabled)
+		%DeleteDataButton.disabled = Settings.player_code.is_empty())
+	%DeleteDataButton.pressed.connect(_delete_my_data)
+
+
+func _delete_my_data() -> void:
+	%DeleteDataButton.disabled = true
+	%DataStatus.text = "Apagando..."
+	var deleted: bool = await Playtest.uplink.delete_my_data()
+	%DataStatus.text = "Seus dados foram apagados e o envio foi desligado." if deleted else "Não deu para apagar agora. Tente de novo com internet."
+	if deleted:
+		Settings.accept_telemetry(false)
+		(%TelemetryCheck as CheckButton).set_pressed_no_signal(false)
+	else:
+		%DeleteDataButton.disabled = false
 
 
 func _bind_slider(slider: HSlider, key: StringName) -> void:

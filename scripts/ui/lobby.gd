@@ -29,6 +29,7 @@ var _adventurer_buttons: Array[Button] = []
 @onready var room_panel: Control = %RoomPanel
 @onready var players_label: Label = %PlayersLabel
 @onready var start_button: Button = %StartButton
+@onready var group_name_input: LineEdit = %GroupNameInput
 
 
 func _ready() -> void:
@@ -43,6 +44,7 @@ func _ready() -> void:
 	%BackButton.pressed.connect(_back)
 	start_button.pressed.connect(Net.start_match)
 	friendly_fire_toggle.toggled.connect(Net.set_friendly_fire)
+	group_name_input.text_changed.connect(Net.set_group_name)
 	name_input.text = Settings.player_name
 	Net.roster_changed.connect(_refresh)
 	Net.connection_failed.connect(_on_connection_failed)
@@ -205,6 +207,10 @@ func _refresh() -> void:
 		lines.append("%s: %s" % [who, infos[choice].title if choice != Net.NO_CHOICE else "escolhendo..."])
 	players_label.text = "\n".join(lines)
 	friendly_fire_toggle.disabled = not multiplayer.is_server()
+	# so o host escreve; os outros veem o nome que ele escolheu
+	group_name_input.editable = multiplayer.is_server()
+	if not multiplayer.is_server():
+		group_name_input.text = Net.group_name
 	friendly_fire_toggle.set_pressed_no_signal(Net.friendly_fire)
 	start_button.visible = multiplayer.is_server()
 	start_button.disabled = not Net.can_start()

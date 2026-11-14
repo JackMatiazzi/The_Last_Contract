@@ -30,6 +30,8 @@ const MISSION_INTRO := "res://scenes/cutscenes/mission_intro.tscn"
 const MAIN_MENU := "res://scenes/ui/main_menu.tscn"
 const NO_CHOICE := -1
 const MAX_NAME_LENGTH := 16
+## o placar de grupos guarda ate 24 caracteres (igual a API)
+const MAX_GROUP_NAME_LENGTH := 24
 const VIRTUAL_ADAPTERS := ["virtualbox", "vmware", "hyper-v", "vethernet", "wsl", "docker", "loopback"]
 ## invisiveis ou que invertem a direcao do texto: um nome com eles baguncaria placar e avisos
 const HIDDEN_CHARACTERS := [
@@ -43,6 +45,8 @@ var roster := {}
 ## peer_id -> nome escolhido no lobby
 var names := {}
 var friendly_fire := true
+## nome do grupo escolhido no lobby (opcional); vai no relatorio para o placar de grupos
+var group_name := ""
 var match_seed := 0
 ## depois do inicio ninguem troca de aventureiro nem de nome
 var in_match := false
@@ -218,6 +222,7 @@ func leave() -> void:
 	_loaded_peers.clear()
 	waiting_for_peers = false
 	friendly_fire = true
+	group_name = ""
 	in_match = false
 	room_code = ""
 
@@ -283,6 +288,13 @@ func set_player_name(raw: String) -> void:
 		_request_name.rpc_id(1, cleaned)
 
 ## Define e sincroniza o estado do fogo amigo (somente o Host).
+## so o host define; vazio e permitido (o placar mostra os nomes dos jogadores)
+func set_group_name(raw: String) -> void:
+	if multiplayer.is_server():
+		group_name = clean_text(raw, MAX_GROUP_NAME_LENGTH)
+		_share_roster()
+
+
 func set_friendly_fire(enabled: bool) -> void:
 	if multiplayer.is_server():
 		friendly_fire = enabled
@@ -389,13 +401,13 @@ func _apply_choice(peer_id: int, index: int) -> void:
 ## a sala online so aceita mensagens depois de responder; ate la a lista fica so aqui
 func _share_roster() -> void:
 	if multiplayer.multiplayer_peer.get_connection_status() == MultiplayerPeer.CONNECTION_CONNECTED:
-		_sync_roster.rpc(roster, names, friendly_fire)
+		_sync_roster.rpc(roster, names, friendly_fire, group_name)
 	roster_changed.emit()
 
 ## RPC de autoridade que substitui o estado do lobby local pelos dados atualizados do host.
 ## O host tambem e outro jogador: grupo maior que o limite e ignorado e os nomes sao limpos de novo
 @rpc("authority", "reliable")
-func _sync_roster(shared: Dictionary, shared_names: Dictionary, shared_friendly_fire: bool) -> void:
+func _sync_roster(shared: Dictionary, shared_names: Dictionary, shared_friendly_fire: bool, shared_group_name := "") -> void:
 	if shared.size() > MAX_PLAYERS or shared_names.size() > MAX_PLAYERS or not shared.keys().all(_is_roster_entry.bind(shared)):
 		return
 	roster = shared
@@ -403,6 +415,7 @@ func _sync_roster(shared: Dictionary, shared_names: Dictionary, shared_friendly_
 	for peer_id: Variant in shared_names:
 		names[peer_id] = clean_name(str(shared_names[peer_id]))
 	friendly_fire = shared_friendly_fire
+	group_name = clean_text(shared_group_name, MAX_GROUP_NAME_LENGTH)
 	roster_changed.emit()
 
 

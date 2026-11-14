@@ -18,6 +18,10 @@ const GAMEPLAY_ACTIONS := ["move_forward", "move_back", "move_left", "move_right
 		"next_ability", "next_item"]
 ## quem nunca assinou o contrato aparece assim
 const DEFAULT_PLAYER_NAME := "Aventureiro"
+## escolha sobre enviar o resumo das partidas ao servidor: ainda não perguntado, aceitou ou recusou
+const CONSENT_UNSET := 0
+const CONSENT_YES := 1
+const CONSENT_NO := 2
 
 var master_volume := 1.0
 var music_volume := 0.8
@@ -29,6 +33,10 @@ var invert_y := false
 var input_device := InputDevice.AUTOMATIC
 var stick_sensitivity := 1.0
 var player_name := DEFAULT_PLAYER_NAME
+var telemetry_consent := CONSENT_UNSET
+## código aleatório deste PC, criado só quando o jogador aceita: liga as partidas dele no painel sem
+## nome nem identificador do aparelho. Recusar apaga o código
+var player_code := ""
 
 var _applied_device := -1
 var _last_used_gamepad := false
@@ -98,7 +106,21 @@ func _set_bus_volume(bus: String, linear: float) -> void:
 
 
 func _keys() -> PackedStringArray:
-	return ["master_volume", "music_volume", "sfx_volume", "fullscreen", "vsync", "mouse_sensitivity", "invert_y", "input_device", "stick_sensitivity", "player_name"]
+	return ["master_volume", "music_volume", "sfx_volume", "fullscreen", "vsync", "mouse_sensitivity", "invert_y", "input_device", "stick_sensitivity", "player_name", "telemetry_consent", "player_code"]
+
+func accept_telemetry(accepted: bool) -> void:
+	telemetry_consent = CONSENT_YES if accepted else CONSENT_NO
+	if not accepted:
+		player_code = ""
+	elif player_code.is_empty():
+		player_code = new_player_code()
+	_save()
+
+
+static func new_player_code() -> String:
+	var crypto := Crypto.new()
+	return crypto.generate_random_bytes(16).hex_encode()
+
 
 ## Carrega as configurações salvas no arquivo 'user://settings.cfg'.
 func _load() -> void:

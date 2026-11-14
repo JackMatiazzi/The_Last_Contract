@@ -192,6 +192,18 @@ unique_name_in_owner = true
 layout_mode = 2
 autowrap_mode = 3
 
+[node name="GroupLabel" type="Label" parent="Panel/Scroll/Content/RoomPanel/PartyColumn"]
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Nome do grupo (opcional, aparece no placar de grupos)"
+autowrap_mode = 3
+
+[node name="GroupNameInput" type="LineEdit" parent="Panel/Scroll/Content/RoomPanel/PartyColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+max_length = 24
+placeholder_text = "Sem nome: o placar mostra os jogadores"
+
 [node name="ChoiceColumn" type="VBoxContainer" parent="Panel/Scroll/Content/RoomPanel"]
 layout_mode = 2
 size_flags_horizontal = 3
