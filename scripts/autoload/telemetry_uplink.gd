@@ -14,7 +14,7 @@ const CONTACT := ""
 ## estes eventos disparam um envio parcial no solo
 const MILESTONES: Array[String] = ["group_cleared", "boss_killed", "blessing_chosen", "trapdoor_entered", "trapdoor_expired", "dungeon_entered", "dungeon_exit"]
 ## campos que a API aceita em cada evento; o resto (como o resumo de dano) fica só no arquivo local
-const FIELDS: Array[String] = ["type", "t", "attempt", "position", "buff", "enemy", "stage", "groups_left", "hits", "taken", "healed"]
+const FIELDS: Array[String] = ["type", "t", "attempt", "position", "buff", "buffs", "enemy", "stage", "groups_left", "hits", "taken", "healed"]
 ## a API recusa eventos acima de 16 KB; com folga, numa partida longa saem primeiro as mortes mais antigas
 const MAX_EVENT_BYTES := 12000
 ## ao fechar o jogo, espera no máximo isso pelo último envio

@@ -97,7 +97,8 @@ func test_the_summary_keeps_only_the_fields_the_server_accepts() -> void:
 	assert_str(death.enemy).is_equal("Arqueiro esqueleto")
 	assert_str(death.stage).is_equal("Pedra Alta")
 	assert_bool(death.has("recap")).is_false()
-	assert_bool((events[0] as Dictionary).has("buffs")).is_false()
+	# as bênçãos que a tentativa herdou vão junto: é o que cruza bênção com melhora no painel
+	assert_array((events[0] as Dictionary).buffs).is_equal(["x"])
 
 
 func test_a_long_match_fits_the_size_limit_keeping_the_milestones_and_the_latest_deaths() -> void:
