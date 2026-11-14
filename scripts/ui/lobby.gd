@@ -44,7 +44,9 @@ func _ready() -> void:
 	%BackButton.pressed.connect(_back)
 	start_button.pressed.connect(Net.start_match)
 	friendly_fire_toggle.toggled.connect(Net.set_friendly_fire)
-	group_name_input.text_changed.connect(Net.set_group_name)
+	# o nome vai para os outros quando o host confirma ou sai do campo, nao a cada tecla
+	group_name_input.text_submitted.connect(Net.set_group_name)
+	group_name_input.focus_exited.connect(func() -> void: Net.set_group_name(group_name_input.text))
 	name_input.text = Settings.player_name
 	Net.roster_changed.connect(_refresh)
 	Net.connection_failed.connect(_on_connection_failed)

@@ -169,14 +169,23 @@ static func http_address(web_url: String) -> String:
 ## relatorio do fim da partida para o banco da sala online (placar e playtest). Sem ficha nao manda:
 ## partida local ou pelo tunel nao passa pela sala. A ficha vale uma vez so
 func send_match_report(report: Dictionary) -> Error:
-	if relay_ticket.is_empty():
+	var full := take_match_report(report)
+	if full.is_empty():
 		return ERR_UNCONFIGURED
-	var body := JSON.stringify(report.merged({"ficha": relay_ticket, "apelido": Settings.player_name}))
-	relay_ticket = ""
+	var body := JSON.stringify(full)
 	var request := HTTPRequest.new()
 	add_child(request)
 	request.request_completed.connect(_on_report_sent.bind(request))
 	return request.request(http_address(relay_url) + "/telemetria", ["Content-Type: application/json"], HTTPClient.METHOD_POST, body)
+
+
+## junta a ficha e o apelido ao relatório e gasta a ficha; vazio quando a partida não passou pela sala
+func take_match_report(report: Dictionary) -> Dictionary:
+	if relay_ticket.is_empty():
+		return {}
+	var full := report.merged({"ficha": relay_ticket, "apelido": Settings.player_name})
+	relay_ticket = ""
+	return full
 
 
 func _on_report_sent(result: int, code: int, _headers: PackedStringArray, _body: PackedByteArray, request: HTTPRequest) -> void:
@@ -287,7 +296,6 @@ func set_player_name(raw: String) -> void:
 	else:
 		_request_name.rpc_id(1, cleaned)
 
-## Define e sincroniza o estado do fogo amigo (somente o Host).
 ## so o host define; vazio e permitido (o placar mostra os nomes dos jogadores)
 func set_group_name(raw: String) -> void:
 	if multiplayer.is_server():
@@ -295,6 +303,7 @@ func set_group_name(raw: String) -> void:
 		_share_roster()
 
 
+## Define e sincroniza o estado do fogo amigo (somente o Host).
 func set_friendly_fire(enabled: bool) -> void:
 	if multiplayer.is_server():
 		friendly_fire = enabled

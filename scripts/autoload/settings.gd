@@ -108,12 +108,17 @@ func _set_bus_volume(bus: String, linear: float) -> void:
 func _keys() -> PackedStringArray:
 	return ["master_volume", "music_volume", "sfx_volume", "fullscreen", "vsync", "mouse_sensitivity", "invert_y", "input_device", "stick_sensitivity", "player_name", "telemetry_consent", "player_code"]
 
+## desligar só para de enviar: o código fica, para o jogador ainda poder apagar o que já mandou
 func accept_telemetry(accepted: bool) -> void:
 	telemetry_consent = CONSENT_YES if accepted else CONSENT_NO
-	if not accepted:
-		player_code = ""
-	elif player_code.is_empty():
+	if accepted and player_code.is_empty():
 		player_code = new_player_code()
+	_save()
+
+
+## depois que o servidor apagou os dados: o código some e um aceite futuro cria outro
+func forget_player_code() -> void:
+	player_code = ""
 	_save()
 
 

@@ -79,6 +79,7 @@ func _delete_my_data() -> void:
 	%DataStatus.text = "Seus dados foram apagados e o envio foi desligado." if deleted else "Não deu para apagar agora. Tente de novo com internet."
 	if deleted:
 		Settings.accept_telemetry(false)
+		Settings.forget_player_code()
 		(%TelemetryCheck as CheckButton).set_pressed_no_signal(false)
 	else:
 		%DeleteDataButton.disabled = false

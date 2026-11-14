@@ -74,7 +74,7 @@ func test_the_host_names_the_group_and_it_goes_to_the_room() -> void:
 	Net.host(Net.PORT, Net.Transport.ENET)
 	lobby._show_room(true)
 
-	lobby.group_name_input.text_changed.emit("Os Desgarrados")
+	lobby.group_name_input.text_submitted.emit("Os Desgarrados")
 
 	assert_bool(lobby.group_name_input.editable).is_true()
 	assert_str(Net.group_name).is_equal("Os Desgarrados")
