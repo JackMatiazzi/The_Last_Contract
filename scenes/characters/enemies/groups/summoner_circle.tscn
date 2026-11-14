@@ -5,7 +5,7 @@
 [ext_resource type="PackedScene" path="res://scenes/characters/enemies/skeleton_summoner.tscn" id="3_summoner"]
 
 [node name="SummonerCircle" type="Node3D"]
-editor_description = "Círculo do invocador: o mago invocador com dois esqueletos de guarda. Derrubar o invocador derruba os esqueletos que ele levantou."
+editor_description = "Círculo do invocador: o mago invocador com três esqueletos de guarda. Derrubar o invocador derruba os esqueletos que ele levantou."
 script = ExtResource("1_group")
 
 [node name="Invocador" parent="." instance=ExtResource("3_summoner")]
@@ -16,3 +16,6 @@ position = Vector3(-1.2, 0.1, 1.0)
 
 [node name="Guarda2" parent="." instance=ExtResource("2_minion")]
 position = Vector3(1.2, 0.1, 1.0)
+
+[node name="Guarda3" parent="." instance=ExtResource("2_minion")]
+position = Vector3(0, 0.1, 1.8)

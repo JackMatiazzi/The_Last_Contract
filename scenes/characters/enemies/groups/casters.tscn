@@ -6,7 +6,7 @@
 [ext_resource type="PackedScene" path="res://scenes/characters/enemies/skeleton_archer.tscn" id="4_archer"]
 
 [node name="Casters" type="Node3D"]
-editor_description = "Atiradores: um esqueleto na frente segura o grupo enquanto o mago e o arqueiro atiram de trás."
+editor_description = "Atiradores: um esqueleto na frente segura o grupo enquanto o mago e dois arqueiros atiram de trás."
 script = ExtResource("1_group")
 
 [node name="Escudo" parent="." instance=ExtResource("2_minion")]
@@ -18,3 +18,6 @@ position = Vector3(-1.4, 0.1, -1.2)
 [node name="Arqueiro" parent="." instance=ExtResource("4_archer")]
 position = Vector3(1.4, 0.1, -1.2)
 rotation = Vector3(0, 0.3, 0)
+
+[node name="Arqueiro2" parent="." instance=ExtResource("4_archer")]
+position = Vector3(0, 0.1, -2.6)
