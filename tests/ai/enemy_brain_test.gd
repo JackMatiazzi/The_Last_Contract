@@ -281,3 +281,17 @@ func test_disabled_ai_stays_still() -> void:
 	await arena.wait_seconds(1.0)
 
 	assert_float(skeleton.global_position.distance_to(Vector3.ZERO)).is_less(0.05)
+
+
+# o caminho manda reto contra a parede (sem malha de navegação, como numa quina que a malha não previu):
+# parado empurrando, o inimigo dá um passo de lado e contorna
+func test_an_enemy_pushing_against_an_obstacle_steps_aside_and_goes_around() -> void:
+	var skeleton := _spawn_skeleton(Vector3.ZERO)
+	var player := arena.spawn(TestArena.KNIGHT, Vector3(0, 0, 8))
+	arena.add_wall(Vector3(0, 1, 3), Vector3(2.4, 2, 0.4))
+	await arena.wait_physics(3)
+	skeleton.take_damage(0.1, player)
+
+	await arena.wait_seconds(7.0)
+
+	assert_float(skeleton.global_position.z).override_failure_message("ficou preso atrás da parede em z=%.2f" % skeleton.global_position.z).is_greater(3.5)
