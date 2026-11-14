@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="EnemyProfile" format=3]
+
+[ext_resource type="Script" path="res://scripts/characters/enemies/enemy_profile.gd" id="1_profile"]
+
+[resource]
+script = ExtResource("1_profile")
+display_name = "Arqueiro esqueleto"
+sight_range = 22.0
+hearing_range = 8.0
+memory_time = 5.0
+attack_range = 12.0
+chase_run_distance = 99.0

@@ -1,0 +1,18 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/characters/enemies/enemy_group.gd" id="1_group"]
+[ext_resource type="PackedScene" path="res://scenes/characters/enemies/skeleton_minion.tscn" id="2_minion"]
+[ext_resource type="PackedScene" path="res://scenes/characters/enemies/skeleton_summoner.tscn" id="3_summoner"]
+
+[node name="SummonerCircle" type="Node3D"]
+editor_description = "Círculo do invocador: o mago invocador com dois esqueletos de guarda. Derrubar o invocador derruba os esqueletos que ele levantou."
+script = ExtResource("1_group")
+
+[node name="Invocador" parent="." instance=ExtResource("3_summoner")]
+position = Vector3(0, 0.1, -1.0)
+
+[node name="Guarda1" parent="." instance=ExtResource("2_minion")]
+position = Vector3(-1.2, 0.1, 1.0)
+
+[node name="Guarda2" parent="." instance=ExtResource("2_minion")]
+position = Vector3(1.2, 0.1, 1.0)
