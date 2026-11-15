@@ -1327,6 +1327,10 @@ transform = Transform3D(0.86603, 0.00000, 0.50000, -0.50000, 0.00000, 0.86603, 0
 [node name="scaffold0" parent="Historia/F_Mirante" instance=ExtResource("deco_scaffold")]
 transform = Transform3D(0.00000, 0.00000, 1.00000, -0.00000, 1.00000, 0.00000, -1.00000, -0.00000, 0.00000, 12.000, 12.000, -66.000)
 
+[node name="Executioner" parent="Historia/F_Mirante/scaffold0"]
+visible = false
+process_mode = 4
+
 [node name="banner_red1" parent="Historia/F_Mirante" instance=ExtResource("deco_banner_red")]
 transform = Transform3D(0.00000, 0.00000, -1.20000, 0.00000, 1.20000, 0.00000, 1.20000, -0.00000, 0.00000, -21.800, 13.500, -58.000)
 
