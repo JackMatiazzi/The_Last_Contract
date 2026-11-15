@@ -41,6 +41,7 @@ func run() -> void:
 	await _forged_damage_is_ignored()
 	await _revive_through_the_network(host, helper)
 	await _everyone_falls_and_votes()
+	await _host_takes_everyone_down_the_trapdoor()
 	await _report_to_the_online_room()
 	await _leave_together()
 
@@ -118,6 +119,25 @@ func _everyone_falls_and_votes() -> void:
 	check(RunState.stats_of(HOST_PEER).deaths == 2, "placar: host caiu duas vezes")
 	var clients := Net.peers_in_order().filter(func(peer_id: int) -> bool: return peer_id != HOST_PEER)
 	check(clients.all(func(peer_id: int) -> bool: return RunState.stats_of(peer_id).deaths == 1), "placar: cada cliente caiu uma vez")
+
+
+# o host aperta E no alçapão e o grupo inteiro tem que chegar junto ao calabouço
+func _host_takes_everyone_down_the_trapdoor() -> void:
+	calm_enemies()
+	mark("pronto para descer")
+	if role == "host":
+		if not await wait_mark("pronto para descer", players - 1):
+			return
+		var game := session()
+		game.open_trapdoor_at(game.player.global_position + Vector3(1.5, 0, 0))
+		if not await wait_until(func() -> bool: return game.player.interactables_in_reach > 0, "aviso do alçapão ao chegar perto"):
+			return
+		press_action(&"interact")
+	if not await wait_scene("CalaboucoEscondidoLevel"):
+		return
+	if not await wait_until(func() -> bool: return not Net.waiting_for_peers and get_tree().current_scene.has_node("GameSession"), "calabouço carregado em todas as máquinas"):
+		return
+	check(session().players.size() == players, "o grupo inteiro desce pelo alçapão")
 
 
 # os clientes avisam que terminaram e so fecham depois que o host libera
