@@ -21,7 +21,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        flow: [solo, coop-enet, coop-ws, coop-relay]
+        flow: [solo, alcapao, coop-enet, coop-ws, coop-relay]
     steps:
       - uses: actions/checkout@v7
       - name: Fontes do sistema
