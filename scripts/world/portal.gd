@@ -29,16 +29,30 @@ const TIME_BAR_WIDTH := 100.0
 ## a barra acima do anel esvazia ate o portal fechar
 @export var time_fill: Sprite3D
 
-var link: Portal
+## ao ligar o par, o tempo dos dois começa a correr; o primeiro portal sozinho espera o segundo
+var link: Portal:
+	set(other):
+		link = other
+		if is_linked():
+			_start_closing()
 
 var _showing := false
 var _age := 0.0
+var _closing := false
 
 
 func _ready() -> void:
 	assert(visual and travel_sound and veil and view and view_camera and time_fill, "Portal: aponte os nos exportados")
 	add_to_group(GROUP)
 	body_entered.connect(_on_body_entered)
+	if is_linked():
+		_start_closing()
+
+
+func _start_closing() -> void:
+	if _closing or not is_inside_tree():
+		return
+	_closing = true
 	var timeline := create_tween()
 	timeline.tween_interval(lifetime)
 	timeline.tween_property(visual, "scale", Vector3.ZERO, CLOSE_TIME)
@@ -90,7 +104,8 @@ func time_left_fraction() -> float:
 
 
 func _process(delta: float) -> void:
-	_age += delta
+	if _closing:
+		_age += delta
 	time_fill.region_rect.size.x = TIME_BAR_WIDTH * time_left_fraction()
 	var eye := get_viewport().get_camera_3d()
 	var showing := is_linked() and eye != null
