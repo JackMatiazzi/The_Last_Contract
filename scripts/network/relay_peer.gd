@@ -109,6 +109,7 @@ func _poll() -> void:
 			# a sala fecha com codigo 4000+ e o motivo no fechamento quando recusa, expira ou o host sai
 			if refusal.is_empty() and _socket.get_close_code() >= ROOM_CLOSE_CODES:
 				refusal = _socket.get_close_reason()
+			Net.log_network("sala fechou a conexão: código %d, motivo \"%s\"" % [_socket.get_close_code(), refusal if not refusal.is_empty() else _socket.get_close_reason()])
 			_drop_connection()
 
 

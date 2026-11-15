@@ -234,6 +234,7 @@ func descend_to_bonus() -> void:
 
 @rpc("authority", "call_local", "reliable")
 func _net_descend() -> void:
+	Net.log_network("descendo pelo alçapão")
 	_trapdoor.close()
 	_contract_ended = true
 	Playtest.record("trapdoor_entered")

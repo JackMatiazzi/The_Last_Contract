@@ -213,6 +213,7 @@ func _on_relay_host_dropped(relay_peer: RelayPeer) -> void:
 	if multiplayer.multiplayer_peer != relay_peer:
 		return
 	last_error = _relay_refusal("A conexão com a sala online caiu.")
+	log_network("conexão com a sala caiu na partida=%s: %s" % [in_match, last_error])
 	var was_in_match := in_match
 	leave()
 	if was_in_match:
@@ -378,6 +379,7 @@ func _release_when_everyone_loaded() -> void:
 ## RPC enviado pelo servidor para despausar o jogo em todos os clientes simultaneamente.
 @rpc("authority", "call_local", "reliable")
 func _net_everyone_loaded() -> void:
+	log_network("todos carregaram %s" % get_tree().current_scene.name)
 	waiting_for_peers = false
 	get_tree().paused = false
 
@@ -465,6 +467,7 @@ func _on_peer_connected(peer_id: int) -> void:
 func _on_peer_disconnected(peer_id: int) -> void:
 	if not roster.has(peer_id):
 		return
+	log_network("jogador %d (%s) saiu" % [peer_id, names.get(peer_id, "?")])
 	roster.erase(peer_id)
 	names.erase(peer_id)
 	_loaded_peers.erase(peer_id)
@@ -485,7 +488,13 @@ func _on_connection_failed() -> void:
 	connection_failed.emit()
 
 ## Callback executado quando o servidor fecha a sala ou cai.
+## linha com horário no godot.log: a queda de uma partida em grupo fica registrada em qualquer máquina
+func log_network(event: String) -> void:
+	print("[rede %s] %s" % [Time.get_datetime_string_from_system(), event])
+
+
 func _on_server_disconnected() -> void:
+	log_network("o host desconectou: %s" % _relay_refusal("sem motivo"))
 	# o host recusa sem explicar; quem nunca recebeu a lista foi barrado na porta
 	var was_in_room := roster.has(multiplayer.get_unique_id())
 	last_error = _relay_refusal("O host encerrou a partida." if was_in_room else "A sala está cheia ou a partida já começou.")
