@@ -237,6 +237,11 @@ static func peer_can_reach(tree: SceneTree, peer_id: int, point: Vector3, reach:
 	return adventurer.global_position.distance_to(point) <= reach
 
 
+## só os aventureiros ganham a vida a mais por tentativas; os mortos-vivos ficam com a deles
+func get_max_health() -> float:
+	return super() + RunState.extra_health()
+
+
 func set_display_name(display_name: String) -> void:
 	name_tag.text = display_name
 
