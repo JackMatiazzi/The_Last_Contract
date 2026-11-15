@@ -149,3 +149,17 @@ func test_entrance_spots_keep_a_safe_margin_from_the_spawn() -> void:
 			continue
 		for player_spot: Marker3D in encounters.player_spots.get_children():
 			assert_float(spot.global_position.distance_to(player_spot.global_position)).is_greater(encounters.min_distance_from_player + 3.0)
+
+
+func test_the_crevasse_has_deep_water_that_kills() -> void:
+	var water := level.find_child("AguaDaFenda", true, false) as KillZone
+	assert_object(water).is_not_null()
+	var knight := session.player
+	knight.global_position = Vector3(4, 7.5, -36)
+
+	for i in 120:
+		await get_tree().physics_frame
+		if knight.is_dead:
+			break
+
+	assert_bool(knight.is_dead).is_true()

@@ -6,6 +6,7 @@
 [ext_resource type="Script" path="res://scripts/world/breakable_props.gd" id="breakable_script"]
 [ext_resource type="PackedScene" path="res://scenes/world/prop_debris.tscn" id="debris_scene"]
 [ext_resource type="PackedScene" path="res://scenes/world/chest.tscn" id="chest"]
+[ext_resource type="Script" path="res://scripts/world/kill_zone.gd" id="kill_zone_script"]
 [ext_resource type="Texture2D" path="res://assets/quaternius_village/models/T_RockTrim_BaseColor.png" id="rock_color"]
 [ext_resource type="Texture2D" path="res://assets/quaternius_village/models/T_RockTrim_ORM.png" id="rock_orm"]
 [ext_resource type="Texture2D" path="res://assets/quaternius_village/models/T_RockTrim_Normal.png" id="rock_normal"]
@@ -268,6 +269,19 @@ size = Vector3(4.400, 1.200, 0.200)
 
 [sub_resource type="BoxShape3D" id="Shape_17"]
 size = Vector3(4.400, 1.200, 0.200)
+
+[sub_resource type="StandardMaterial3D" id="Mat_water"]
+transparency = 1
+albedo_color = Color(0.07, 0.18, 0.24, 0.88)
+metallic = 0.4
+roughness = 0.05
+
+[sub_resource type="PlaneMesh" id="Mesh_water"]
+material = SubResource("Mat_water")
+size = Vector2(4, 20)
+
+[sub_resource type="BoxShape3D" id="Shape_water"]
+size = Vector3(4, 1.6, 20)
 
 [sub_resource type="BoxMesh" id="Box_18"]
 material = SubResource("Mat_wood")
@@ -805,6 +819,18 @@ mesh = SubResource("Box_17")
 [node name="Shape" type="CollisionShape3D" parent="Ponte/GuardaSul"]
 shape = SubResource("Shape_17")
 
+[node name="AguaDaFenda" type="Area3D" parent="."]
+position = Vector3(4, 5.8, -42)
+script = ExtResource("kill_zone_script")
+
+[node name="Forma" type="CollisionShape3D" parent="AguaDaFenda"]
+shape = SubResource("Shape_water")
+
+[node name="Superficie" type="MeshInstance3D" parent="AguaDaFenda"]
+position = Vector3(0, 0.4, 0)
+mesh = SubResource("Mesh_water")
+cast_shadow = 0
+
 [node name="Cerca" type="Node3D" parent="."]
 
 [node name="BarreiraA" type="StaticBody3D" parent="Cerca"]
@@ -1327,10 +1353,6 @@ transform = Transform3D(0.86603, 0.00000, 0.50000, -0.50000, 0.00000, 0.86603, 0
 [node name="scaffold0" parent="Historia/F_Mirante" instance=ExtResource("deco_scaffold")]
 transform = Transform3D(0.00000, 0.00000, 1.00000, -0.00000, 1.00000, 0.00000, -1.00000, -0.00000, 0.00000, 12.000, 12.000, -66.000)
 
-[node name="Executioner" parent="Historia/F_Mirante/scaffold0"]
-visible = false
-process_mode = 4
-
 [node name="banner_red1" parent="Historia/F_Mirante" instance=ExtResource("deco_banner_red")]
 transform = Transform3D(0.00000, 0.00000, -1.20000, 0.00000, 1.20000, 0.00000, 1.20000, -0.00000, 0.00000, -21.800, 13.500, -58.000)
 
@@ -1710,3 +1732,7 @@ position = Vector3(-17, 7.8, -31)
 light_color = Color(0.6, 0.85, 1, 1)
 light_energy = 0.9
 omni_range = 5.0
+
+[node name="Executioner" parent="Historia/F_Mirante/scaffold0"]
+visible = false
+process_mode = 4
