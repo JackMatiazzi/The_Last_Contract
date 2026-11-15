@@ -123,7 +123,7 @@ func forget_player_code() -> void:
 	_save()
 
 
-static func new_player_code() -> String:
+func new_player_code() -> String:
 	var crypto := Crypto.new()
 	return crypto.generate_random_bytes(16).hex_encode()
 

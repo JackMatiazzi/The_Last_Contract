@@ -144,7 +144,7 @@ func delete_my_data() -> bool:
 	var request := HTTPRequest.new()
 	request.timeout = 10.0
 	add_child(request)
-	if request.request(Net.http_address(Net.relay_url) + "/jogador/" + Settings.player_code, [], HTTPClient.METHOD_DELETE) != OK:
+	if request.request(Net.api_url("/jogador/" + Settings.player_code), [], HTTPClient.METHOD_DELETE) != OK:
 		request.queue_free()
 		return false
 	var answer: Array = await request.request_completed
@@ -185,7 +185,7 @@ func _send_next() -> void:
 	request.timeout = 10.0
 	add_child(request)
 	request.request_completed.connect(_on_answered.bind(request, next.path, next.on_answer))
-	var url: String = Net.http_address(Net.relay_url) + str(next.path)
+	var url := Net.api_url(str(next.path))
 	if request.request(url, ["Content-Type: application/json"], HTTPClient.METHOD_POST, JSON.stringify(next.body)) != OK:
 		request.queue_free()
 		_send_next()

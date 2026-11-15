@@ -160,6 +160,11 @@ func _remember_ticket(_code: String, relay_peer: RelayPeer) -> void:
 	relay_ticket = relay_peer.ticket
 
 
+## endereço HTTP de uma rota da API da sala online (relatório, playtest, apagar dados)
+func api_url(path: String) -> String:
+	return http_address(relay_url) + path
+
+
 static func http_address(web_url: String) -> String:
 	if web_url.begins_with("wss://"):
 		return "https://" + web_url.trim_prefix("wss://")
