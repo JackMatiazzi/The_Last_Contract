@@ -14,6 +14,7 @@ const ORBIT_SPEED := 0.08
 
 func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	_show_why_the_match_ended()
 	Net.leave()
 	if Net.has_command_line():
 		get_tree().change_scene_to_file.call_deferred(LOBBY)
@@ -30,6 +31,15 @@ func _ready() -> void:
 	if consent.should_ask():
 		consent.chosen.connect(_focus_for_gamepad.bind(%PlayButton), CONNECT_ONE_SHOT)
 		consent.open()
+
+
+# a partida em grupo caiu (sala fechou, host saiu): o jogo volta ao menu e diz por quê
+func _show_why_the_match_ended() -> void:
+	if Net.last_error.is_empty():
+		return
+	%Notice.text = Net.last_error
+	%Notice.show()
+	Net.last_error = ""
 
 
 func _process(delta: float) -> void:
