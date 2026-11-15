@@ -18,6 +18,7 @@ const OPEN_REACH := 4.0
 
 var is_open := false
 var _player: Adventurer
+var _loot: Array[Node3D] = []
 
 
 func _ready() -> void:
@@ -49,17 +50,29 @@ func open() -> void:
 	is_open = true
 	prompt.hide()
 	_set_player(null)
+	_hide_loot_until_the_lid_opens()
 	animation_player.play("open")
 	opened.emit()
 
 
-func drop_loot() -> void:
+# em grupo a animação anda em tempos diferentes em cada máquina: a poção nasce já na abertura, escondida,
+# para a mensagem de quem a pegou nunca chegar antes de ela existir
+func _hide_loot_until_the_lid_opens() -> void:
 	if loot_scene == null:
 		return
-	var loot := loot_scene.instantiate() as Node3D
-	loot.name = "%sLoot" % name
-	loot.position = get_parent().to_local(loot_spot.global_position)
-	get_parent().add_child(loot)
+	_loot = LootDrop.spawn(get_parent(), loot_scene, "%sLoot" % name, loot_spot.global_position)
+	for loot in _loot:
+		loot.hide()
+		loot.process_mode = Node.PROCESS_MODE_DISABLED
+
+
+## chamada pela trilha de método da animação open, quando a tampa abre
+func drop_loot() -> void:
+	for loot in _loot:
+		if is_instance_valid(loot):
+			loot.show()
+			loot.process_mode = Node.PROCESS_MODE_INHERIT
+	_loot.clear()
 
 
 func _on_body_entered(body: Node3D) -> void:
