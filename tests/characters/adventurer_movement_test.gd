@@ -72,14 +72,20 @@ func test_holding_space_runs() -> void:
 	assert_str(knight.animation_player.current_animation).is_equal(Character.ANIM_RUN)
 
 
-func test_letting_go_of_space_goes_back_to_walking() -> void:
+# um toque no espaço liga a corrida: soltar não volta a andar, só parar de andar desliga
+func test_letting_go_of_space_keeps_running_and_stopping_ends_it() -> void:
 	await arena.send_action("move_forward")
 	await arena.send_action("run")
 	await arena.wait_seconds(0.4)
 
 	await arena.send_action("run", false)
 	await arena.wait_seconds(0.4)
+	assert_float(_horizontal_speed()).is_greater(knight.walk_speed + 0.5)
 
+	await arena.send_action("move_forward", false)
+	await arena.wait_physics(3)
+	await arena.send_action("move_forward")
+	await arena.wait_seconds(0.4)
 	assert_float(_horizontal_speed()).is_equal_approx(knight.walk_speed, 0.01)
 
 

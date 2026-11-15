@@ -271,3 +271,55 @@ func test_an_exhausted_knight_cannot_raise_the_shield() -> void:
 	await arena.wait_physics(2)
 
 	assert_bool(knight.is_blocking).is_false()
+
+
+func _speed(adventurer: Adventurer) -> float:
+	return Vector2(adventurer.velocity.x, adventurer.velocity.z).length()
+
+
+# tocar o espaço uma vez já dispara a corrida, que gasta sem parar: tocar várias vezes não sai mais barato
+func test_one_tap_starts_running_and_keeps_spending_while_moving() -> void:
+	var runner := arena.spawn(TestArena.KNIGHT, Vector3(-6, 0, 0), 180.0) as Adventurer
+	await arena.wait_physics(2)
+	await arena.send_action("move_forward")
+	await arena.send_action("run")
+	await arena.send_action("run", false)
+	await arena.wait_seconds(0.2)
+	var before := runner.stamina.current
+
+	await arena.wait_seconds(0.5)
+
+	assert_float(_speed(runner)).is_greater(runner.walk_speed + 0.5)
+	assert_float(before - runner.stamina.current).is_equal_approx(runner.run_cost * 0.5, runner.run_cost * 0.15)
+
+
+func test_stopping_ends_the_run_started_by_a_tap() -> void:
+	var runner := arena.spawn(TestArena.KNIGHT, Vector3(-6, 0, 0), 180.0) as Adventurer
+	await arena.wait_physics(2)
+	await arena.send_action("move_forward")
+	await arena.send_action("run")
+	await arena.send_action("run", false)
+	await arena.wait_seconds(0.3)
+
+	await arena.send_action("move_forward", false)
+	await arena.wait_physics(3)
+	await arena.send_action("move_forward")
+	await arena.wait_seconds(0.5)
+
+	assert_float(_speed(runner)).is_equal_approx(runner.walk_speed, 0.3)
+
+
+func test_running_out_of_stamina_ends_the_run_until_the_next_tap() -> void:
+	var runner := arena.spawn(TestArena.KNIGHT, Vector3(-6, 0, 0), 180.0) as Adventurer
+	await arena.wait_physics(2)
+	await arena.send_action("move_forward")
+	await arena.send_action("run")
+	await arena.send_action("run", false)
+	await arena.wait_seconds(0.1)
+	runner.stamina.current = 0.5
+	await arena.wait_seconds(0.3)
+
+	runner.stamina.refill()
+	await arena.wait_seconds(0.4)
+
+	assert_bool(runner.wants_to_run()).is_false()

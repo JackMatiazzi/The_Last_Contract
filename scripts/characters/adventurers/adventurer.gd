@@ -204,7 +204,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		use_secondary()
 	elif event.is_action_released("secondary"):
 		release_secondary()
-	elif event.is_action_pressed("run") and event is InputEventJoypadButton:
+	# um toque liga a corrida, no teclado e no controle; ela gasta sem parar e desliga ao parar de andar
+	# ou ao zerar a estamina. Se valesse só segurando, tocar várias vezes correria pagando menos
+	elif event.is_action_pressed("run"):
 		_run_toggled = true
 	elif event.is_action_pressed("interact"):
 		if revive_target:
@@ -424,6 +426,7 @@ func _drain_for_running(delta: float) -> bool:
 		return false
 	stamina.spend(run_cost * delta)
 	if stamina.current == 0.0:
+		_run_toggled = false
 		energy_short.emit(stamina)
 	return true
 
