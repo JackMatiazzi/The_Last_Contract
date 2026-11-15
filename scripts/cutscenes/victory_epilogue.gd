@@ -1,13 +1,14 @@
 class_name VictoryEpilogue
 extends AdventurerCutscene
-## Epílogo da vitória: o grupo volta à vila e o Lorde cobra o contrato do jeito dele. Neste mundo contrato
-## tem peso e sempre se cumpre, inclusive as letras miúdas: quem venceu os mortos vira a próxima leva.
+## Epílogo da vitória, no mesmo palco da derrota: a vila celebra o grupo, o Lorde manda prender, os guardas
+## arrastam o herói ao cadafalso e o carrasco cumpre a sua parte.
 
 const LINES: Array[String] = [
 	"Contrato cumprido.",
+	"A vila celebra quem a libertou.",
 	"%s... Vocês cumpriram algo que eu não achava possível.",
-	"Mas não se preocupem.\nLogo estarão lá de novo, como uma nova leva.",
-	"Neste reino, todo contrato é cumprido.",
+	"Guardas, levem-nos.",
+	"O contrato foi cumprido.\nNão fique sem ler. E, mesmo se ler, tenha certeza da índole do seu contratante.",
 ]
 
 
