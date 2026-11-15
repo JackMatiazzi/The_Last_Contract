@@ -16,7 +16,7 @@ height = 2.5
 size = Vector3(1.8, 2.0, 1.8)
 
 [node name="SkeletonElite" node_paths=PackedStringArray("animation_player", "attack") instance=ExtResource("1_enemy")]
-max_health = 15.0
+max_health = 24.0
 knockback = 1.8
 walk_speed = 3.0
 run_speed = 5.5
@@ -46,7 +46,7 @@ bone_idx = 13
 script = ExtResource("5_attack")
 sound = NodePath("Sound")
 damage = 2.0
-cooldown = 2.2
+cooldown = 1.7
 animations = PackedStringArray("1H_Melee_Attack_Chop", "1H_Melee_Attack_Slice_Horizontal")
 impact_delay = 0.7
 recovery = 0.3

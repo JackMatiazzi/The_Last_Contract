@@ -83,7 +83,7 @@ func test_damage_buff_adds_to_hit() -> void:
 	knight.attack.try_attack(knight)
 	await arena.wait_seconds(0.6)
 
-	assert_float(skeleton.health).is_equal(3.0)
+	assert_float(skeleton.health).is_equal(3.5)
 
 
 func test_cooldown_buff_shortens_recharge() -> void:
@@ -94,4 +94,4 @@ func test_cooldown_buff_shortens_recharge() -> void:
 	var frenzied := arena.spawn(TestArena.KNIGHT, Vector3(5, 0, 0))
 	await arena.wait_physics(2)
 
-	assert_float(frenzied.attack.effective_cooldown(frenzied)).is_equal_approx(plain_cooldown * 0.75, 0.001)
+	assert_float(frenzied.attack.effective_cooldown(frenzied)).is_equal_approx(plain_cooldown * 0.85, 0.001)

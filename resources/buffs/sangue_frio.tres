@@ -11,7 +11,7 @@ amount = 2.0
 [sub_resource type="Resource" id="Resource_qyia3"]
 script = ExtResource("1_1bfjb")
 stat = 2
-amount = -0.1
+amount = -0.05
 
 [resource]
 script = ExtResource("2_qvdke")

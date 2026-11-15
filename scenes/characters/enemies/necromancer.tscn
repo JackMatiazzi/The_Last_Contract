@@ -19,7 +19,7 @@ radius = 0.6
 height = 2.6
 
 [node name="Necromancer" node_paths=PackedStringArray("animation_player", "attack") instance=ExtResource("1_enemy")]
-max_health = 30.0
+max_health = 60.0
 knockback = 0.8
 walk_speed = 2.2
 run_speed = 3.0
@@ -49,7 +49,7 @@ bone_name = "handslot.r"
 script = ExtResource("5_attack")
 sound = NodePath("Sound")
 damage = 2.0
-cooldown = 2.0
+cooldown = 1.6
 animations = PackedStringArray("Spellcast_Shoot")
 impact_delay = 0.55
 recovery = 0.3
@@ -69,6 +69,8 @@ bus = &"SFX"
 [node name="Summoner" type="Node3D" parent="." node_paths=PackedStringArray("sound")]
 script = ExtResource("7_summoner")
 minion_scene = ExtResource("8_minion")
+interval = 8.0
+max_alive = 6
 wave = Array[PackedScene]([ExtResource("8_minion"), ExtResource("8_minion"), ExtResource("12_mage"), ExtResource("13_archer")])
 sound = NodePath("Sound")
 

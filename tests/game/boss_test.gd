@@ -36,7 +36,7 @@ func test_necromancer_is_a_tough_caster() -> void:
 	arena = TestArena.new(self)
 	var boss := arena.spawn(NECROMANCER, Vector3.ZERO)
 
-	assert_float(boss.get_max_health()).is_equal(30.0)
+	assert_float(boss.get_max_health()).is_equal(60.0)
 	assert_object(boss.attack).is_instanceof(RangedAttack)
 	assert_int((boss.attack as RangedAttack).target_layers).is_equal(2)
 
