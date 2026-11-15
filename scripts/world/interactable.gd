@@ -24,8 +24,9 @@ func can_interact() -> bool:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if _player and not _player.is_dead and can_interact() and event.is_action_pressed("interact"):
-		_interact()
+		# marca antes: usar pode trocar de cena (alcapao, saida do calabouco) e tirar este no da arvore
 		get_viewport().set_input_as_handled()
+		_interact()
 
 
 func _interact() -> void:
