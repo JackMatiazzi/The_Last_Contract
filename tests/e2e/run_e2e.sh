@@ -2,6 +2,7 @@
 # testes de ponta a ponta, um fluxo por chamada:
 #   solo       um contrato solo ate a segunda tentativa
 #   alcapao    do chefe morto ao calabouco apertando E no alcapao
+#   vida-extra ate a terceira tentativa, conferindo a vida maxima a mais a cada 2 tentativas
 #   coop-enet  partida em grupo pela rede local (ENet, UDP)
 #   coop-ws    a mesma partida por WebSocket, o caminho do tunel Cloudflare
 #   coop-relay a mesma partida pela sala online com codigo, com a API (the-last-contract-api) rodando local
@@ -45,6 +46,11 @@ run_solo() {
 run_alcapao() {
 	play alcapao_e2e.tscn > "$LOGS/alcapao.log" 2>&1
 	check_log alcapao $?
+}
+
+run_vida_extra() {
+	play vida_extra_e2e.tscn > "$LOGS/vida-extra.log" 2>&1
+	check_log vida-extra $?
 }
 
 # os clientes so entram depois que o host abriu a porta; maquina de CI fria demora a carregar o jogo.
@@ -105,18 +111,20 @@ run_relay() {
 case "${1:-todos}" in
 	solo) run_solo ;;
 	alcapao) run_alcapao ;;
+	vida-extra) run_vida_extra ;;
 	coop-enet) run_coop coop-enet --host 127.0.0.1 ;;
 	coop-ws) run_coop coop-ws --host=ws ws://127.0.0.1:7777 ;;
 	coop-relay) run_relay ;;
 	todos)
 		run_solo
 		run_alcapao
+		run_vida_extra
 		run_coop coop-enet --host 127.0.0.1
 		run_coop coop-ws --host=ws ws://127.0.0.1:7777
 		run_relay
 		;;
 	*)
-		echo "uso: $0 [solo|alcapao|coop-enet|coop-ws|coop-relay]"
+		echo "uso: $0 [solo|alcapao|vida-extra|coop-enet|coop-ws|coop-relay]"
 		exit 2
 		;;
 esac
