@@ -1,0 +1,160 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/leaderboard_panel.gd" id="1_panel"]
+[ext_resource type="PackedScene" path="res://scenes/ui/leaderboard_row.tscn" id="2_row"]
+
+[node name="LeaderboardPanel" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_panel")
+
+[node name="Dim" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.02, 0.015, 0.01, 0.6)
+
+[node name="Center" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Panel" type="PanelContainer" parent="Center"]
+custom_minimum_size = Vector2(780, 0)
+layout_mode = 2
+
+[node name="Content" type="VBoxContainer" parent="Center/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="Title" type="Label" parent="Center/Panel/Content"]
+layout_mode = 2
+theme_type_variation = &"HeadingLabel"
+text = "Placar"
+horizontal_alignment = 1
+
+[node name="Tabs" type="TabContainer" parent="Center/Panel/Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 380)
+layout_mode = 2
+current_tab = 0
+
+[node name="Grupo" type="VBoxContainer" parent="Center/Panel/Content/Tabs"]
+layout_mode = 2
+theme_override_constants/separation = 8
+metadata/_tab_index = 0
+
+[node name="Hint" type="Label" parent="Center/Panel/Content/Tabs/Grupo"]
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+theme_override_font_sizes/font_size = 14
+text = "Contratos cumpridos em grupo: menos tentativas primeiro; o tempo desempata."
+
+[node name="Header" parent="Center/Panel/Content/Tabs/Grupo" instance=ExtResource("2_row")]
+modulate = Color(0.98, 0.84, 0.55, 1)
+layout_mode = 2
+
+[node name="Cell0" parent="Center/Panel/Content/Tabs/Grupo/Header" index="0"]
+text = "#"
+
+[node name="Cell1" parent="Center/Panel/Content/Tabs/Grupo/Header" index="1"]
+text = "Grupo"
+
+[node name="Cell2" parent="Center/Panel/Content/Tabs/Grupo/Header" index="2"]
+text = "Jogadores"
+
+[node name="Cell3" parent="Center/Panel/Content/Tabs/Grupo/Header" index="3"]
+text = "Tentativas"
+
+[node name="Cell4" parent="Center/Panel/Content/Tabs/Grupo/Header" index="4"]
+text = "Tempo"
+
+[node name="GroupStatus" type="Label" parent="Center/Panel/Content/Tabs/Grupo"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="Scroll" type="ScrollContainer" parent="Center/Panel/Content/Tabs/Grupo"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="GroupRows" type="VBoxContainer" parent="Center/Panel/Content/Tabs/Grupo/Scroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Solo" type="VBoxContainer" parent="Center/Panel/Content/Tabs"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 8
+metadata/_tab_index = 1
+
+[node name="Hint" type="Label" parent="Center/Panel/Content/Tabs/Solo"]
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+theme_override_font_sizes/font_size = 14
+text = "Recordes por classe, sem nomes: no solo o nome assinado não sai do seu computador."
+autowrap_mode = 3
+
+[node name="Header" parent="Center/Panel/Content/Tabs/Solo" instance=ExtResource("2_row")]
+modulate = Color(0.98, 0.84, 0.55, 1)
+layout_mode = 2
+
+[node name="Cell0" parent="Center/Panel/Content/Tabs/Solo/Header" index="0"]
+custom_minimum_size = Vector2(110, 0)
+text = "Classe"
+
+[node name="Cell1" parent="Center/Panel/Content/Tabs/Solo/Header" index="1"]
+text = "Partidas"
+
+[node name="Cell2" parent="Center/Panel/Content/Tabs/Solo/Header" index="2"]
+text = "Vitórias"
+
+[node name="Cell3" parent="Center/Panel/Content/Tabs/Solo/Header" index="3"]
+text = "Melhor tempo"
+
+[node name="Cell4" parent="Center/Panel/Content/Tabs/Solo/Header" index="4"]
+text = "Média tent."
+
+[node name="SoloStatus" type="Label" parent="Center/Panel/Content/Tabs/Solo"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="SoloRows" type="VBoxContainer" parent="Center/Panel/Content/Tabs/Solo"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Footer" type="HBoxContainer" parent="Center/Panel/Content"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 16
+
+[node name="RetryButton" type="Button" parent="Center/Panel/Content/Footer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+text = "Tentar de novo"
+
+[node name="BackButton" type="Button" parent="Center/Panel/Content/Footer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"PrimaryButton"
+text = "Voltar"
+
+[node name="GroupsRequest" type="HTTPRequest" parent="."]
+unique_name_in_owner = true
+timeout = 10.0
+
+[node name="SoloRequest" type="HTTPRequest" parent="."]
+unique_name_in_owner = true
+timeout = 10.0

@@ -1,0 +1,41 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/leaderboard_row.gd" id="1_row"]
+
+[node name="LeaderboardRow" type="HBoxContainer"]
+theme_override_constants/separation = 14
+script = ExtResource("1_row")
+
+[node name="Cell0" type="Label" parent="."]
+custom_minimum_size = Vector2(36, 0)
+layout_mode = 2
+mouse_filter = 1
+
+[node name="Cell1" type="Label" parent="."]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 1.2
+mouse_filter = 1
+clip_text = true
+text_overrun_behavior = 3
+
+[node name="Cell2" type="Label" parent="."]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 1
+clip_text = true
+text_overrun_behavior = 3
+
+[node name="Cell3" type="Label" parent="."]
+custom_minimum_size = Vector2(96, 0)
+layout_mode = 2
+mouse_filter = 1
+horizontal_alignment = 2
+
+[node name="Cell4" type="Label" parent="."]
+custom_minimum_size = Vector2(96, 0)
+layout_mode = 2
+mouse_filter = 1
+horizontal_alignment = 2

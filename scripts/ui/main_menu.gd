@@ -10,6 +10,7 @@ const ORBIT_SPEED := 0.08
 
 @onready var menu_panel: Control = %MenuPanel
 @onready var settings_menu: SettingsMenu = %SettingsMenu
+@onready var leaderboard: LeaderboardPanel = %LeaderboardPanel
 
 
 func _ready() -> void:
@@ -23,6 +24,8 @@ func _ready() -> void:
 	skeleton_animation.play("Idle")
 	%PlayButton.pressed.connect(_on_play_pressed)
 	%CoopButton.pressed.connect(get_tree().change_scene_to_file.bind(LOBBY))
+	%LeaderboardButton.pressed.connect(_open_leaderboard)
+	leaderboard.closed.connect(_close_leaderboard)
 	%SettingsButton.pressed.connect(_open_settings)
 	%QuitButton.pressed.connect(get_tree().quit)
 	settings_menu.closed.connect(_close_settings)
@@ -48,6 +51,16 @@ func _process(delta: float) -> void:
 
 func _on_play_pressed() -> void:
 	get_tree().change_scene_to_file(CHARACTER_SELECT)
+
+
+func _open_leaderboard() -> void:
+	menu_panel.hide()
+	leaderboard.open()
+
+
+func _close_leaderboard() -> void:
+	menu_panel.show()
+	_focus_for_gamepad(%LeaderboardButton)
 
 
 func _open_settings() -> void:
