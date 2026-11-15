@@ -30,7 +30,7 @@
 \newcommand{\jogo}{The Last Contract}
 \newcommand{\subtitulo}{Mini Game Design Document}
 \newcommand{\equipe}{André Bartzen Araujo \and Jackson Matiazzi \and José Maciel Camargo}
-\newcommand{\disciplina}{Disciplina --- Avaliação Grau 2}
+\newcommand{\disciplina}{Disciplina - Avaliação Grau 2}
 \newcommand{\gddversao}{0.40}
 
 \definecolor{Destaque}{HTML}{7A2E2E}
@@ -43,7 +43,7 @@
 \pagestyle{fancy}
 \fancyhf{}
 \fancyhead[L]{\textcolor{Destaque}{\jogo}}
-\fancyhead[R]{\subtitulo{} --- v\gddversao}
+\fancyhead[R]{\subtitulo{} - v\gddversao}
 \fancyfoot[C]{\thepage}
 \renewcommand{\headrulewidth}{0.4pt}
 
@@ -54,7 +54,7 @@
     pdftitle={\jogo{} - \subtitulo}
 }
 
-\title{\textbf{\jogo} \\ \large \subtitulo{} --- versão \gddversao}
+\title{\textbf{\jogo} \\ \large \subtitulo{} - versão \gddversao}
 \author{\equipe}
 \date{\disciplina \\ \today}
 
@@ -225,7 +225,7 @@ O jogador explora livremente a vila e enfrenta grupos de mortos-vivos espalhados
 
 Cada tentativa começa com o jogador e os grupos de inimigos posicionados aleatoriamente pelo mapa. O jogador possui apenas uma vida.
 
-Ao morrer, pode escolher entre \textbf{Reviver} ou \textbf{Desistir}. Ao reviver, todos os inimigos retornam, novas posições são sorteadas e o jogador recebe uma escolha entre dois buffs aleatórios.
+Ao morrer, pode escolher entre \textbf{Reviver} ou \textbf{Desistir}. Ao reviver, todos os inimigos retornam, novas posições são sorteadas e o jogador escolhe uma entre duas bênçãos sorteadas.
 
 Não existe sistema de níveis para jogadores ou inimigos.
 
@@ -246,10 +246,10 @@ Não existe sistema de níveis para jogadores ou inimigos.
     \node[etapa, below=of contrato] (sorteio) {Sortear posições do\\jogador e dos inimigos};
     \node[etapa, below=of sorteio] (combate) {Explorar a vila e\\enfrentar os grupos};
     \node[etapa, below=of combate] (boss) {Derrotar o boss};
-    \node[fim, below=of boss] (vitoria) {Vitória};
+    \node[fim, below=of boss] (vitoria) {Alçapão ou vitória\\(as duas acabam no cadafalso)};
 
     \node[etapa, right=2.2cm of combate] (morte) {Todo o grupo cai};
-    \node[etapa, above=of morte] (buff) {Votar em 1 entre\\2 buffs aleatórios};
+    \node[etapa, above=of morte] (buff) {Votar em 1 entre\\2 bênçãos sorteadas};
     \node[fim, below=of morte] (execucao) {Desistir:\\execução};
 
     \draw[seta] (contrato) -- (sorteio);
@@ -278,8 +278,8 @@ Vida única & O jogador possui apenas uma vida por tentativa. Em grupo, um aliad
 Grupos de inimigos & Sete grupos por tentativa, de dois a quatro mortos-vivos cada, espalhados pelas zonas da vila: primeiro um por zona, depois um segundo grupo nas outras zonas (no máximo dois por zona). \\
 Posições aleatórias & A cada tentativa, o jogador renasce em um ponto sorteado e os grupos de inimigos são reposicionados. \\
 Reviver ou Desistir & Escolha apresentada quando o grupo inteiro cai. Desistir (só o host) encerra a missão com a execução do aventureiro. \\
-Buffs acumulativos & Ao reviver, o grupo vota num entre dois buffs aleatórios; os buffs se acumulam entre tentativas. \\
-Buffs dos inimigos & Os mortos-vivos recebem os mesmos buffs escolhidos pelo jogador nas tentativas anteriores. \\
+Bênçãos acumulativas & Ao reviver, o grupo vota numa entre duas bênçãos sorteadas; elas se acumulam entre tentativas. \\
+Bênçãos dos inimigos & Os mortos-vivos recebem as mesmas bênçãos escolhidas nas tentativas anteriores. \\
 Boss & O Necromante, um mago esqueleto que surge no Mirante quando todos os grupos caem: mantém distância, dispara rajadas mágicas e levanta uma leva de quatro mortos-vivos (dois esqueletos, um mago e um arqueiro). \\
 Objetos interativos & Baús espalhados pela vila: perto de um, aparece o aviso para abrir; aberto, solta uma poção. Tocar na poção a guarda no inventário (até 4); com o inventário cheio ela fica no chão e é pega assim que sobrar espaço, se o aventureiro ainda estiver em cima dela. Em grupo, dois jogadores na mesma poção não levam uma cada: o host decide quem pegou. Um golpe ou projétil de aventureiro quebra a poção que está no chão, e ela se perde. \\
 Inventário rápido & Itens guardados para usar quando quiser: a poção de vida cura 2 ao ser usada (não é gasta com a vida cheia) e serve para reviver um aliado. A roda do mouse para baixo troca o item selecionado; segurar E por 0,6\,s bebe (o gole deixa o aventureiro exposto). \\
@@ -289,8 +289,8 @@ Portal & Magia do Mage, 20\% de mana por portal. O primeiro uso abre a entrada n
 Fogo amigo & Opção do host no lobby, ligada por padrão: golpes e projéteis também acertam aliados. \\
 Placar & Abates, assistências, mortes e a última queda de cada jogador, segurando Tab. Um aviso no canto mostra quem abateu quem e como cada um caiu; a tela de morte mostra o histórico de dano daquela vida. \\
 Som 3D & Passos, golpes, dor, ossos caindo e feitiços saem da posição de quem os faz; a música muda conforme a cena. \\
-Vitória & Limpar todos os grupos (a HUD mostra quantos faltam) e derrotar o Necromante. Ele deixa um alçapão aberto por 30 segundos, com contagem na HUD; o host desce com o grupo inteiro para o calabouço (fase bônus). Se ninguém descer, abre a tela ``Contrato cumprido''; ``Voltar à vila'' leva ao epílogo da traição (\ref{sec:fases}). \\
-Fase bônus & No calabouço, cair todo o grupo também abre a votação de bênção, mas a nova tentativa recomeça da entrada do calabouço, não da vila. Sair com a cláusula cumprida (nenhum morto-vivo de pé) abre a vitória; sair devendo leva à execução. \\
+Vitória & Limpar todos os grupos (a HUD mostra quantos faltam) e derrotar o Necromante. Ele deixa um alçapão aberto por 30 segundos, com contagem na HUD; o host desce com o grupo inteiro para o calabouço (fase bônus). Se ninguém descer, abre a tela ``Contrato cumprido''; ``Voltar à vila'' leva ao epílogo, em que o Lorde executa o grupo mesmo assim (ver Os dois finais). \\
+Fase bônus & No calabouço, cair todo o grupo também abre a votação de bênção, mas a nova tentativa recomeça da entrada do calabouço, não da vila. Com todos os mortos-vivos derrubados, a saída leva à vitória e ao mesmo epílogo; sair devendo leva direto à execução. \\
 \bottomrule
 \end{xltabular}
 
@@ -312,7 +312,7 @@ Trocar item & Roda do mouse para baixo & Direcional para baixo \\
 Interagir  & E: toque abre baú ou revive aliado caído (com poção no inventário); perto de um baú, segurar não bebe; longe, segurar 0,6\,s bebe o item selecionado. Perto de um aliado caído sem poção, o aviso diz ``Sem poção para reviver'' & X (mesmas regras) \\
 Placar     & Tab (segurar) & Back (segurar) \\
 Pausar     & Esc & Menu (Start) \\
-Menus      & Mouse, setas, Enter, Esc; na seleção, clicar no próprio personagem 3D o escolhe, além das teclas 1--4; 1--2 nas bênçãos & Direcional, A confirma, B volta, LB/RB trocam aventureiro ou aba \\
+Menus      & Mouse, setas, Enter, Esc; na seleção, clicar no próprio personagem 3D o escolhe, além das teclas 1-4; 1-2 nas bênçãos & Direcional, A confirma, B volta, LB/RB trocam aventureiro ou aba \\
 \bottomrule
 \end{xltabular}
 
@@ -351,9 +351,9 @@ Todo aventureiro tem uma barra de estamina de 100; o Mage tem também uma de man
 \textbf{Aventureiro} & \textbf{Paga com} & \textbf{Rápido} & \textbf{Pesado} & \textbf{Recarga} & \textbf{Outros gastos} \\
 \midrule
 Knight    & estamina & 15 & 35 & 1$\times$ & escudo: 6 por segundo e 12 por golpe defendido \\
-Barbarian & estamina & 15 & 50 & 1$\times$ & --- \\
-Rogue     & estamina & 12 & 30 & 1$\times$ & --- \\
-Mage      & mana     & 20 & 45 & mana 1,5$\times$, estamina 0,5$\times$ & --- \\
+Barbarian & estamina & 15 & 50 & 1$\times$ & - \\
+Rogue     & estamina & 12 & 30 & 1$\times$ & - \\
+Mage      & mana     & 20 & 45 & mana 1,5$\times$, estamina 0,5$\times$ & - \\
 \bottomrule
 \end{xltabular}
 
@@ -362,22 +362,22 @@ Todos gastam 12 de estamina por segundo correndo. Com menos energia que o custo,
 % ===============================================================
 \section{Personagens}
 
-O jogador poderá escolher entre quatro aventureiros, com diferentes estilos de combate, incluindo personagens corpo a corpo e de longo alcance.
+O jogador escolhe entre quatro aventureiros, dois de corpo a corpo e dois de longo alcance.
 
 \begin{xltabular}{\textwidth}{@{}lX@{}}
 \toprule
 \textbf{Personagem} & \textbf{Papel} \\
 \midrule
 Aventureiros & Personagens controlados pelos jogadores. \\
-Lorde & Responsável por entregar a missão. \\
+Lorde & Dá o contrato e, no fim, manda executar quem o cumpriu. \\
 Mortos-vivos & Inimigos espalhados pela vila. \\
-Boss & Principal inimigo e responsável pela infestação. \\
+Necromante (boss) & Sócio do Lorde, levanta os mortos da vila. \\
 \bottomrule
 \end{xltabular}
 
 \subsection{Aventureiros jogáveis}
 
-Cada aventureiro tem um ataque único. Todos atacam na direção em que a câmera olha. Mage e Rogue têm uma mira no centro da tela: o projétil sai da arma em direção ao ponto que a mira cobre (parede, chão ou morto-vivo, até 40\,m), inclusive para cima ou para baixo, então acertar de longe exige apontar a câmera; o ataque rápido causa 1 de dano por acerto (mais os buffs) e só acerta outro aventureiro com o fogo amigo ligado. Projéteis param ao bater em paredes e deixam rastro: o projétil do Mage queima uma marca violeta na superfície (some após 6\,s) e o virote do Rogue fica cravado onde bateu, na parede ou no corpo do morto-vivo, acompanhando-o enquanto ele se move (some após 4\,s). Golpes corpo a corpo não atravessam paredes: só acertam quem está com o caminho livre até o atacante. O virote da besta fica cravado no osso mais próximo de onde acertou e acompanha o morto-vivo andando, girando e caindo ao morrer.
+Cada aventureiro tem um ataque único. Todos atacam na direção em que a câmera olha. Mage e Rogue têm uma mira no centro da tela: o projétil sai da arma em direção ao ponto que a mira cobre (parede, chão ou morto-vivo, até 40\,m), inclusive para cima ou para baixo, então acertar de longe exige apontar a câmera; o ataque rápido causa 1 de dano por acerto (mais os buffs) e só acerta outro aventureiro com o fogo amigo ligado. Projéteis param ao bater em paredes e deixam rastro: o projétil do Mage queima uma marca violeta na superfície (some após 6\,s) e o virote do Rogue fica cravado onde bateu, na parede ou no osso mais próximo do morto-vivo, e o acompanha andando, girando e caindo (some após 4\,s). Golpes corpo a corpo não atravessam paredes: só acertam quem está com o caminho livre até o atacante.
 
 Regras comuns de ataque, pensadas para o controle não ficar pesado:
 \begin{itemize}
@@ -404,7 +404,7 @@ Rogue & Longo alcance & Besta. \textbf{Virote}: rápido (30\,m/s), alcance de 6\
 
 \subsection{Mortos-vivos e IA}
 
-Os mortos-vivos não se limitam a andar e bater: eles percebem, reagem com atraso humano e, nas próximas fases, se coordenam em grupo e respondem às ações do jogador. Todos usam a mesma base de física e animação do jogador e são mais lentos que ele (andar 2,8\,m/s, correr 5\,m/s), para que fugir seja uma opção real.
+Os mortos-vivos não se limitam a andar e bater: eles percebem, reagem com atraso humano, procuram quem sumiu e se juntam num elite quando o grupo cai. Todos usam a mesma base de física e animação do jogador e são mais lentos que ele (andar 2,8\,m/s, correr 5\,m/s), para que fugir seja uma opção real.
 
 \textbf{Percepção.} Em grupo, cada morto-vivo mira o aventureiro vivo mais próximo. Visão em cone de 120\textdegree{} até 14\,m, bloqueada por paredes; audição de corrida e de ataques num raio de 6\,m, mesmo sem ver; percepção de proximidade: nota o jogador a até 2,5\,m mesmo de costas, se não houver parede; ser atingido, inclusive por um disparo de longe, revela a posição do jogador; memória da última posição do jogador por 3\,s.
 
@@ -459,9 +459,9 @@ Mayoi Michio & 12 & por estilo & Semi-boss do calabouço; cada golpe nele vale 2
 % ===============================================================
 \section{Mundo}
 
-O jogo acontece em uma vila medieval explorável, composta por ruas, casas, praça, construções e áreas abertas.
+O jogo acontece em Pedra Alta, uma vila mineira medieval na encosta de uma montanha, com ruas, casas, terraços e áreas abertas.
 
-A missão principal acontece em um único mapa, a vila. Debaixo dela fica o calabouço escondido, a fase bônus, aberta pelo alçapão que o Necromante deixa ao morrer.
+A missão principal acontece num único mapa, a vila. Debaixo dela fica o calabouço escondido, a fase bônus, aberta pelo alçapão que o Necromante deixa ao morrer.
 
 \subsection{Fases e fluxo de uma partida}
 \label{sec:fases}
@@ -482,7 +482,7 @@ Finais & Vitória: tela ``Contrato cumprido'' e o epílogo da traição. Desist�
 
 A cada nova tentativa, tanto o jogador quanto os grupos de inimigos recebem novas posições aleatórias dentro da vila, fazendo com que os encontros e o caminho percorrido possam mudar entre as partidas.
 
-\textbf{Pedraalta, a vila da montanha (fase atual).} Uma vila mineira de prata na encosta: o Lorde quer a mina de volta, não a vila, e por isso contrata aventureiros descartáveis. O mapa tem 44\,m $\times$ 122\,m e sobe de sul para norte em terraços (cotas 0, +3, +6, +9 e +12\,m), ligados por rampas de 4\,m de largura e até 25 graus que alternam de lado para obrigar a cruzar cada terraço. As bordas são visíveis: paredão de rocha a oeste e ao norte, portão desmoronado ao sul e cerca sobre o precipício a leste. São cinco zonas de combate; os sete grupos de cada tentativa são sorteados entre os pontos das zonas, um por zona e depois um segundo nas outras, no máximo dois por zona; a zona da entrada sempre recebe o grupo dos dormentes, o mais fácil, para o primeiro encontro ensinar: \textbf{A, Porteira do Cais de Carga} (portão arrombado por dentro, carroças viradas, bandeiras do Lorde); \textbf{B, Terraços dos Fornos} (casas, forno frio, varal com roupa e camas na rua: dormiram e não acordaram; fonte como respiro); \textbf{C, Pedreira do Corte Fundo} (ferramentas largadas, entulho, um veio de minério claro demais no paredão e a entrada gradeada do calabouço, com a lanterna da Companhia quebrada na boca); \textbf{D, Capela dos Mil Degraus} (covas abertas de dentro para fora e velas ainda acesas; a capela não é refúgio); \textbf{E, Varanda do Vigia} (ramal opcional pela ponte sobre a fenda, com o posto do vigia e um baú). No topo, \textbf{F, o Mirante do Último Sino}: a arena do Necromante, um círculo de pedra vermelha com seis braseiros, o sino rachado e o cadafalso do Lorde, vazio (o carrasco só aparece nas cutscenes). Há um baú em B, C, E e F. Sem seta de objetivo, os marcos guiam: a fumaça e o brilho da pedreira, as velas da capela e os braseiros vermelhos do topo. A vila plana anterior continua no projeto (\texttt{village\_level.tscn}) como referência.
+\textbf{Pedra Alta, a vila da montanha (fase atual).} Uma vila mineira de prata na encosta: o Lorde quer a mina de volta, não a vila, e por isso contrata aventureiros descartáveis. O mapa tem 44\,m $\times$ 122\,m e sobe de sul para norte em terraços (cotas 0, +3, +6, +9 e +12\,m), ligados por rampas de 4\,m de largura e até 25 graus que alternam de lado para obrigar a cruzar cada terraço. As bordas são visíveis: paredão de rocha a oeste e ao norte, portão desmoronado ao sul e cerca sobre o precipício a leste. São cinco zonas de combate; os sete grupos de cada tentativa são sorteados entre os pontos das zonas, um por zona e depois um segundo nas outras, no máximo dois por zona; a zona da entrada sempre recebe o grupo dos dormentes, o mais fácil, para o primeiro encontro ensinar: \textbf{A, Porteira do Cais de Carga} (portão arrombado por dentro, carroças viradas, bandeiras do Lorde); \textbf{B, Terraços dos Fornos} (casas, forno frio, varal com roupa e camas na rua: dormiram e não acordaram; fonte como respiro); \textbf{C, Pedreira do Corte Fundo} (ferramentas largadas, entulho, um veio de minério claro demais no paredão e a entrada gradeada do calabouço, com a lanterna da Companhia quebrada na boca); \textbf{D, Capela dos Mil Degraus} (covas abertas de dentro para fora e velas ainda acesas; a capela não é refúgio); \textbf{E, Varanda do Vigia} (ramal opcional pela ponte sobre a fenda, com o posto do vigia e um baú). No topo, \textbf{F, o Mirante do Último Sino}: a arena do Necromante, um círculo de pedra vermelha com seis braseiros, o sino rachado e o cadafalso do Lorde, vazio (o carrasco só aparece nas cutscenes). Há um baú em B, C, E e F. Sem seta de objetivo, os marcos guiam: a fumaça e o brilho da pedreira, as velas da capela e os braseiros vermelhos do topo. A vila plana anterior continua no projeto (\texttt{village\_level.tscn}) como referência.
 
 \textbf{A planta no Figma.} A página \emph{ideia de mapa} do arquivo de design tem a planta da encosta (Figura~\ref{fig:pedraalta}), feita antes de montar a fase: 44\,m $\times$ 122\,m, 1 quadrado = 2\,m, com o sul (a entrada, pelo portão desmoronado) embaixo. Cada faixa de cor é uma cota; as setas brancas são as rampas, que alternam de lado; os pontos laranja são os pontos de grupo de cada zona, com o círculo tracejado do alcance de 6\,m; os triângulos verdes, o nascimento dos jogadores; os quadrados amarelos, os baús; e os anéis laranja, os respiros (a fonte em B, o patamar entre C e D e a antessala do mirante). A planta trazia oito regras de layout, que o mapa seguiu: um grupo por zona; a zona A sempre com o grupo mais fraco e longe do nascimento; rampas de 4\,m com até 25 graus; bordas visíveis (paredão a oeste, cerca e precipício a leste), sem parede invisível; nenhum ponto a menos de 4\,m do paredão, por causa da câmera; marcos visíveis de longe no lugar da seta; e a zona D como a mais exposta, com barracas e carroças cortando a linha de visão. Ela é de 08/11/2026: hoje são sete grupos por tentativa (um por zona e depois um segundo nas outras), não cinco.
 
@@ -494,9 +494,9 @@ A cada nova tentativa, tanto o jogador quanto os grupos de inimigos recebem nova
 \end{figure}
 
 
-\textbf{A vila (primeira versão).} Um vilarejo medieval de 48\,m $\times$ 48\,m, à noite, iluminado por tochas nas paredes. Todo o chão é de pedra (tijolo, tijolo vermelho e calçamento irregular). No centro, uma praça calçada com carroças, caixotes e barris que servem de cobertura; em volta, oito casas de pedra e enxaimel, de um ou dois andares, formando ruas e becos; ao sul, um campo aberto cercado. As portas em arco são vãos de verdade: dá para entrar nas casas, que viram esconderijos e atalhos.
+\textbf{A primeira vila.} Antes da Pedra Alta, a fase era um vilarejo medieval de 48\,m $\times$ 48\,m, à noite, iluminado por tochas nas paredes. Todo o chão é de pedra (tijolo, tijolo vermelho e calçamento irregular). No centro, uma praça calçada com carroças, caixotes e barris que servem de cobertura; em volta, oito casas de pedra e enxaimel, de um ou dois andares, formando ruas e becos; ao sul, um campo aberto cercado. As portas em arco são vãos de verdade: dá para entrar nas casas, que viram esconderijos e atalhos.
 
-\textbf{Sorteio dos encontros.} O mapa tem seis pontos de nascimento do jogador e treze pontos de grupo. A cada tentativa o jogador nasce num ponto sorteado e cinco grupos ocupam pontos a pelo menos 16\,m dele. Os grupos são cenas prontas: \textbf{patrulha} (2 esqueletos, sem elite), \textbf{guarda} (3 esqueletos, com elite) e \textbf{dormentes} (3 esqueletos deitados, com elite). Um teste garante que de todo ponto de grupo se anda até todo ponto de nascimento. Em grupo, todos usam a mesma semente de sorteio, então a vila sai igual em todas as máquinas, e os jogadores nascem lado a lado no ponto sorteado.
+\textbf{Sorteio dos encontros.} Na primeira vila eram seis pontos de nascimento e treze pontos de grupo: o jogador nascia num ponto sorteado e cinco grupos ocupavam pontos a pelo menos 16\,m dele. Na Pedra Alta o sorteio é por zona, como descrito acima. Os grupos são cenas prontas: \textbf{patrulha} (2 esqueletos, sem elite), \textbf{guarda} (3 esqueletos, com elite) e \textbf{dormentes} (3 esqueletos deitados, com elite). Nos dois mapas, um teste garante que de todo ponto de grupo se anda até todo ponto de nascimento. Em grupo, todos usam a mesma semente de sorteio, então a vila sai igual em todas as máquinas, e os jogadores nascem lado a lado no ponto sorteado.
 
 
 \subsection{O calabouço escondido (fase bônus)}
@@ -696,15 +696,17 @@ Para avaliar o jogo além das impressões da turma, cada partida manda um resumo
 
 \subsection{Mapa}
 
-Pedraalta (\texttt{scenes/maps/pedraalta.tscn}) usa os mesmos três GridMaps, com o chão em várias alturas; os terraços, rampas, paredões e a cerca são blocos com colisão, com a textura de pedra (RockTrim) e de tijolo irregular do kit da vila para não sumirem no céu noturno; a decoração grande (entulho, caixotes, chaminés, camas, mesas, portões) tem caixa de colisão do tamanho do modelo, e o navmesh é assado a partir das colisões (\texttt{pedraalta\_navmesh.res}, inclinação máxima de 30 graus; gerado por \texttt{tools/pedraalta/}). Os pontos de grupo levam a zona como metadado, e o sorteio espalha os grupos pelas zonas (no máximo dois por zona); mapas sem zona sorteiam como antes. A vila é montada com três GridMaps: \textbf{Chão} (células de 2\,m para ruas e praça), \textbf{Estrutura} (células de 1\,m para pisos, paredes, cantos e escadas das casas) e \textbf{Objetos} (carroças, caixotes, barris e cercas). Telhados, portas, janelas e objetos de cenário ficam fora da grade, como cenas avulsas. As bibliotecas de peças são geradas por um script a partir dos modelos importados. Em volta da vila, quatro paredes invisíveis de 6\,m (\texttt{Limites}) seguram quem sai pelas portas das casas da borda antes do fim do chão. Cada mapa é uma cena própria em \texttt{scenes/maps/} (\texttt{village}, \texttt{grid\_sandbox}, \texttt{public\_square} e \texttt{village\_road}), com os GridMaps \textbf{Chao}, \textbf{Estrutura} e \textbf{Objetos} dentro dela, e é desenhado inteiro pela paleta do GridMap. São três bibliotecas de peças: \textbf{ground} (pisos de pedra e madeira do Medieval Village MegaKit; os pisos do KayKit saíram por serem de cor lisa e destoarem das texturas), \textbf{village\_structure} (paredes, cantos, escadas, telhados e empenas) e \textbf{props} (carroça, caixotes, barris, cercas e tocha de parede, com colisão). Fora da grade ficam só as luzes, os limites invisíveis do mapa, os pontos de sorteio e peças com personagens, como o cadafalso da execução.
+Cada mapa é uma cena própria em \texttt{scenes/maps/} e é desenhado com três GridMaps: \textbf{Chao} (células de 2\,m para ruas e praça), \textbf{Estrutura} (células de 1\,m para pisos, paredes, cantos e escadas das casas) e \textbf{Objetos} (carroças, caixotes, barris e cercas). São três bibliotecas de peças, geradas por um script a partir dos modelos importados: \textbf{ground} (pisos de pedra e madeira do Medieval Village MegaKit; os do KayKit saíram por serem de cor lisa e destoarem das texturas), \textbf{village\_structure} (paredes, cantos, escadas, telhados e empenas) e \textbf{props} (carroça, caixotes, barris, cercas e tocha de parede, com colisão). Telhados, portas, janelas e objetos de cenário ficam fora da grade, como cenas avulsas, junto com as luzes, os limites do mapa, os pontos de sorteio e peças com personagens, como o cadafalso da execução.
 
-\textbf{Floresta de fundo.} Em volta da vila, uma floresta low-poly fecha o horizonte: três árvores modeladas no Blender (pinheiro alto, pinheiro baixo e árvore de copa, de 22 a 32 faces cada) espalhadas com semente fixa entre o quadrado livre de 30\,m de meia largura e o raio de 62\,m, com 2,6\,m entre troncos, desenhadas por \texttt{MultiMeshInstance3D} sem sombra. Embaixo, um chão de terra com textura de ruído; por cima, quatro volumes de neblina rasteira (\texttt{FogVolume}) cobrem o chão entre o mapa e a mata, e as árvores saem da névoa. A floresta é a cena \texttt{scenes/props/forest\_ring.tscn} e serve para qualquer mapa: basta instanciá-la, ajustar no inspetor o quadrado livre, o raio, o espaçamento e a semente e clicar em \emph{Gerar floresta}; o chão e a neblina se ajustam junto. A geração precisa do editor aberto (o modo \texttt{--headless} não guarda as posições das árvores), e a neblina só aparece se o \texttt{Environment} da fase tiver a neblina volumétrica ligada (com densidade global zero, só os volumes contam).
+A Pedra Alta (\texttt{scenes/maps/pedraalta.tscn}) usa os mesmos três GridMaps, com o chão em várias alturas. Os terraços, rampas, paredões e a cerca são blocos com colisão, com a textura de pedra (RockTrim) e de tijolo irregular do kit da vila para não sumirem no céu noturno. A decoração grande (entulho, caixotes, chaminés, camas, mesas, portões) tem caixa de colisão do tamanho do modelo, e o navmesh é assado a partir das colisões (\texttt{pedraalta\_navmesh.res}, inclinação máxima de 30 graus, gerado por \texttt{tools/pedraalta/}). Os pontos de grupo levam a zona como metadado, e o sorteio espalha os grupos pelas zonas (no máximo dois por zona); mapas sem zona sorteiam como antes. As outras cenas de mapa são a primeira vila (\texttt{village}), a estrada e a praça das cutscenes (\texttt{village\_road} e \texttt{public\_square}), o calabouço e uma área de teste (\texttt{grid\_sandbox}). Na primeira vila, quatro paredes invisíveis de 6\,m (\texttt{Limites}) seguram quem sai pelas portas das casas da borda antes do fim do chão; a Pedra Alta não tem parede invisível, as bordas são visíveis.
+
+\textbf{Floresta de fundo.} Em volta da vila, uma floresta low-poly fecha o horizonte: três árvores modeladas no Blender (pinheiro alto, pinheiro baixo e árvore de copa, de 22 a 32 faces cada) espalhadas com semente fixa entre o quadrado livre de 30\,m de meia largura e o raio de 62\,m, com 2,6\,m entre troncos, desenhadas por \texttt{MultiMeshInstance3D} sem sombra. Embaixo, um chão de terra com textura de ruído; por cima, quatro volumes de neblina rasteira (\texttt{FogVolume}) cobrem o chão entre o mapa e a mata, e as árvores saem da névoa. A floresta é a cena \texttt{scenes/props/forest\_ring.tscn} e serve para qualquer mapa: basta instanciá-la, ajustar no inspetor o quadrado livre, o raio, o espaçamento e a semente e clicar em \emph{Gerar floresta}; o chão e a neblina se ajustam junto. A geração precisa do editor aberto (o modo \texttt{-{}-headless} não guarda as posições das árvores), e a neblina só aparece se o \texttt{Environment} da fase tiver a neblina volumétrica ligada (com densidade global zero, só os volumes contam).
 
 As cutscenes usam o AnimationPlayer do próprio Godot: câmeras, legendas, fades, movimentos e animações dos personagens são trilhas da animação, ajustáveis no painel Animation sem mexer em código. Todas usam o mesmo script (\texttt{AdventurerCutscene}), que só coloca o aventureiro escolhido nos marcadores indicados e, ao terminar, abre a cena definida no inspetor; uma cutscene nova não precisa de código.
 
 \subsection{Testes automatizados}
 
-O projeto usa o gdUnit4 (versão 6.2.1). São 736 testes, todos passando em 15/11/2026, incluindo a mira dos ataques à distância, organizados por área: seleção de aventureiro, assinatura do contrato (nome limpo, salvo e usado na vitória), criação do aventureiro escolhido na partida, cena de execução, um teste específico para cada personagem (Knight, Barbarian, Mage, Rogue e Skeleton Minion), personagem base (vida, morte, buffs), percepção e cérebro dos mortos-vivos (visão, audição, memória, despertar, perseguição, ataque com aviso, busca e navegação contornando paredes), habilidades do botão direito (escudo do Knight, segundo machado do Barbarian), jogo pelo controle (analógicos, gatilhos, filtro por dispositivo, navegação nos menus), formação do elite, movimento do aventureiro (aceleração, andar, correr com um toque no Espaço, queda, mira pela câmera), comandos de ataque (combo, cancelamento, ataque guardado, golpe interrompido), combate corpo a corpo e à distância, estado da missão, fase da vila (sorteio dos encontros e alcance pela navegação), áudio, baú e poção, Necromante e vitória, configurações, HUD, barra de vida, tela de morte e pausa, máquina de estados do jogador, energia (custos, golpe pesado, dano proporcional, corrida e escudo), votação, histórico de dano e placar, inventário rápido, beber segurando E, troca de habilidade, poção e objetos que quebram, portal e HUD em cruz, funções de rede do lobby, a fase da Pedra Alta (zonas, grupo fácil na entrada e alcance pela navegação), a floresta de fundo, o registro de playtest e o calabouço escondido (peças, escuridão, armadilhas, poção de mana, escadas, barril, espadachim e seus estilos, mímico, contagem de mortos-vivos, saída, travas de classe, selos, alavancas, bilhetes e o alcance de todos os grupos pela navegação). Para rodar: aba gdUnit do editor ou o workflow de testes no GitHub. Também entram nos testes os inimigos novos (mago, arqueiro, invocador, mago de batalha e a leva do Necromante), o destravar dos mortos-vivos, a mira dos atiradores, o alçapão, o lobby da sala online e o nome do grupo, o consentimento e a fila da telemetria, a corrida por toque e a escolha por clique. Além deles, testes de ponta a ponta rodam o jogo de verdade a partir do menu, apertando os mesmos botões que o jogador: um contrato solo até a segunda tentativa, com a telemetria chegando a uma API local; uma partida em grupo com dois processos ligados pela rede local (dano entre máquinas, pedido forjado recusado pelo host, reviver pela rede, votação e placar); a mesma partida pela sala online local; e o alçapão (matar o Necromante, descer e chegar ao calabouço). Uma partida de carga com 4 bots mede o custo da sala. Rodam com \texttt{tests/e2e/run\_e2e.sh}, também no GitHub. A API tem os próprios testes (66, em Node).
+O projeto usa o gdUnit4 (versão 6.2.1). São 736 testes, todos passando em 15/11/2026, incluindo a mira dos ataques à distância, organizados por área: seleção de aventureiro, assinatura do contrato (nome limpo, salvo e usado na vitória), criação do aventureiro escolhido na partida, cena de execução, um teste específico para cada personagem (Knight, Barbarian, Mage, Rogue e Skeleton Minion), personagem base (vida, morte, buffs), percepção e cérebro dos mortos-vivos (visão, audição, memória, despertar, perseguição, ataque com aviso, busca e navegação contornando paredes), habilidades do botão direito (escudo do Knight, segundo machado do Barbarian), jogo pelo controle (analógicos, gatilhos, filtro por dispositivo, navegação nos menus), formação do elite, movimento do aventureiro (aceleração, andar, correr com um toque no Espaço, queda, mira pela câmera), comandos de ataque (combo, cancelamento, ataque guardado, golpe interrompido), combate corpo a corpo e à distância, estado da missão, fase da vila (sorteio dos encontros e alcance pela navegação), áudio, baú e poção, Necromante e vitória, configurações, HUD, barra de vida, tela de morte e pausa, máquina de estados do jogador, energia (custos, golpe pesado, dano proporcional, corrida e escudo), votação, histórico de dano e placar, inventário rápido, beber segurando E, troca de habilidade, poção e objetos que quebram, portal e HUD em cruz, funções de rede do lobby, a fase da Pedra Alta (zonas, grupo fácil na entrada e alcance pela navegação), a floresta de fundo, o registro de playtest e o calabouço escondido (peças, escuridão, armadilhas, poção de mana, escadas, barril, espadachim e seus estilos, mímico, contagem de mortos-vivos, saída, travas de classe, selos, alavancas, bilhetes e o alcance de todos os grupos pela navegação). Para rodar: aba gdUnit do editor ou o workflow de testes no GitHub. Também entram nos testes os inimigos novos (mago, arqueiro, invocador, mago de batalha e a leva do Necromante), o destravar dos mortos-vivos, a mira dos atiradores, o alçapão, o lobby da sala online e o nome do grupo, o consentimento e a fila da telemetria, a corrida por toque e a escolha por clique. Além deles, testes de ponta a ponta rodam o jogo de verdade a partir do menu, apertando os mesmos botões que o jogador: um contrato solo até a segunda tentativa, com a telemetria chegando a uma API local; uma partida em grupo com dois processos na mesma máquina, ligados direto (dano entre máquinas, pedido forjado recusado pelo host, reviver pela rede, votação e placar); a mesma partida pela sala online local; e o alçapão (matar o Necromante, descer e chegar ao calabouço). Uma partida de carga com 4 bots mede o custo da sala. Rodam com \texttt{tests/e2e/run\_e2e.sh}, também no GitHub. A API tem os próprios testes (66, em Node).
 
 % ===============================================================
 \section{Assets}
@@ -751,7 +753,7 @@ Histórias & A Companhia da Lanterna (origem, a expedição dia a dia e os cinco
 
 \textbf{O que mudou depois do Figma.} O arquivo foi montado em 08/11/2026, e algumas coisas andaram desde então; onde há diferença, vale este GDD:
 \begin{itemize}
-    \item A fase principal é a Pedra Alta, com sete grupos por tentativa; a planta da encosta e a página de história ainda falam em cinco.
+    \item A fase principal é a Pedra Alta, com sete grupos por tentativa; a planta da encosta e a página de história ainda falam em cinco grupos.
     \item A poção cura 2 (no Figma, 3), e as bênçãos ficaram mais fracas em 15/11.
     \item As três perguntas em aberto da página do contrato (o que o Lorde ganha, quem é o Necromante e para que serve o pagamento adiantado) foram respondidas pelo pacto entre o Lorde e o Necromante e pelo epílogo da vitória (ver História).
     \item O calabouço não é mais avulso: é a fase bônus, aberta pelo alçapão do Necromante.
