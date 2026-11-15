@@ -42,6 +42,7 @@ func run() -> void:
 	await _revive_through_the_network(host, helper)
 	await _everyone_falls_and_votes()
 	await _host_takes_everyone_down_the_trapdoor()
+	await _michio_joins_and_the_room_holds()
 	await _report_to_the_online_room()
 	await _leave_together()
 
@@ -138,6 +139,29 @@ func _host_takes_everyone_down_the_trapdoor() -> void:
 	if not await wait_until(func() -> bool: return not Net.waiting_for_peers and get_tree().current_scene.has_node("GameSession"), "calabouço carregado em todas as máquinas"):
 		return
 	check(session().players.size() == players, "o grupo inteiro desce pelo alçapão")
+
+
+# no teste do grupo a partida caiu para todos logo depois de aceitar o Michio no grupo
+func _michio_joins_and_the_room_holds() -> void:
+	var found := get_tree().current_scene.find_children("*", "FriendlyUndead", true, false)
+	check(not found.is_empty(), "o Michio está no calabouço")
+	if found.is_empty():
+		return
+	var michio := found.front() as FriendlyUndead
+	if role == "host":
+		michio._net_invite.rpc()
+	if not await wait_until(func() -> bool: return michio.awaiting_answer, "convite do Michio chegar"):
+		return
+	if _is_helper():
+		session().player.global_position = michio.global_position + Vector3(1.5, 0.3, 0)
+		await wait_physics(10)
+		michio._request_answer.rpc_id(HOST_PEER, true)
+	if not await wait_until(func() -> bool: return michio.is_companion, "o Michio entrar no grupo"):
+		return
+	await get_tree().create_timer(20.0).timeout
+	if role == "host":
+		check(multiplayer.get_peers().size() == players - 1, "a sala continua com todos depois do Michio entrar")
+	check(Net.is_online() and get_tree().current_scene.has_node("GameSession"), "todos seguem na partida 20 s depois do Michio entrar")
 
 
 # os clientes avisam que terminaram e so fecham depois que o host libera
