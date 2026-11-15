@@ -8,5 +8,5 @@ display_name = "Mago esqueleto"
 sight_range = 18.0
 hearing_range = 8.0
 memory_time = 5.0
-attack_range = 9.0
+attack_range = 6.9
 chase_run_distance = 99.0

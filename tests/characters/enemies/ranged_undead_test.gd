@@ -7,6 +7,9 @@ const MAGE := "res://scenes/characters/enemies/skeleton_mage.tscn"
 const ARCHER := "res://scenes/characters/enemies/skeleton_archer.tscn"
 const SUMMONER := "res://scenes/characters/enemies/skeleton_summoner.tscn"
 const BATTLEMAGE := "res://scenes/characters/enemies/skeleton_battlemage.tscn"
+# o arqueiro e o mago esqueleto atiram da mesma distância que o Rogue e o Mage, sem vantagem de alcance
+const PLAYER_BOLT := preload("res://scenes/combat/crossbow_bolt.tscn")
+const PLAYER_MAGIC := preload("res://scenes/combat/magic_bolt.tscn")
 const CASTERS := "res://scenes/characters/enemies/groups/casters.tscn"
 const SUMMONER_CIRCLE := "res://scenes/characters/enemies/groups/summoner_circle.tscn"
 const BATTLEMAGE_SQUAD := "res://scenes/characters/enemies/groups/battlemage_squad.tscn"
@@ -50,12 +53,23 @@ func test_the_skeleton_mage_is_fragile_and_attacks_with_magic_from_afar() -> voi
 	assert_object(mage.attack).is_instanceof(RangedAttack)
 	assert_int((mage.attack as RangedAttack).target_layers).is_equal(2)
 	assert_float(mage.get_max_health()).is_less(8.0)
-	assert_float(mage.profile.attack_range).is_greater(6.0)
 	assert_str(mage.get_display_name()).is_equal("Mago esqueleto")
 
 
-func test_the_skeleton_mage_hits_from_eight_meters() -> void:
-	await _shoots_from_afar(MAGE, 8.0)
+func test_the_skeleton_mage_reaches_as_far_as_the_player_mage_and_no_farther() -> void:
+	arena = TestArena.new(self)
+	var mage := arena.spawn(MAGE, Vector3.ZERO) as Enemy
+	var bolt := (mage.attack as RangedAttack).projectile_scene.instantiate() as Projectile
+	var player_bolt := PLAYER_MAGIC.instantiate() as Projectile
+
+	assert_float(mage.profile.attack_range).is_less_equal(player_bolt.max_distance)
+	assert_float(bolt.max_distance).is_equal(player_bolt.max_distance)
+	bolt.free()
+	player_bolt.free()
+
+
+func test_the_skeleton_mage_hits_from_five_meters() -> void:
+	await _shoots_from_afar(MAGE, 5.0)
 
 
 func test_the_archer_shoots_arrows_that_reach_its_range() -> void:
@@ -66,13 +80,24 @@ func test_the_archer_shoots_arrows_that_reach_its_range() -> void:
 
 	assert_object(bow).is_not_null()
 	assert_int(bow.target_layers).is_equal(2)
-	assert_float(arrow.max_distance).is_greater_equal(archer.profile.attack_range + 2.0)
 	assert_str(archer.get_display_name()).is_equal("Arqueiro esqueleto")
 	arrow.free()
 
 
-func test_the_archer_hits_from_ten_meters() -> void:
-	await _shoots_from_afar(ARCHER, 10.0)
+func test_the_archer_reaches_as_far_as_the_player_rogue_and_no_farther() -> void:
+	arena = TestArena.new(self)
+	var archer := arena.spawn(ARCHER, Vector3.ZERO) as Enemy
+	var arrow := (archer.attack as RangedAttack).projectile_scene.instantiate() as Projectile
+	var player_bolt := PLAYER_BOLT.instantiate() as Projectile
+
+	assert_float(archer.profile.attack_range).is_less_equal(player_bolt.max_distance)
+	assert_float(arrow.max_distance).is_equal(player_bolt.max_distance)
+	arrow.free()
+	player_bolt.free()
+
+
+func test_the_archer_hits_from_five_meters() -> void:
+	await _shoots_from_afar(ARCHER, 5.0)
 
 
 func test_the_summoner_is_an_elite_caster_that_raises_skeletons() -> void:
