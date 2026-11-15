@@ -43,7 +43,7 @@ autowrap_mode = 3
 [node name="Lord" type="Label" parent="Center/Panel/Content"]
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
-text = "O Lorde honra o acordo. Desta vez, não haverá execução."
+text = "O Lorde espera vocês na vila para acertar o contrato."
 horizontal_alignment = 1
 autowrap_mode = 3
 
@@ -51,4 +51,4 @@ autowrap_mode = 3
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 4
-text = "Voltar ao menu"
+text = "Voltar à vila"

@@ -6,6 +6,8 @@ extends Node
 
 const EXECUTION := "res://scenes/cutscenes/execution.tscn"
 const MAIN_MENU := "res://scenes/ui/main_menu.tscn"
+## depois da vitória o grupo volta à vila, e o Lorde cobra o contrato do jeito dele
+const EPILOGUE := "res://scenes/cutscenes/victory_epilogue.tscn"
 ## Fase bônus: o alçapão que o Necromante deixa ao morrer leva até ela.
 const BONUS_LEVEL := "res://scenes/levels/calabouco_escondido_level.tscn"
 const TRAPDOOR := preload("res://scenes/world/trapdoor.tscn")
@@ -56,7 +58,7 @@ func _ready() -> void:
 	death_screen.gave_up.connect(_give_up)
 	death_screen.revive_chosen.connect(_cast_vote)
 	if victory_screen:
-		victory_screen.back_to_menu.connect(_back_to_menu)
+		victory_screen.back_to_menu.connect(_return_to_village)
 	Net.player_left.connect(_on_player_left)
 	player.died.connect(_log_death)
 	capture_cursor()
@@ -358,6 +360,11 @@ func _on_resumed() -> void:
 func _on_player_revived() -> void:
 	if not pause_menu.visible:
 		capture_cursor()
+
+func _return_to_village() -> void:
+	Playtest.record("epilogue_started")
+	get_tree().change_scene_to_file.call_deferred(EPILOGUE)
+
 
 ## Reinicia as variáveis de progresso e retorna ao menu principal.
 func _back_to_menu() -> void:
