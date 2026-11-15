@@ -8,6 +8,9 @@ const BREAKABLE_PREFIXES := ["Prop_Crate", "keg", "crates_stacked", "barrel_"]
 const VERTICAL_REACH := 2.0
 
 @export var debris_scene: PackedScene
+## chance de soltar poção de cura ao quebrar, uma por jogador; quem sorteia é o host
+@export_range(0.0, 1.0) var potion_chance := 0.3
+@export var potion_scene: PackedScene = preload("res://scenes/world/health_potion.tscn")
 
 var _breakable_items := {}
 
@@ -37,11 +40,11 @@ func _request_break(cell: Vector3i) -> void:
 	var spot := to_global(map_to_local(cell))
 	var sender := multiplayer.get_remote_sender_id()
 	if _is_breakable(get_cell_item(cell)) and Adventurer.peer_can_reach(get_tree(), sender, spot, Character.REMOTE_HIT_REACH, false):
-		_break_cell.rpc(cell)
+		_break_cell.rpc(cell, randf() < potion_chance)
 
 
 @rpc("authority", "call_local", "reliable")
-func _break_cell(cell: Vector3i) -> void:
+func _break_cell(cell: Vector3i, drops_potion: bool) -> void:
 	if not _is_breakable(get_cell_item(cell)):
 		return
 	var spot := to_global(map_to_local(cell))
@@ -50,6 +53,8 @@ func _break_cell(cell: Vector3i) -> void:
 		var debris := debris_scene.instantiate() as Node3D
 		get_parent().add_child(debris)
 		debris.global_position = spot
+	if drops_potion and potion_scene:
+		LootDrop.spawn(get_parent(), potion_scene, "PropLoot_%d_%d_%d" % [cell.x, cell.y, cell.z], spot + Vector3.DOWN * cell_size.y * 0.5)
 
 
 func _is_breakable(item: int) -> bool:

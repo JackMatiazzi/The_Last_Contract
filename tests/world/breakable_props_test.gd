@@ -47,3 +47,24 @@ func test_wagons_and_fences_hold() -> void:
 
 	for cell: Vector3i in sturdy:
 		assert_int(props.get_cell_item(cell)).is_not_equal(GridMap.INVALID_CELL_ITEM)
+
+
+# chance pequena de poção ao quebrar, uma por jogador; quem sorteia é o host e manda o resultado junto
+func test_a_lucky_break_drops_a_health_potion() -> void:
+	props.potion_chance = 1.0
+	var props_before := props.get_used_cells().size()
+	knight.heavy_attack()
+	await arena.wait_seconds(knight.attack.heavy_impact_delay + 0.1)
+
+	# o giro pode quebrar mais de um objeto: cada um solta a sua (sozinho, uma por objeto)
+	var broken := props_before - props.get_used_cells().size()
+	assert_int(broken).is_greater(0)
+	assert_int(arena.root.find_children("*", "Potion", true, false).size()).is_equal(broken)
+
+
+func test_an_unlucky_break_drops_nothing() -> void:
+	props.potion_chance = 0.0
+	knight.heavy_attack()
+	await arena.wait_seconds(knight.attack.heavy_impact_delay + 0.1)
+
+	assert_int(arena.root.find_children("*", "Potion", true, false).size()).is_equal(0)
