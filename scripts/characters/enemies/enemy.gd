@@ -60,9 +60,13 @@ func take_damage(amount: float, source: Node3D = null) -> void:
 	super(amount, source)
 	if is_dead or not is_multiplayer_authority():
 		return
-	perception.acquire_target()
-	if perception.target != null:
-		perception.force_awareness(perception.target)
+	var attacker := source as Character
+	if attacker and attacker.is_in_group("players") and not attacker.is_dead:
+		perception.provoke(attacker)
+	else:
+		perception.acquire_target()
+		if perception.target != null:
+			perception.force_awareness(perception.target)
 	if brain.current_state_name == "Dormant" and ai_enabled:
 		brain.change_state("Awaken")
 
