@@ -104,7 +104,7 @@ func elapsed() -> float:
 	return snappedf((Time.get_ticks_msec() - _started_msec) / 1000.0, 0.1)
 
 
-static func position_of(node: Node3D) -> Array:
+func position_of(node: Node3D) -> Array:
 	return [snappedf(node.global_position.x, 0.1), snappedf(node.global_position.y, 0.1), snappedf(node.global_position.z, 0.1)]
 
 
