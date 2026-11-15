@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 # testes de ponta a ponta, um fluxo por chamada:
 #   solo       um contrato solo ate a segunda tentativa
+#   alcapao    do chefe morto ao calabouco apertando E no alcapao
 #   coop-enet  partida em grupo pela rede local (ENet, UDP)
 #   coop-ws    a mesma partida por WebSocket, o caminho do tunel Cloudflare
 #   coop-relay a mesma partida pela sala online com codigo, com a API (the-last-contract-api) rodando local
-# Sem argumento roda os quatro. PLAYERS escolhe o tamanho do grupo (padrao 4). API_DIR aponta a copia da
+# Sem argumento roda todos. PLAYERS escolhe o tamanho do grupo (padrao 4). API_DIR aponta a copia da
 # API, com npm ci feito; o padrao e a pasta ao lado do jogo.
 # O Godot pode sair com 0 mesmo com erro de script, entao o log tambem decide
 set -u
@@ -38,6 +39,12 @@ check_log() {
 run_solo() {
 	play solo_e2e.tscn > "$LOGS/solo.log" 2>&1
 	check_log solo $?
+}
+
+
+run_alcapao() {
+	play alcapao_e2e.tscn > "$LOGS/alcapao.log" 2>&1
+	check_log alcapao $?
 }
 
 # os clientes so entram depois que o host abriu a porta; maquina de CI fria demora a carregar o jogo.
@@ -97,17 +104,19 @@ run_relay() {
 
 case "${1:-todos}" in
 	solo) run_solo ;;
+	alcapao) run_alcapao ;;
 	coop-enet) run_coop coop-enet --host 127.0.0.1 ;;
 	coop-ws) run_coop coop-ws --host=ws ws://127.0.0.1:7777 ;;
 	coop-relay) run_relay ;;
 	todos)
 		run_solo
+		run_alcapao
 		run_coop coop-enet --host 127.0.0.1
 		run_coop coop-ws --host=ws ws://127.0.0.1:7777
 		run_relay
 		;;
 	*)
-		echo "uso: $0 [solo|coop-enet|coop-ws|coop-relay]"
+		echo "uso: $0 [solo|alcapao|coop-enet|coop-ws|coop-relay]"
 		exit 2
 		;;
 esac
