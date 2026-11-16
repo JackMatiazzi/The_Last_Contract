@@ -4,6 +4,10 @@ extends Node3D
 const WORLD_LAYER := 1
 const EYE_HEIGHT := 1.4
 const CHEST_HEIGHT := 1.0
+## em grupo, outro jogador precisa estar ao menos isso mais perto para tirar a atenção do alvo atual
+const RETARGET_MARGIN := 3.0
+## quem bate segura a atenção por esse tempo, mesmo com outro jogador mais perto
+const PROVOKED_TIME := 4.0
 
 var enemy: Enemy
 var target: Character
@@ -14,6 +18,7 @@ var time_since_aware := INF
 var sight_enabled := true
 
 var _sight_query := PhysicsRayQueryParameters3D.new()
+var _provoked_left := 0.0
 
 
 func _ready() -> void:
@@ -22,6 +27,7 @@ func _ready() -> void:
 
 
 func sense(delta: float) -> void:
+	_provoked_left = maxf(_provoked_left - delta, 0.0)
 	acquire_target()
 	time_since_aware += delta
 	can_see = sight_enabled and target != null and _sees(target)
@@ -44,25 +50,39 @@ func force_awareness(new_target: Character) -> void:
 	_mark_aware()
 
 
+## o jogador que bateu vira o alvo e segura a atenção por um tempo
+func provoke(attacker: Character) -> void:
+	_provoked_left = PROVOKED_TIME
+	force_awareness(attacker)
+
+
 func _mark_aware() -> void:
 	last_known_position = target.global_position
 	time_since_aware = 0.0
 
 
 func acquire_target() -> void:
+	var nearest := _nearest_living_player()
 	if target == null or not is_instance_valid(target) or target.is_dead:
-		target = _nearest_living_player()
+		target = nearest
+	elif _provoked_left == 0.0 and nearest != target and _distance_to(nearest) + RETARGET_MARGIN < _distance_to(target):
+		target = nearest
 
 
 func _nearest_living_player() -> Character:
 	var nearest: Character = null
 	var nearest_distance := INF
 	for player: Character in get_tree().get_nodes_in_group("players"):
-		var distance := player.global_position.distance_squared_to(enemy.global_position)
+		var distance := _distance_to(player)
 		if not player.is_dead and distance < nearest_distance:
 			nearest = player
 			nearest_distance = distance
 	return nearest
+
+
+# em 3D, para não preferir quem está num terraço acima só por estar perto no mapa
+func _distance_to(candidate: Character) -> float:
+	return candidate.global_position.distance_to(enemy.global_position)
 
 
 func _sees(candidate: Character) -> bool:

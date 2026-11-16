@@ -69,10 +69,7 @@ func _net_wake() -> void:
 # o tesouro cai em todas as maquinas com o mesmo nome, para a pocao ser a mesma em todas
 func _die_locally() -> void:
 	super()
-	var loot := loot_scene.instantiate() as Node3D
-	loot.name = "%sLoot" % name
-	get_parent().add_child(loot)
-	loot.global_position = global_position + model.global_basis.z * 1.4
+	LootDrop.spawn(get_parent(), loot_scene, "%sLoot" % name, global_position + model.global_basis.z * 1.4)
 
 
 func _unhandled_input(event: InputEvent) -> void:

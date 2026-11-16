@@ -10,10 +10,12 @@ const ORBIT_SPEED := 0.08
 
 @onready var menu_panel: Control = %MenuPanel
 @onready var settings_menu: SettingsMenu = %SettingsMenu
+@onready var leaderboard: LeaderboardPanel = %LeaderboardPanel
 
 
 func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	_show_why_the_match_ended()
 	Net.leave()
 	if Net.has_command_line():
 		get_tree().change_scene_to_file.call_deferred(LOBBY)
@@ -22,6 +24,8 @@ func _ready() -> void:
 	skeleton_animation.play("Idle")
 	%PlayButton.pressed.connect(_on_play_pressed)
 	%CoopButton.pressed.connect(get_tree().change_scene_to_file.bind(LOBBY))
+	%LeaderboardButton.pressed.connect(_open_leaderboard)
+	leaderboard.closed.connect(_close_leaderboard)
 	%SettingsButton.pressed.connect(_open_settings)
 	%QuitButton.pressed.connect(get_tree().quit)
 	settings_menu.closed.connect(_close_settings)
@@ -32,12 +36,31 @@ func _ready() -> void:
 		consent.open()
 
 
+# a partida em grupo caiu (sala fechou, host saiu): o jogo volta ao menu e diz por quê
+func _show_why_the_match_ended() -> void:
+	if Net.last_error.is_empty():
+		return
+	%Notice.text = Net.last_error
+	%Notice.show()
+	Net.last_error = ""
+
+
 func _process(delta: float) -> void:
 	camera_pivot.rotation.y += ORBIT_SPEED * delta
 
 
 func _on_play_pressed() -> void:
 	get_tree().change_scene_to_file(CHARACTER_SELECT)
+
+
+func _open_leaderboard() -> void:
+	menu_panel.hide()
+	leaderboard.open()
+
+
+func _close_leaderboard() -> void:
+	menu_panel.show()
+	_focus_for_gamepad(%LeaderboardButton)
 
 
 func _open_settings() -> void:

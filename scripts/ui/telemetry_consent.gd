@@ -3,7 +3,7 @@ extends Control
 ## Aviso de participação no playtest, mostrado uma vez no menu principal. Nada é enviado antes da
 ## escolha, e recusar não muda nada no jogo. Dá para mudar depois em Configurações > Dados.
 
-const TEXT := "Ajude a avaliar o jogo: ao fim de cada partida, o jogo envia um resumo (classe, resultado, duração, mortes, bênçãos e onde você caiu) com um código aleatório deste computador, sem o seu nome. No co-op pela sala online, o apelido também vai, como avisa o lobby. Os dados ficam 90 dias em servidores do Cloudflare, fora do Brasil. Você pode desistir ou apagar seus dados em Configurações > Dados. Contato: %s"
+const TEXT := "Ajude a avaliar o jogo: ao fim de cada partida, o jogo envia um resumo (classe, resultado, duração, mortes, bênçãos e onde você caiu) com um código aleatório deste computador, sem o seu nome. No co-op pela sala online, o apelido e o nome do grupo também vão e aparecem no placar público do jogo. Os dados ficam 90 dias em servidores do Cloudflare, fora do Brasil. Você pode desistir ou apagar seus dados em Configurações > Dados. Contato: %s"
 
 signal chosen
 

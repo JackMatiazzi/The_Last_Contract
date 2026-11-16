@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/characters/enemies/enemy.tscn" id="1_enemy"]
 [ext_resource type="PackedScene" path="res://assets/kaykit_skeletons/characters/Skeleton_Warrior.glb" id="2_model"]
@@ -7,6 +7,8 @@
 [ext_resource type="Script" path="res://scripts/combat/melee_attack.gd" id="5_attack"]
 [ext_resource type="AudioStream" path="res://resources/audio/swing.tres" id="snd_swing"]
 [ext_resource type="AudioStream" path="res://assets/audio/sfx/undead/elite_bell.ogg" id="snd_bell"]
+[ext_resource type="Script" path="res://scripts/combat/ranged_attack.gd" id="throw_script"]
+[ext_resource type="PackedScene" path="res://scenes/combat/thrown_axe.tscn" id="thrown_axe"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_elite"]
 radius = 0.55
@@ -15,13 +17,14 @@ height = 2.5
 [sub_resource type="BoxShape3D" id="BoxShape3D_hitbox"]
 size = Vector3(1.8, 2.0, 1.8)
 
-[node name="SkeletonElite" node_paths=PackedStringArray("animation_player", "attack") instance=ExtResource("1_enemy")]
+[node name="SkeletonElite" node_paths=PackedStringArray("animation_player", "attack", "throw_attack") instance=ExtResource("1_enemy")]
 max_health = 24.0
 knockback = 1.8
 walk_speed = 3.0
 run_speed = 5.5
 animation_player = NodePath("Model/Skeleton_Warrior/AnimationPlayer")
 attack = NodePath("Model/MeleeAttack")
+throw_attack = NodePath("Model/AxeThrow")
 profile = ExtResource("4_profile")
 
 [node name="CollisionShape3D" parent="."]
@@ -60,6 +63,20 @@ monitorable = false
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Model/MeleeAttack/Hitbox"]
 position = Vector3(0, 1.1, 1.1)
 shape = SubResource("BoxShape3D_hitbox")
+
+[node name="AxeThrow" type="Node3D" parent="Model"]
+script = ExtResource("throw_script")
+damage = 1.5
+cooldown = 4.0
+animations = PackedStringArray("Throw")
+impact_delay = 0.45
+recovery = 0.4
+move_factor = 0.0
+projectile_scene = ExtResource("thrown_axe")
+target_layers = 2
+
+[node name="Muzzle" type="Marker3D" parent="Model/AxeThrow"]
+position = Vector3(0, 1.6, 0.7)
 
 [node name="Aura" type="OmniLight3D" parent="."]
 position = Vector3(0, 1.6, 0)

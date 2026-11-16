@@ -71,3 +71,24 @@ func test_client_ids_do_not_follow_the_global_seed() -> void:
 
 	assert_int(first).is_not_equal(second)
 	assert_int(first).is_between(RelayPeer.HOST_ID + 1, RelayPeer.MAX_ID)
+
+
+# a sala derruba quem manda mais de 512 pacotes numa mensagem: o lote sai antes, por maior que seja a rajada
+class RecordingPeer extends RelayPeer:
+	var batches: Array[PackedByteArray] = []
+
+	func _send_batch(data: PackedByteArray) -> void:
+		batches.append(data)
+
+
+func test_a_burst_of_small_packets_never_goes_over_the_room_limit_in_one_message() -> void:
+	var peer := RecordingPeer.new()
+	peer._status = MultiplayerPeer.CONNECTION_CONNECTED
+	for i in 1000:
+		peer._put_packet_script(PackedByteArray([i % 256, 1, 2]))
+	peer._flush(true)
+
+	var counts := peer.batches.map(func(batch: PackedByteArray) -> int: return RelayPeer.decode_batch(batch).size())
+	assert_int(counts.reduce(func(total: int, count: int) -> int: return total + count, 0)).is_equal(1000)
+	assert_bool(counts.all(func(count: int) -> bool: return count <= RelayPeer.MAX_BATCH_RECORDS)).is_true()
+	assert_int(RelayPeer.MAX_BATCH_RECORDS).is_less(512)

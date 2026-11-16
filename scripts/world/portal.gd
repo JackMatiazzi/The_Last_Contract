@@ -127,9 +127,9 @@ func _follow(eye: Camera3D) -> void:
 	view_camera.near = maxf(eye.near, absf(to_local(eye.global_position).z) - NEAR_MARGIN)
 
 
-# recarga e som em todas as maquinas; so o dono do aventureiro move o boneco
+# recarga e som em todas as maquinas; so o dono do personagem move o boneco (os mortos-vivos sao do host)
 func _on_body_entered(body: Node3D) -> void:
-	var traveler := body as Adventurer
+	var traveler := body as Character
 	if traveler == null or traveler.is_dead or not is_linked():
 		return
 	var now := Time.get_ticks_msec() / 1000.0
@@ -142,7 +142,7 @@ func _on_body_entered(body: Node3D) -> void:
 		_send_through.call_deferred(traveler, link.exit_point())
 
 
-func _send_through(traveler: Adventurer, point: Vector3) -> void:
+func _send_through(traveler: Character, point: Vector3) -> void:
 	if is_instance_valid(traveler):
 		traveler.global_position = point
 		traveler.reset_physics_interpolation()

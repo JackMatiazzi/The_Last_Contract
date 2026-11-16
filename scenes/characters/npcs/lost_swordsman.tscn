@@ -210,3 +210,5 @@ monitorable = false
 [node name="Shape" type="CollisionShape3D" parent="Conversa"]
 position = Vector3(0, 1, 0)
 shape = SubResource("SphereShape3D_talk")
+
+[editable path="Model/Esqueleto"]

@@ -5,7 +5,7 @@
 [ext_resource type="PackedScene" path="res://assets/kaykit_skeletons/accessories/Skeleton_Staff.gltf" id="3_staff"]
 [ext_resource type="Resource" path="res://resources/enemies/skeleton_mage.tres" id="4_profile"]
 [ext_resource type="Script" path="res://scripts/combat/ranged_attack.gd" id="5_attack"]
-[ext_resource type="PackedScene" path="res://scenes/combat/necro_bolt.tscn" id="6_bolt"]
+[ext_resource type="PackedScene" path="res://scenes/combat/skeleton_mage_bolt.tscn" id="6_bolt"]
 [ext_resource type="AudioStream" path="res://assets/audio/sfx/combat/magic_cast.ogg" id="7_cast"]
 
 [node name="SkeletonMage" node_paths=PackedStringArray("animation_player", "attack") instance=ExtResource("1_enemy")]

@@ -64,10 +64,10 @@ const BASE_REGEN := 24.0
 @export var heavy_cost := 35.0
 ## por segundo de corrida
 @export var run_cost := 12.0
-## segurar o escudo cansa devagar; cada golpe defendido custa mais; sem estamina a guarda quebra
-@export var block_cost := 6.0
+## segurar o escudo cansa bem devagar; sem estamina a guarda quebra
+@export var block_cost := 2.0
 ## estamina gasta a cada golpe defendido
-@export var block_hit_cost := 12.0
+@export var block_hit_cost := 2.0
 # o urro que o esqueletinho tanto pede (so o Barbarian)
 @export var roars := false
 
@@ -235,6 +235,11 @@ static func peer_can_reach(tree: SceneTree, peer_id: int, point: Vector3, reach:
 	if adventurer == null or (alive_only and adventurer.is_dead):
 		return false
 	return adventurer.global_position.distance_to(point) <= reach
+
+
+## só os aventureiros ganham a vida a mais por tentativas; os mortos-vivos ficam com a deles
+func get_max_health() -> float:
+	return super() + RunState.extra_health()
 
 
 func set_display_name(display_name: String) -> void:

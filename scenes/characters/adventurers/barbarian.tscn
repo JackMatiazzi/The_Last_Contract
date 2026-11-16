@@ -39,6 +39,8 @@ heavy_animation_speed = 1.15
 heavy_impact_delay = 0.62
 heavy_cooldown_multiplier = 2.7
 breaks_walls = true
+heavy_launch_speed = 11.0
+heavy_launch_lift = 4.5
 
 [node name="Hitbox" type="Area3D" parent="Model/AxeAttack"]
 collision_layer = 0

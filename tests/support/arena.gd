@@ -74,3 +74,11 @@ func wait_physics(frames: int) -> void:
 
 func wait_seconds(seconds: float) -> void:
 	await wait_physics(ceili(seconds * Engine.physics_ticks_per_second))
+
+
+## a recarga dos golpes conta no relógio real; logo depois de um travamento (carregar a cena,
+## máquina ocupada) o tempo da engine corre na frente do relógio, e quadros ou timers chegam cedo
+func wait_real_seconds(seconds: float) -> void:
+	var until := Time.get_ticks_msec() + ceili(seconds * 1000.0)
+	while Time.get_ticks_msec() < until:
+		await root.get_tree().physics_frame

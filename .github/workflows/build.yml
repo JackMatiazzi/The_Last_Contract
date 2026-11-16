@@ -1,6 +1,6 @@
 name: Build
 
-# exporta Linux e Windows; roda nos PRs para o main, manualmente e dentro da release
+# exporta Linux (.tar.gz e .deb) e Windows; roda nos PRs para o main, manualmente e dentro da release
 on:
   pull_request:
     branches: [main]
@@ -47,7 +47,43 @@ jobs:
             (cd ${{ matrix.pasta }} && zip -q "$GITHUB_WORKSPACE/${{ matrix.pacote }}" ${{ matrix.arquivo }})
           fi
 
+      - name: Pacote .deb
+        if: matrix.preset == 'Linux'
+        run: |
+          raiz=deb/the-last-contract
+          install -Dm755 "${{ matrix.pasta }}/${{ matrix.arquivo }}" "$raiz/usr/bin/the-last-contract"
+          install -Dm644 assets/icon/icon.png "$raiz/usr/share/icons/hicolor/512x512/apps/the-last-contract.png"
+          install -Dm644 /dev/stdin "$raiz/usr/share/applications/the-last-contract.desktop" <<'ATALHO'
+          [Desktop Entry]
+          Type=Application
+          Name=The Last Contract
+          Exec=/usr/bin/the-last-contract
+          Icon=the-last-contract
+          Terminal=false
+          Categories=Game;ActionGame;
+          ATALHO
+          mkdir -p "$raiz/DEBIAN"
+          cat > "$raiz/DEBIAN/control" <<CONTROLE
+          Package: the-last-contract
+          Version: 0.1.${{ github.run_number }}
+          Section: games
+          Priority: optional
+          Architecture: amd64
+          Depends: libc6, libgl1, libvulkan1, libasound2 | libasound2t64, libpulse0
+          Maintainer: JackMatiazzi <JackMatiazzi@users.noreply.github.com>
+          Description: The Last Contract
+           Ação em terceira pessoa para até 4 jogadores contra uma vila tomada por mortos-vivos.
+          CONTROLE
+          dpkg-deb --root-owner-group --build "$raiz" TheLastContract-linux.deb
+          dpkg-deb --info TheLastContract-linux.deb
+
       - uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.pacote }}
           path: ${{ matrix.pacote }}
+
+      - uses: actions/upload-artifact@v7
+        if: matrix.preset == 'Linux'
+        with:
+          name: TheLastContract-linux.deb
+          path: TheLastContract-linux.deb

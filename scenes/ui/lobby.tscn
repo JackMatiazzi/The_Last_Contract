@@ -94,7 +94,7 @@ text = "Entrar na sala"
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
-text = "Na sala online, seu apelido aparece no placar público e ele e os dados da partida ficam guardados por 90 dias para avaliar o jogo (servidores do Cloudflare). Não use seu nome real. Para apagar, peça ao grupo do jogo."
+text = "Na sala online, seu apelido e o nome do grupo aparecem no placar público e ele e os dados da partida ficam guardados por 90 dias para avaliar o jogo (servidores do Cloudflare). Não use seu nome real. Para apagar, peça ao grupo do jogo."
 autowrap_mode = 3
 
 [node name="OtherWaysToggle" type="Button" parent="Panel/Scroll/Content/ConnectPanel"]

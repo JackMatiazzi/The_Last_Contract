@@ -50,7 +50,7 @@ func test_knight_combo_cycles_three_swings() -> void:
 	for i in 3:
 		assert_bool(knight.attack.try_attack(knight)).is_true()
 		played.append(knight.animation_player.current_animation)
-		await arena.wait_seconds(knight.attack.effective_cooldown(knight) + 0.02)
+		await arena.wait_real_seconds(knight.attack.effective_cooldown(knight) + 0.02)
 
 	assert_array(played).is_equal(Array(knight.attack.animations))
 

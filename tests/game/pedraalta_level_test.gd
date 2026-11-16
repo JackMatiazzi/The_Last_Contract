@@ -149,3 +149,46 @@ func test_entrance_spots_keep_a_safe_margin_from_the_spawn() -> void:
 			continue
 		for player_spot: Marker3D in encounters.player_spots.get_children():
 			assert_float(spot.global_position.distance_to(player_spot.global_position)).is_greater(encounters.min_distance_from_player + 3.0)
+
+
+func test_the_crevasse_has_deep_water_that_kills() -> void:
+	var water := level.find_child("AguaDaFenda", true, false) as KillZone
+	assert_object(water).is_not_null()
+	var knight := session.player
+	knight.global_position = Vector3(4, 7.5, -36)
+
+	for i in 120:
+		await get_tree().physics_frame
+		if knight.is_dead:
+			break
+
+	assert_bool(knight.is_dead).is_true()
+
+
+# em grupo, quem ainda está de pé precisa saber quem caiu para ir reviver
+func _ally() -> Adventurer:
+	var ally := load("res://scenes/characters/adventurers/mage.tscn").instantiate() as Adventurer
+	ally.position = session.player.global_position + Vector3(2, 0.3, 0)
+	session.add_child(ally)
+	ally.set_display_name("Brann")
+	session.players.append(ally)
+	session.watch_player(ally)
+	return ally
+
+
+func test_when_an_ally_falls_the_screen_shows_their_name() -> void:
+	var ally := _ally()
+	await get_tree().physics_frame
+
+	ally.take_damage(999.0)
+
+	assert_str(session.hud.announcement.text).contains("Brann caiu")
+
+
+func test_when_you_fall_with_allies_standing_the_screen_says_so() -> void:
+	_ally()
+	await get_tree().physics_frame
+
+	session.player.take_damage(999.0)
+
+	assert_str(session.hud.announcement.text).contains("Você caiu")

@@ -57,5 +57,6 @@ jobs:
           make_latest: true
           files: |
             TheLastContract-linux.tar.gz
+            TheLastContract-linux.deb
             TheLastContract-windows.zip
             projeto.pdf

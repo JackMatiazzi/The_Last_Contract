@@ -17,6 +17,9 @@ const FLUSH_INTERVAL_MSEC := 100
 const HEADER_SIZE := 10
 ## a sala derruba mensagens acima de 64 KB; o lote sai antes de chegar perto disso
 const MAX_BATCH_BYTES := 60000
+## a sala recusa a mensagem com mais de 512 pacotes e derruba quem mandou: o lote sai antes de chegar lá,
+## mesmo com muitos personagens mandando posição ao mesmo tempo
+const MAX_BATCH_RECORDS := 400
 const SOCKET_BUFFER_BYTES := 1 << 17
 ## o jogo consome a fila a cada quadro; fila desse tamanho so acontece com alguem inundando a sala
 const MAX_INCOMING := 4096
@@ -34,6 +37,7 @@ var _status := CONNECTION_DISCONNECTED
 var _peers: Array[int] = []
 var _incoming: Array[Dictionary] = []
 var _outgoing := StreamPeerBuffer.new()
+var _outgoing_records := 0
 var _last_flush_msec := 0
 var _target_peer := 0
 var _transfer_channel := 0
@@ -109,6 +113,7 @@ func _poll() -> void:
 			# a sala fecha com codigo 4000+ e o motivo no fechamento quando recusa, expira ou o host sai
 			if refusal.is_empty() and _socket.get_close_code() >= ROOM_CLOSE_CODES:
 				refusal = _socket.get_close_reason()
+			Net.log_network("sala fechou a conexão: código %d, motivo \"%s\"" % [_socket.get_close_code(), refusal if not refusal.is_empty() else _socket.get_close_reason()])
 			_drop_connection()
 
 
@@ -168,6 +173,7 @@ func _drop_connection() -> void:
 		_remove_peer(peer)
 	_incoming.clear()
 	_outgoing.clear()
+	_outgoing_records = 0
 	_status = CONNECTION_DISCONNECTED
 	if _socket.get_ready_state() != WebSocketPeer.STATE_CLOSED:
 		_socket.close()
@@ -179,9 +185,14 @@ func _flush(now: bool) -> void:
 		return
 	if not now and Time.get_ticks_msec() - _last_flush_msec < FLUSH_INTERVAL_MSEC:
 		return
-	_socket.send(_outgoing.data_array)
+	_send_batch(_outgoing.data_array)
 	_outgoing.clear()
+	_outgoing_records = 0
 	_last_flush_msec = Time.get_ticks_msec()
+
+
+func _send_batch(data: PackedByteArray) -> void:
+	_socket.send(data)
 
 
 func _send_control(control: Dictionary) -> void:
@@ -194,9 +205,10 @@ func _put_packet_script(buffer: PackedByteArray) -> Error:
 		return ERR_UNCONFIGURED
 	if buffer.size() > _get_max_packet_size():
 		return ERR_OUT_OF_MEMORY
-	if _outgoing.get_size() + HEADER_SIZE + buffer.size() > MAX_BATCH_BYTES:
+	if _outgoing.get_size() + HEADER_SIZE + buffer.size() > MAX_BATCH_BYTES or _outgoing_records >= MAX_BATCH_RECORDS:
 		_flush(true)
 	_outgoing.put_data(encode_record(_target_peer, _transfer_channel, _transfer_mode, buffer))
+	_outgoing_records += 1
 	return OK
 
 
@@ -290,4 +302,5 @@ func _close() -> void:
 	_peers.clear()
 	_incoming.clear()
 	_outgoing.clear()
+	_outgoing_records = 0
 	_status = CONNECTION_DISCONNECTED

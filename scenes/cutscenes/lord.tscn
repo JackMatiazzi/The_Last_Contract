@@ -68,3 +68,5 @@ visible = false
 
 [node name="Skeleton_Minion_LegLeft" parent="Bones/Rig/Skeleton3D"]
 visible = false
+
+[editable path="Bones"]

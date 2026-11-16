@@ -4,12 +4,21 @@ extends Node
 ## Quem aceitou participar tambem manda o resumo ao servidor (TelemetryUplink)
 
 const DIR := "user://playtest"
+## sem mexer por mais que isso, o tempo não conta para nenhum dispositivo (lendo bilhete, parado, longe do PC)
+const IDLE_AFTER := 2.0
+const GAMEPAD := "controle"
+const KEYBOARD_MOUSE := "teclado_mouse"
+const STICK_HELD := 0.5
+const STICKS: Array[JoyAxis] = [JOY_AXIS_LEFT_X, JOY_AXIS_LEFT_Y, JOY_AXIS_RIGHT_X, JOY_AXIS_RIGHT_Y, JOY_AXIS_TRIGGER_LEFT, JOY_AXIS_TRIGGER_RIGHT]
 
 var enabled := OS.has_feature("template") or "--playtest" in OS.get_cmdline_user_args()
 var directory := DIR
 var last_path := ""
 var _run := {}
 var _started_msec := 0
+var _device_seconds := {}
+var _last_device := ""
+var _last_input_msec := 0
 var uplink := TelemetryUplink.new()
 
 
@@ -57,6 +66,8 @@ func start_run(adventurer: String, players: int, level: String) -> void:
 	if not enabled:
 		return
 	_started_msec = Time.get_ticks_msec()
+	_device_seconds = {GAMEPAD: 0.0, KEYBOARD_MOUSE: 0.0}
+	_last_device = ""
 	var started_at := Time.get_datetime_string_from_system()
 	# o peer separa as instancias de um co-op aberto na mesma maquina
 	var file_name := "%s_%s_p%d_%03d.json" % [started_at.replace(":", "-"), adventurer.to_snake_case(), multiplayer.get_unique_id(), _started_msec % 1000]
@@ -89,7 +100,7 @@ func record(kind: String, data := {}) -> void:
 func finish(result: String) -> void:
 	if not is_running():
 		return
-	record(result)
+	record(result, device_usage())
 	_run["result"] = result
 	_run["duration"] = elapsed()
 	_save()
@@ -98,6 +109,51 @@ func finish(result: String) -> void:
 	else:
 		uplink.send_coop(_run, result)
 	_run = {}
+
+
+## o dispositivo mais usado na partida e quanto do tempo jogado foi no controle; vazio se ninguém mexeu
+func device_usage() -> Dictionary:
+	var total: float = _device_seconds.get(GAMEPAD, 0.0) + _device_seconds.get(KEYBOARD_MOUSE, 0.0)
+	if total <= 0.0:
+		return {}
+	var share: float = _device_seconds[GAMEPAD] / total
+	return {"device": GAMEPAD if share > 0.5 else KEYBOARD_MOUSE, "gamepad_share": snappedf(share, 0.01)}
+
+
+func _input(event: InputEvent) -> void:
+	if not is_running():
+		return
+	var gamepad: bool = event is InputEventJoypadButton or (event is InputEventJoypadMotion and absf(event.axis_value) > STICK_HELD)
+	var moved_mouse: bool = event is InputEventMouseMotion and event.screen_relative.length() > Settings.MOUSE_SWITCH_DISTANCE
+	if gamepad:
+		_touch(GAMEPAD)
+	elif event is InputEventKey or event is InputEventMouseButton or moved_mouse:
+		_touch(KEYBOARD_MOUSE)
+
+
+# analógico parado inclinado e tecla segurada não geram evento novo, mas o jogador continua jogando
+func _process(delta: float) -> void:
+	if not is_running():
+		return
+	if _gamepad_held():
+		_touch(GAMEPAD)
+	elif Input.is_anything_pressed() and not _last_device.is_empty():
+		_last_input_msec = Time.get_ticks_msec()
+	if not _last_device.is_empty() and Time.get_ticks_msec() - _last_input_msec <= IDLE_AFTER * 1000.0:
+		_device_seconds[_last_device] += delta
+
+
+func _touch(device: String) -> void:
+	_last_device = device
+	_last_input_msec = Time.get_ticks_msec()
+
+
+static func _gamepad_held() -> bool:
+	for pad in Input.get_connected_joypads():
+		for axis in STICKS:
+			if absf(Input.get_joy_axis(pad, axis)) > STICK_HELD:
+				return true
+	return false
 
 
 func elapsed() -> float:

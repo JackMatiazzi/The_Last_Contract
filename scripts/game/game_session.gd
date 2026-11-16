@@ -117,7 +117,7 @@ func _spawn_players() -> void:
 		add_child(adventurer)
 		adventurer.set_display_name(Net.display_name(peer_id))
 		players.append(adventurer)
-		adventurer.died.connect(_on_player_died)
+		watch_player(adventurer)
 		if peer_id == multiplayer.get_unique_id():
 			player = adventurer
 	player.camera.make_current()
@@ -234,6 +234,7 @@ func descend_to_bonus() -> void:
 
 @rpc("authority", "call_local", "reliable")
 func _net_descend() -> void:
+	Net.log_network("descendo pelo alçapão")
 	_trapdoor.close()
 	_contract_ended = true
 	Playtest.record("trapdoor_entered")
@@ -242,11 +243,17 @@ func _net_descend() -> void:
 	get_tree().change_scene_to_file.call_deferred(BONUS_LEVEL)
 
 
-# solo e um grupo de um: cai todo mundo, vota todo mundo
-func _on_player_died() -> void:
+func watch_player(adventurer: Adventurer) -> void:
+	adventurer.died.connect(_on_player_died.bind(adventurer))
+
+
+# solo e um grupo de um: cai todo mundo, vota todo mundo. Em grupo, quem está de pé vê quem caiu
+func _on_player_died(fallen: Adventurer) -> void:
 	if not _all_players_dead():
-		if player.is_dead:
+		if fallen == player:
 			hud.announce("Você caiu. Seus aliados ainda lutam.")
+		else:
+			hud.announce("%s caiu. Leve uma poção para reviver." % fallen.get_display_name())
 		return
 	_on_party_down()
 

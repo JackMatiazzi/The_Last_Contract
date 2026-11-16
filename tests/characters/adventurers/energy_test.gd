@@ -323,3 +323,24 @@ func test_running_out_of_stamina_ends_the_run_until_the_next_tap() -> void:
 	await arena.wait_seconds(0.4)
 
 	assert_bool(runner.wants_to_run()).is_false()
+
+
+# o escudo ficou barato: 2 de estamina por segundo segurando e 2 por golpe defendido
+func test_holding_the_shield_for_a_second_costs_about_two_stamina() -> void:
+	knight.use_secondary()
+	await arena.wait_physics(2)
+	var before := knight.stamina.current
+
+	await arena.wait_seconds(1.0)
+
+	assert_float(before - knight.stamina.current).is_between(1.4, 2.6)
+
+
+func test_a_blocked_hit_costs_two_stamina() -> void:
+	knight.use_secondary()
+	await arena.wait_physics(2)
+	var before := knight.stamina.current
+
+	knight.take_damage(1.0, skeleton)
+
+	assert_float(before - knight.stamina.current).is_equal_approx(2.0, 0.3)

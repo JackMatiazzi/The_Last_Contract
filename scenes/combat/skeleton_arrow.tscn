@@ -8,13 +8,13 @@
 radius = 0.15
 
 [node name="SkeletonArrow" type="Area3D"]
-editor_description = "Flecha do arqueiro esqueleto: mais rápida que a magia, voa até 16 m."
+editor_description = "Flecha do arqueiro esqueleto: mais rápida que a magia, voa até 6 m, o alcance do Rogue."
 collision_layer = 0
 monitorable = false
 script = ExtResource("1_projectile")
 impact_scene = ExtResource("2_impact")
 speed = 22.0
-max_distance = 16.0
+max_distance = 6.0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 shape = SubResource("SphereShape3D_arrow")
