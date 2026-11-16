@@ -96,3 +96,22 @@ func test_the_bigger_sword_hits_an_enemy_farther_away() -> void:
 
 	assert_float(near.health).is_equal(4.0)
 	assert_float(far.health).is_equal(5.0)
+
+
+func _sword_height_at(knight: Adventurer, animation_time: float) -> float:
+	knight.animation_player.play(knight.attack.heavy_animation)
+	knight.animation_player.seek(animation_time, true)
+	await arena.wait_physics(1)
+	return _sword_of(knight).global_position.y
+
+
+# o dano do golpe pesado sai com a espada descendo, não erguida no alto antes do golpe
+func test_the_heavy_hit_lands_while_the_sword_comes_down() -> void:
+	var knight := arena.spawn(SCENE, Vector3.ZERO) as Adventurer
+	await arena.wait_physics(2)
+	var impact := knight.attack.heavy_impact_delay * knight.attack.heavy_animation_speed
+
+	var before: float = await _sword_height_at(knight, impact - 0.05)
+	var falling: float = before - await _sword_height_at(knight, impact)
+
+	assert_float(falling).is_greater(0.05)
