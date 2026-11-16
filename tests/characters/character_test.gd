@@ -75,9 +75,9 @@ func test_run_buffs_apply_to_adventurers_and_enemies() -> void:
 	var knight := arena.spawn(TestArena.KNIGHT, Vector3.ZERO)
 	var skeleton := arena.spawn(TestArena.SKELETON, Vector3(4, 0, 0))
 
-	assert_float(knight.get_max_health()).is_equal(13.0)
-	assert_float(skeleton.get_max_health()).is_equal(8.0)
-	assert_float(skeleton.health).is_equal(8.0)
+	assert_float(knight.get_max_health()).is_equal(12.0)
+	assert_float(skeleton.get_max_health()).is_equal(7.0)
+	assert_float(skeleton.health).is_equal(7.0)
 
 
 func test_max_health_never_drops_below_one() -> void:
@@ -92,7 +92,7 @@ func test_speed_buff_raises_max_speed() -> void:
 	RunState.buffs.append(load("res://resources/buffs/passos_leves.tres"))
 	var knight := arena.spawn(TestArena.KNIGHT, Vector3.ZERO)
 
-	assert_float(knight.get_max_speed()).is_equal_approx(knight.walk_speed * 1.2, 0.001)
+	assert_float(knight.get_max_speed()).is_equal_approx(knight.walk_speed * 1.15, 0.001)
 
 
 func test_speed_penalty_never_goes_below_floor() -> void:

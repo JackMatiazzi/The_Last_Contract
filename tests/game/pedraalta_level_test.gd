@@ -52,12 +52,17 @@ func test_every_group_spot_belongs_to_a_zone() -> void:
 		assert_bool(spot.has_meta("zone")).override_failure_message("%s sem zona" % spot.name).is_true()
 
 
-func test_five_groups_one_in_each_zone() -> void:
-	var zones := _groups().map(_zone_of)
-
+# todas as zonas têm grupo; os grupos a mais vão para zonas diferentes, nunca três na mesma
+func _check_spread(zones: Array) -> void:
 	assert_int(zones.size()).is_equal(encounters.group_count)
+	for zone in ["A", "B", "C", "D", "E"]:
+		assert_int(zones.count(zone)).override_failure_message("zona %s sem grupo" % zone).is_greater_equal(1)
 	for zone in zones:
-		assert_int(zones.count(zone)).override_failure_message("dois grupos na zona %s" % zone).is_equal(1)
+		assert_int(zones.count(zone)).override_failure_message("grupos demais na zona %s" % zone).is_less_equal(2)
+
+
+func test_every_zone_gets_a_group_and_the_extras_spread_out() -> void:
+	_check_spread(_groups().map(_zone_of))
 
 
 func test_the_spread_holds_on_every_draw() -> void:
@@ -65,10 +70,7 @@ func test_the_spread_holds_on_every_draw() -> void:
 	for draw in 20:
 		for group in _groups():
 			group.free()
-		var zones := encounters.spawn_groups(player_position).map(_zone_of)
-		assert_int(zones.size()).is_equal(encounters.group_count)
-		for zone in zones:
-			assert_int(zones.count(zone)).is_equal(1)
+		_check_spread(encounters.spawn_groups(player_position).map(_zone_of))
 
 
 func test_every_group_spot_can_walk_to_every_player_spot() -> void:

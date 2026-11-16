@@ -14,7 +14,7 @@ height = 2.4
 
 [node name="SkeletonBattlemage" node_paths=PackedStringArray("animation_player", "attack") instance=ExtResource("1_enemy")]
 editor_description = "Mago de batalha (elite): não invoca ninguém, só atira. Mais vida, tiro mais forte, mais rápido e de mais longe que o mago comum."
-max_health = 12.0
+max_health = 16.0
 knockback = 1.4
 walk_speed = 2.4
 run_speed = 3.2

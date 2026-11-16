@@ -1,6 +1,9 @@
 class_name Enemy
 extends Character
 
+## altura do peito do alvo, onde mira quem ataca de longe
+const AIM_HEIGHT := 1.0
+
 @export var profile: EnemyProfile
 ## desligado, o cerebro nao decide nada (cenas paradas e testes)
 @export var ai_enabled := true
@@ -62,6 +65,15 @@ func take_damage(amount: float, source: Node3D = null) -> void:
 		perception.force_awareness(perception.target)
 	if brain.current_state_name == "Dormant" and ai_enabled:
 		brain.change_state("Awaken")
+
+
+## Quem ataca de longe mira no peito do alvo que está vendo; o corpo pode ainda estar virando.
+## Sem alvo, mira para a frente como os outros personagens.
+func get_aim_point() -> Vector3:
+	var target := perception.target
+	if target and is_instance_valid(target) and not target.is_dead:
+		return target.global_position + Vector3.UP * AIM_HEIGHT
+	return super()
 
 
 func get_display_name() -> String:

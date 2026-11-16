@@ -3,6 +3,7 @@ extends Area3D
 ## a area so pega personagens; parede e checada por raio para nao atravessar em alta velocidade
 
 const WORLD_LAYER := 1
+const ADVENTURER_LAYER := 2
 const STICK_DEPTH := 0.15
 const BREAK_RADIUS := 0.9
 ## sai um pouco a frente do outro portal para nao contar a passagem de novo
@@ -75,6 +76,9 @@ func _physics_process(delta: float) -> void:
 
 
 func _pass_through(gate: Portal, crossing: Vector3) -> void:
+	# do outro lado o tiro de um aventureiro também pode acertar aventureiros (fogo amigo pelo portal)
+	if _shooter is Adventurer:
+		collision_mask |= ADVENTURER_LAYER
 	var came_from := global_position
 	global_transform = gate.carry(Transform3D(global_basis, crossing), came_from)
 	_direction = -global_basis.z

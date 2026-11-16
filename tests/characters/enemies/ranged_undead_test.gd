@@ -147,3 +147,16 @@ func test_the_levels_can_draw_the_new_groups() -> void:
 
 		assert_array(groups).override_failure_message(path).contains(NEW_GROUPS)
 		level.free()
+
+
+# o tiro vai em quem ele está vendo, mesmo antes de terminar de virar o corpo para lá
+func test_a_caster_aims_at_its_target_not_where_its_body_faces() -> void:
+	arena = TestArena.new(self)
+	var player := arena.spawn(TestArena.KNIGHT, Vector3(6, 0, 0))
+	var mage := await _hunting(MAGE, player)
+	mage.model.rotation.y = 0.0
+
+	var aim := mage.get_aim_point()
+
+	assert_float(aim.x).is_greater(4.0)
+	assert_float(absf(aim.z)).is_less(1.5)

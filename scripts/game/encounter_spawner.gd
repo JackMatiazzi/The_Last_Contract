@@ -12,7 +12,7 @@ extends Node3D
 @export var boss_spot: Marker3D
 @export var group_scenes: Array[PackedScene] = []
 ## grupos sorteados por tentativa
-@export var group_count := 5
+@export var group_count := 7
 ## os grupos nascem pelo menos a esta distancia do jogador
 @export var min_distance_from_player := 16.0
 ## a zona da entrada sempre recebe o grupo mais facil, para o primeiro encontro ensinar
@@ -28,7 +28,7 @@ func spawn_groups(player_position: Vector3) -> Array[EnemyGroup]:
 	var spots := _markers(group_spots).filter(func(spot: Marker3D) -> bool:
 		return spot.global_position.distance_to(player_position) >= min_distance_from_player)
 	spots.shuffle()
-	spots = _one_per_zone(spots)
+	spots = _spread_by_zone(spots)
 	var scenes := group_scenes.duplicate()
 	scenes.shuffle()
 	var spawned: Array[EnemyGroup] = []
@@ -43,19 +43,26 @@ func spawn_groups(player_position: Vector3) -> Array[EnemyGroup]:
 		spawned.append(group)
 	return spawned
 
-## pontos com metadata zone: no maximo um grupo por zona, para os grupos nao se amontoarem
-## pontos sem zona (mapas antigos) entram todos, como antes
-func _one_per_zone(spots: Array) -> Array:
-	var used := {}
-	var kept := []
+## pontos com metadata zone: primeiro um grupo em cada zona, depois os grupos a mais em zonas que ainda
+## têm só um, para não amontoar. Pontos sem zona (mapas antigos) entram todos, como antes
+func _spread_by_zone(spots: Array) -> Array:
+	var per_zone := {}
+	var first_round := []
+	var second_round := []
 	for spot: Marker3D in spots:
 		var zone: Variant = spot.get_meta("zone", null)
-		if zone != null and used.has(zone):
+		if zone == null:
+			first_round.append(spot)
 			continue
-		if zone != null:
-			used[zone] = true
-		kept.append(spot)
-	return kept
+		var count: int = per_zone.get(zone, 0)
+		if count == 0:
+			first_round.append(spot)
+		elif count == 1:
+			second_round.append(spot)
+		else:
+			continue
+		per_zone[zone] = count + 1
+	return first_round + second_round
 
 ## Retorna todos os nós do tipo Marker3D que são filhos diretos do nó pai informado.
 func _markers(parent: Node3D) -> Array[Marker3D]:
