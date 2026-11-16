@@ -45,10 +45,22 @@ func _ready() -> void:
 	if victory_screen:
 		victory_screen.back_to_menu.connect(_back_to_menu)
 	Net.player_left.connect(_on_player_left)
+	player.died.connect(_log_death)
 	capture_cursor()
 	Net.report_level_loaded()
 	if RunState.attempt == 1:
 		hud.show_start_hint()
+	_log_attempt()
+
+
+func _log_attempt() -> void:
+	if RunState.attempt == 1 and not Playtest.is_running():
+		Playtest.start_run(_adventurer_of(multiplayer.get_unique_id()).title, players.size(), get_parent().name)
+	Playtest.record("attempt_started", {"buffs": Array(RunState.buff_lines())})
+
+
+func _log_death() -> void:
+	Playtest.record("player_died", {"position": Playtest.position_of(player), "recap": player.damage_recap()})
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -117,6 +129,7 @@ func _track_groups(groups: Array[EnemyGroup]) -> void:
 func _on_group_cleared() -> void:
 	_groups_left -= 1
 	_show_objective()
+	Playtest.record("group_cleared", {"groups_left": _groups_left})
 	if _groups_left == 0 and multiplayer.is_server():
 		_summon_boss.rpc()
 
@@ -138,6 +151,7 @@ func _summon_boss() -> void:
 	hud.show_boss(boss)
 	hud.set_objective("Derrote o Necromante")
 	hud.announce_boss("O Necromante despertou na praça")
+	Playtest.record("boss_summoned")
 
 ## Chamado quando o chefe é derrotado para acionar a tela de vitória.
 func _on_boss_died() -> void:
@@ -147,6 +161,7 @@ func _on_boss_died() -> void:
 		return
 	release_cursor()
 	victory_screen.open(RunState.attempt)
+	Playtest.finish("victory")
 
 
 # solo e um grupo de um: cai todo mundo, vota todo mundo
@@ -266,6 +281,7 @@ func _on_player_revived() -> void:
 
 ## Reinicia as variáveis de progresso e retorna ao menu principal.
 func _back_to_menu() -> void:
+	Playtest.finish("back_to_menu")
 	RunState.reset()
 	get_tree().change_scene_to_file(MAIN_MENU)
 
@@ -280,7 +296,9 @@ func release_cursor() -> void:
 ## RPC enviado pelo Host ordenando a recarga da cena para a próxima tentativa.
 @rpc("authority", "call_local", "reliable")
 func _net_restart(buff_path: String, seed_value: int) -> void:
-	RunState.start_next_attempt(buff_at(buff_path))
+	var buff := buff_at(buff_path)
+	Playtest.record("blessing_chosen", {"buff": buff.title if buff else ""})
+	RunState.start_next_attempt(buff)
 	Net.match_seed = seed_value
 	Net.waiting_for_peers = true
 	get_tree().reload_current_scene()
@@ -289,6 +307,7 @@ func _net_restart(buff_path: String, seed_value: int) -> void:
 # em grupo, abandonar tira so quem saiu; se for o host, a partida acaba para todos
 func _abandon() -> void:
 	if Net.is_coop():
+		Playtest.finish("left_party")
 		Net.leave()
 		_back_to_menu()
 		return
@@ -316,10 +335,13 @@ func _net_end_contract(fulfilled: bool) -> void:
 	if fulfilled:
 		release_cursor()
 		victory_screen.open(RunState.attempt)
+		Playtest.finish("victory")
 	else:
+		Playtest.finish("contract_failed")
 		_execute()
 
 ## Limpa o estado da corrida e transiciona para a cena de execução.
 func _execute() -> void:
+	Playtest.finish("executed")
 	RunState.reset()
 	get_tree().change_scene_to_file(EXECUTION)
