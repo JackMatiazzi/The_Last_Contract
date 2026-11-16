@@ -581,13 +581,17 @@ text = "Última queda"
 [node name="BossPanel" type="VBoxContainer" parent="."]
 unique_name_in_owner = true
 visible = false
-anchors_preset = 5
+anchors_preset = 7
 anchor_left = 0.5
+anchor_top = 1.0
 anchor_right = 0.5
-offset_left = -190.0
-offset_top = 24.0
-offset_right = 190.0
-offset_bottom = 84.0
+anchor_bottom = 1.0
+offset_left = -56.0
+offset_top = -96.0
+offset_right = 284.0
+offset_bottom = -36.0
+grow_horizontal = 2
+grow_vertical = 0
 mouse_filter = 2
 theme_override_constants/separation = 4
 
@@ -603,7 +607,7 @@ horizontal_alignment = 1
 
 [node name="BossBar" type="ProgressBar" parent="BossPanel"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(380, 18)
+custom_minimum_size = Vector2(340, 18)
 layout_mode = 2
 mouse_filter = 2
 theme_override_styles/background = SubResource("StyleBoxFlat_boss_bg")

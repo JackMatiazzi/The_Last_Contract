@@ -118,3 +118,24 @@ func test_stamina_bar_dims_while_exhausted_and_brightens_when_full() -> void:
 
 	knight.stamina.refill()
 	assert_object(hud.stamina_bar.self_modulate).is_equal(Color.WHITE)
+
+
+# a barra do Necromante, no topo, invadia a barra de vida do jogador
+func test_the_boss_bar_does_not_cover_the_player_health_bar() -> void:
+	var hud := _spawn_hud(arena.spawn(TestArena.KNIGHT, Vector3.ZERO))
+	var boss := arena.spawn(TestArena.SKELETON, Vector3(0, 0, 8))
+	hud.show_boss(boss)
+	await await_idle_frame()
+
+	var health := (hud.get_node("%HealthBar") as Control).get_global_rect()
+	var boss_bar := (hud.get_node("%BossPanel") as Control).get_global_rect()
+	assert_bool(health.intersects(boss_bar)).is_false()
+
+
+func test_the_boss_bar_does_not_cover_the_ability_cross() -> void:
+	var hud := _spawn_hud(arena.spawn(TestArena.KNIGHT, Vector3.ZERO))
+	hud.show_boss(arena.spawn(TestArena.SKELETON, Vector3(0, 0, 8)))
+	await await_idle_frame()
+
+	var cross := (hud.get_node("Cross") as Control).get_global_rect()
+	assert_bool(cross.intersects((hud.get_node("%BossPanel") as Control).get_global_rect())).is_false()
