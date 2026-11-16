@@ -135,14 +135,16 @@ func _interact_like_players() -> void:
 	var mimics := scene.find_children("*", "Mimic", true, false)
 	var me := session().player
 	if multiplayer.get_unique_id() == _first_client():
-		for i in 8:
-			if michio.is_companion:
+		# o convite só vem depois das falas do andar; E com o convite aberto aceita
+		for i in 25:
+			if not is_instance_valid(michio) or michio.is_companion:
 				break
 			me.global_position = michio.global_position + Vector3(1.2, 0.3, 0)
 			await wait_physics(4)
 			press_action(&"interact")
 			Net.log_network("simulação: E no Michio (convite=%s)" % michio.awaiting_answer)
 			await get_tree().create_timer(1.0).timeout
+		check(is_instance_valid(michio) and michio.is_companion, "o Michio aceitou entrar no grupo")
 	elif role == "host" and not mimics.is_empty():
 		var mimic := mimics.front() as Node3D
 		me.global_position = mimic.global_position + Vector3(1.2, 0.3, 0)
@@ -151,7 +153,7 @@ func _interact_like_players() -> void:
 		Net.log_network("simulação: E no mímico")
 	await get_tree().create_timer(10.0).timeout
 	check(Net.is_online(), "a sala aguentou o E no Michio e no mímico")
-	Net.log_network("simulação: Michio no grupo=%s" % michio.is_companion)
+	Net.log_network("simulação: Michio no grupo depois do E de todos (o host pode já ter batido nele)=%s" % (is_instance_valid(michio) and michio.is_companion))
 
 
 # na primeira vez que algo aparece a placa compila o shader e o jogo engasga; a sala precisa aguentar o host
