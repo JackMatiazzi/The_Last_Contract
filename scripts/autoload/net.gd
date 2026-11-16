@@ -64,6 +64,10 @@ var player_count: int:
 var _command_line := Array(OS.get_cmdline_user_args())
 ## entre a troca de fase e a barreira ninguem transmite: o estado inicial sai igual em todas as maquinas
 var waiting_for_peers := false
+## quem não carrega a fase nova nesse tempo sai da partida: o host não fica parado esperando para sempre
+const LOAD_TIMEOUT := 40.0
+## cada espera tem um número: o aviso de tempo esgotado de uma espera antiga não derruba ninguém da nova
+var _load_round := 0
 # so o host conta quem ja terminou de carregar a fase atual
 var _loaded_peers: Array[int] = []
 
@@ -352,8 +356,11 @@ func report_level_loaded() -> void:
 		return
 	get_tree().paused = true
 	if multiplayer.is_server():
+		_load_round += 1
+		get_tree().create_timer(LOAD_TIMEOUT, true).timeout.connect(_give_up_on_slow_peers.bind(_load_round))
 		_register_loaded(1)
 	else:
+		log_network("carreguei %s, avisando o host" % _scene_name())
 		_net_level_loaded.rpc_id(1, match_seed)
 
 ## RPC enviado pelos clientes ao servidor confirmando o carregamento da fase.
@@ -369,6 +376,21 @@ func _register_loaded(peer_id: int) -> void:
 		_loaded_peers.append(peer_id)
 	_release_when_everyone_loaded()
 
+# no co-op de teste um cliente nunca chegou ao calabouço e o host ficou travado: passado o tempo, quem
+# não carregou sai da sala (volta ao menu com o motivo) e o resto do grupo segue
+func _give_up_on_slow_peers(load_round: int) -> void:
+	if load_round != _load_round or not waiting_for_peers or not multiplayer.is_server():
+		return
+	for peer_id: int in peers_in_order():
+		if peer_id == 1 or peer_id in _loaded_peers:
+			continue
+		log_network("jogador %d (%s) não carregou a fase em %d s e saiu da partida" % [peer_id, names.get(peer_id, "?"), LOAD_TIMEOUT])
+		if is_online():
+			multiplayer.multiplayer_peer.disconnect_peer(peer_id)
+		_on_peer_disconnected(peer_id)
+	_release_when_everyone_loaded()
+
+
 ## Quando todos os jogadores carregam a fase, despacha a liberação geral do jogo.
 func _release_when_everyone_loaded() -> void:
 	if not _loaded_peers.has(1) or _loaded_peers.size() < player_count:
@@ -379,7 +401,7 @@ func _release_when_everyone_loaded() -> void:
 ## RPC enviado pelo servidor para despausar o jogo em todos os clientes simultaneamente.
 @rpc("authority", "call_local", "reliable")
 func _net_everyone_loaded() -> void:
-	log_network("todos carregaram %s" % get_tree().current_scene.name)
+	log_network("todos carregaram %s" % _scene_name())
 	waiting_for_peers = false
 	get_tree().paused = false
 
@@ -487,12 +509,17 @@ func _on_connection_failed() -> void:
 	leave()
 	connection_failed.emit()
 
-## Callback executado quando o servidor fecha a sala ou cai.
+func _scene_name() -> String:
+	var scene := get_tree().current_scene
+	return str(scene.name) if scene else "?"
+
+
 ## linha com horário no godot.log: a queda de uma partida em grupo fica registrada em qualquer máquina
 func log_network(event: String) -> void:
 	print("[rede %s] %s" % [Time.get_datetime_string_from_system(), event])
 
 
+## Callback executado quando o servidor fecha a sala ou cai.
 func _on_server_disconnected() -> void:
 	log_network("o host desconectou: %s" % _relay_refusal("sem motivo"))
 	# o host recusa sem explicar; quem nunca recebeu a lista foi barrado na porta

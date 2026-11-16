@@ -12,6 +12,9 @@ func before_test() -> void:
 
 
 func after_test() -> void:
+	Net.waiting_for_peers = false
+	Net._loaded_peers = []
+	get_tree().paused = false
 	Net.leave()
 	Net.roster = _roster_before
 	Net.names = _names_before
@@ -249,3 +252,26 @@ func test_leaving_forgets_the_group_name() -> void:
 	Net.leave()
 
 	assert_str(Net.group_name).is_empty()
+
+
+# na partida em que o host desceu e um cliente não chegou ao calabouço, o host ficou parado para sempre
+func test_a_player_who_never_loads_the_new_stage_is_dropped_after_the_wait() -> void:
+	Net.roster = {1: 0, 2: 1}
+	Net.names = {1: "Host", 2: "Lento"}
+	Net.waiting_for_peers = true
+	Net._loaded_peers = [1]
+
+	Net._give_up_on_slow_peers(Net._load_round)
+
+	assert_bool(Net.roster.has(2)).is_false()
+	assert_bool(Net.waiting_for_peers).is_false()
+
+
+func test_an_old_timer_does_not_drop_anyone_from_a_newer_wait() -> void:
+	Net.roster = {1: 0, 2: 1}
+	Net.waiting_for_peers = true
+	Net._loaded_peers = [1]
+
+	Net._give_up_on_slow_peers(Net._load_round - 1)
+
+	assert_bool(Net.roster.has(2)).is_true()
