@@ -368,3 +368,5 @@ outline_size = 12
 libraries = {
 &"": SubResource("AnimationLibrary_mimic")
 }
+
+[editable path="Model/Bau"]
