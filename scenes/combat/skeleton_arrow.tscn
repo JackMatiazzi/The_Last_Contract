@@ -8,7 +8,7 @@
 radius = 0.15
 
 [node name="SkeletonArrow" type="Area3D"]
-editor_description = "Flecha do arqueiro esqueleto: mais rápida que a magia, voa até 16 m."
+editor_description = "Flecha do arqueiro esqueleto: mais rápida que a magia, voa até 6 m, o alcance do Rogue."
 collision_layer = 0
 monitorable = false
 script = ExtResource("1_projectile")
