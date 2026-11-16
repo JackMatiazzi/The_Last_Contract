@@ -152,10 +152,15 @@ func _michio_joins_and_the_room_holds() -> void:
 		michio._net_invite.rpc()
 	if not await wait_until(func() -> bool: return michio.awaiting_answer, "convite do Michio chegar"):
 		return
+	# o host só aceita depois de ver o jogador perto, e a posição demora a chegar numa máquina lenta
 	if _is_helper():
-		session().player.global_position = michio.global_position + Vector3(1.5, 0.3, 0)
-		await wait_physics(10)
-		michio._request_answer.rpc_id(HOST_PEER, true)
+		for attempt in 20:
+			if michio.is_companion:
+				break
+			session().player.global_position = michio.global_position + Vector3(1.5, 0.3, 0)
+			await wait_physics(10)
+			michio._request_answer.rpc_id(HOST_PEER, true)
+			await get_tree().create_timer(0.5).timeout
 	if not await wait_until(func() -> bool: return michio.is_companion, "o Michio entrar no grupo"):
 		return
 	await get_tree().create_timer(20.0).timeout
