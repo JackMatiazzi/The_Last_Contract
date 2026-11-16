@@ -119,7 +119,8 @@ func test_elite_rises_and_hunts_the_player() -> void:
 	var elite := _elites()[0] as Enemy
 	assert_str(elite.brain.current_state_name).is_equal("Awaken")
 
-	await arena.wait_seconds(3.0)
+	# no caminho ele para um instante para arremessar o machado, e depois volta a caçar
+	await arena.wait_seconds(5.0)
 
 	assert_array(["Chase", "Attack"]).contains([elite.brain.current_state_name])
 	assert_float(elite.global_position.distance_to(player.global_position)).is_less(9.0)

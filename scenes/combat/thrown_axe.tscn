@@ -1,0 +1,25 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/projectile.gd" id="1_projectile"]
+[ext_resource type="PackedScene" path="res://assets/kaykit_skeletons/accessories/Skeleton_Axe.gltf" id="2_axe"]
+[ext_resource type="Script" path="res://scripts/combat/spin.gd" id="3_spin"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_axe"]
+radius = 0.3
+
+[node name="ThrownAxe" type="Area3D"]
+editor_description = "Machado que o esqueleto de elite arremessa: mais lento que a flecha, voa até 10 m girando."
+collision_layer = 0
+monitorable = false
+script = ExtResource("1_projectile")
+speed = 13.0
+max_distance = 10.0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("SphereShape3D_axe")
+
+[node name="Spin" type="Node3D" parent="."]
+script = ExtResource("3_spin")
+
+[node name="Axe" parent="Spin" instance=ExtResource("2_axe")]
+rotation = Vector3(1.5708, 0, 0)

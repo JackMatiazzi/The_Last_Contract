@@ -18,6 +18,11 @@ const AIM_HEIGHT := 1.0
 ## mancha deixada onde o corpo sumiu
 @export var remains_scene: PackedScene
 @export var rise_sound: AudioStreamPlayer3D
+## ataque à distância de quem também bate de perto (o machado arremessado do elite); vazio = só o ataque
+@export var throw_attack: RangedAttack
+## o arremesso só sai com o alvo visto entre essas distâncias: mais perto ele prefere bater
+@export var throw_min_distance := 3.5
+@export var throw_max_distance := 10.0
 
 var _corpse_timeline: Tween
 
@@ -78,6 +83,11 @@ func get_aim_point() -> Vector3:
 	if target and is_instance_valid(target) and not target.is_dead:
 		return target.global_position + Vector3.UP * AIM_HEIGHT
 	return super()
+
+
+## pode arremessar agora no alvo que está vendo, longe demais para o golpe
+func can_throw_at(distance: float) -> bool:
+	return throw_attack != null and distance >= throw_min_distance and distance <= throw_max_distance and throw_attack.can_attack(self)
 
 
 func get_display_name() -> String:

@@ -185,3 +185,41 @@ func test_a_caster_aims_at_its_target_not_where_its_body_faces() -> void:
 
 	assert_float(aim.x).is_greater(4.0)
 	assert_float(absf(aim.z)).is_less(1.5)
+
+
+# o elite também arremessa o machado em quem está fora do alcance do golpe
+const ELITE := "res://scenes/characters/enemies/skeleton_elite.tscn"
+
+
+func _thrown_axes() -> Array[Node]:
+	return arena.root.find_children("*", "Projectile", true, false).filter(func(node: Node) -> bool: return node.scene_file_path.ends_with("thrown_axe.tscn"))
+
+
+func test_the_elite_throws_its_axe_at_a_player_out_of_reach() -> void:
+	arena = TestArena.new(self)
+	await arena.bake_navigation()
+	var player := arena.spawn(TestArena.KNIGHT, Vector3(0, 0, 7.0))
+	await _hunting(ELITE, player)
+
+	var thrown := false
+	for i in 180:
+		await get_tree().physics_frame
+		if not _thrown_axes().is_empty():
+			thrown = true
+			break
+
+	assert_bool(thrown).is_true()
+
+
+func test_the_elite_does_not_throw_at_a_player_right_next_to_it() -> void:
+	arena = TestArena.new(self)
+	await arena.bake_navigation()
+	var player := arena.spawn(TestArena.KNIGHT, Vector3(0, 0, 1.4))
+	await _hunting(ELITE, player)
+
+	var thrown := false
+	for i in 120:
+		await get_tree().physics_frame
+		thrown = thrown or not _thrown_axes().is_empty()
+
+	assert_bool(thrown).is_false()
