@@ -9,7 +9,7 @@
 [ext_resource type="AudioStream" path="res://resources/audio/swing.tres" id="snd_swing"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_hitbox"]
-size = Vector3(1.6, 1.8, 1.6)
+size = Vector3(2.2, 1.8, 3)
 
 [node name="Knight" node_paths=PackedStringArray("animation_player", "attack", "block") instance=ExtResource("1_adventurer")]
 recovers_when_empty = false
@@ -38,7 +38,7 @@ collision_mask = 4
 monitorable = false
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Model/MeleeAttack/Hitbox"]
-position = Vector3(0, 1.1, 1.1)
+position = Vector3(0, 1.1, 1.6)
 shape = SubResource("BoxShape3D_hitbox")
 
 [node name="Block" type="Node" parent="."]

@@ -72,3 +72,27 @@ func test_full_combo_kills_skeleton_in_five_hits() -> void:
 
 	assert_bool(skeleton.is_dead).is_true()
 	assert_int(swings).is_equal(5)
+
+
+# espada em dobro: o golpe chega bem mais longe que o de antes (que parava em uns 2 m)
+func _sword_of(knight: Adventurer) -> Node3D:
+	return knight.find_child("1H_Sword", true, false) as Node3D
+
+
+func test_the_sword_is_twice_its_original_size() -> void:
+	var knight := arena.spawn(SCENE, Vector3.ZERO) as Adventurer
+
+	assert_vector(_sword_of(knight).scale).is_equal_approx(Vector3.ONE * 2.0, Vector3.ONE * 0.01)
+
+
+func test_the_bigger_sword_hits_an_enemy_farther_away() -> void:
+	var knight := arena.spawn(SCENE, Vector3.ZERO) as Adventurer
+	var near := arena.spawn(TestArena.SKELETON, Vector3(0, 0, 2.6))
+	var far := arena.spawn(TestArena.SKELETON, Vector3(0, 0, 4.5))
+	await arena.wait_physics(3)
+
+	knight.attack.try_attack(knight)
+	await arena.wait_seconds(knight.attack.impact_delay + 0.1)
+
+	assert_float(near.health).is_equal(4.0)
+	assert_float(far.health).is_equal(5.0)
