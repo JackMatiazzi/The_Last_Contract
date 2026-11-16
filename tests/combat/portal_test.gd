@@ -83,7 +83,8 @@ func test_walking_into_a_portal_comes_out_of_the_other() -> void:
 	assert_float(mage.global_position.distance_to(exit.global_position)).is_less(2.0)
 
 
-func test_skeletons_do_not_travel() -> void:
+# os mortos-vivos também atravessam: o portal vira armadilha e atalho para os dois lados
+func test_skeletons_travel_through_the_portal_too() -> void:
 	var entry := PORTAL.instantiate() as Portal
 	var exit := PORTAL.instantiate() as Portal
 	arena.root.add_child(entry)
@@ -95,7 +96,7 @@ func test_skeletons_do_not_travel() -> void:
 	var skeleton := arena.spawn(TestArena.SKELETON, Vector3(-6, 0, 0))
 	await arena.wait_physics(4)
 
-	assert_float(skeleton.global_position.distance_to(Vector3(-6, 0, 0))).is_less(1.0)
+	assert_float(skeleton.global_position.distance_to(exit.global_position)).is_less(2.0)
 
 
 func test_coming_out_does_not_send_you_straight_back() -> void:
