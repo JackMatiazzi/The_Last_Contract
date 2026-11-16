@@ -68,6 +68,8 @@ const BASE_REGEN := 24.0
 @export var block_cost := 6.0
 ## estamina gasta a cada golpe defendido
 @export var block_hit_cost := 12.0
+# o urro que o esqueletinho tanto pede (so o Barbarian)
+@export var roars := false
 
 var is_blocking := false
 ## 0 a 1; o deslocamento cresce com o quadrado para golpe leve tremer pouco
@@ -266,6 +268,10 @@ func next_ability() -> void:
 	_ability_index = (_ability_index + 1) % abilities.size()
 	attack = abilities[_ability_index]
 	ability_changed.emit()
+
+
+func can_use(item: QuickItem) -> bool:
+	return item.heal_amount > 0.0 or (item.mana_amount > 0.0 and mana != null)
 
 
 ## com a vida e a mana cheias o item nao e gasto

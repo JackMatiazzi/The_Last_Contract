@@ -29,6 +29,7 @@ var _groups_total := 0
 var _votes := {}
 var _vote_paths := PackedStringArray()
 var _vote_open := false
+var _contract_ended := false
 
 
 func _ready() -> void:
@@ -301,6 +302,22 @@ func _give_up() -> void:
 @rpc("authority", "call_local", "reliable")
 func _net_execute() -> void:
 	_execute()
+
+
+## fim de fase sem boss (o calabouco): cumprido abre a vitoria; com morto-vivo de pe, o contrato falha
+func end_contract(fulfilled: bool) -> void:
+	if multiplayer.is_server() and not _contract_ended:
+		_net_end_contract.rpc(fulfilled)
+
+
+@rpc("authority", "call_local", "reliable")
+func _net_end_contract(fulfilled: bool) -> void:
+	_contract_ended = true
+	if fulfilled:
+		release_cursor()
+		victory_screen.open(RunState.attempt)
+	else:
+		_execute()
 
 ## Limpa o estado da corrida e transiciona para a cena de execução.
 func _execute() -> void:
