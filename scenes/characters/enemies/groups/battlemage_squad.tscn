@@ -1,0 +1,22 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/characters/enemies/enemy_group.gd" id="1_group"]
+[ext_resource type="PackedScene" path="res://scenes/characters/enemies/skeleton_minion.tscn" id="2_minion"]
+[ext_resource type="PackedScene" path="res://scenes/characters/enemies/skeleton_mage.tscn" id="3_mage"]
+[ext_resource type="PackedScene" path="res://scenes/characters/enemies/skeleton_battlemage.tscn" id="4_battlemage"]
+
+[node name="BattlemageSquad" type="Node3D"]
+editor_description = "Esquadra do mago de batalha: dois esqueletos na frente, um mago comum e o mago de batalha atirando de trás."
+script = ExtResource("1_group")
+
+[node name="Frente1" parent="." instance=ExtResource("2_minion")]
+position = Vector3(-1.0, 0.1, 1.2)
+
+[node name="Frente2" parent="." instance=ExtResource("2_minion")]
+position = Vector3(1.0, 0.1, 1.2)
+
+[node name="Mago" parent="." instance=ExtResource("3_mage")]
+position = Vector3(-1.6, 0.1, -1.4)
+
+[node name="MagoDeBatalha" parent="." instance=ExtResource("4_battlemage")]
+position = Vector3(1.2, 0.1, -1.8)

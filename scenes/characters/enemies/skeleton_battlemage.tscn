@@ -1,0 +1,68 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/characters/enemies/enemy.tscn" id="1_enemy"]
+[ext_resource type="PackedScene" path="res://assets/kaykit_skeletons/characters/Skeleton_Mage.glb" id="2_model"]
+[ext_resource type="PackedScene" path="res://assets/kaykit_skeletons/accessories/Skeleton_Staff.gltf" id="3_staff"]
+[ext_resource type="Resource" path="res://resources/enemies/skeleton_battlemage.tres" id="4_profile"]
+[ext_resource type="Script" path="res://scripts/combat/ranged_attack.gd" id="5_attack"]
+[ext_resource type="PackedScene" path="res://scenes/combat/necro_bolt.tscn" id="6_bolt"]
+[ext_resource type="AudioStream" path="res://assets/audio/sfx/combat/magic_cast.ogg" id="7_cast"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_battlemage"]
+radius = 0.55
+height = 2.4
+
+[node name="SkeletonBattlemage" node_paths=PackedStringArray("animation_player", "attack") instance=ExtResource("1_enemy")]
+editor_description = "Mago de batalha (elite): não invoca ninguém, só atira. Mais vida, tiro mais forte, mais rápido e de mais longe que o mago comum."
+max_health = 12.0
+knockback = 1.4
+walk_speed = 2.4
+run_speed = 3.2
+animation_player = NodePath("Model/Skeleton_Mage/AnimationPlayer")
+attack = NodePath("Model/MagicAttack")
+profile = ExtResource("4_profile")
+
+[node name="CollisionShape3D" parent="."]
+position = Vector3(0, 1.2, 0)
+shape = SubResource("CapsuleShape3D_battlemage")
+
+[node name="Model" parent="."]
+scale = Vector3(1.15, 1.15, 1.15)
+
+[node name="HealthBar3D" parent="."]
+position = Vector3(0, 3.0, 0)
+
+[node name="Skeleton_Mage" parent="Model" instance=ExtResource("2_model")]
+
+[node name="handslot_r" type="BoneAttachment3D" parent="Model/Skeleton_Mage/Rig/Skeleton3D"]
+bone_name = "handslot.r"
+
+[node name="Skeleton_Staff" parent="Model/Skeleton_Mage/Rig/Skeleton3D/handslot_r" instance=ExtResource("3_staff")]
+
+[node name="MagicAttack" type="Node3D" parent="Model" node_paths=PackedStringArray("sound")]
+script = ExtResource("5_attack")
+sound = NodePath("Sound")
+damage = 2.0
+cooldown = 1.6
+animations = PackedStringArray("Spellcast_Shoot")
+impact_delay = 0.55
+recovery = 0.3
+move_factor = 0.0
+projectile_scene = ExtResource("6_bolt")
+target_layers = 2
+
+[node name="Muzzle" type="Marker3D" parent="Model/MagicAttack"]
+position = Vector3(0, 1.3, 0.7)
+
+[node name="Sound" type="AudioStreamPlayer3D" parent="Model/MagicAttack"]
+stream = ExtResource("7_cast")
+max_distance = 30.0
+bus = &"SFX"
+
+[node name="Aura" type="OmniLight3D" parent="."]
+position = Vector3(0, 1.6, 0)
+light_color = Color(0.65, 0.35, 1, 1)
+light_energy = 1.4
+omni_range = 3.5
+
+[editable path="Model/Skeleton_Mage"]

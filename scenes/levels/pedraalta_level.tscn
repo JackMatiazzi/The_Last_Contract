@@ -6,6 +6,9 @@
 [ext_resource type="PackedScene" path="res://scenes/characters/enemies/groups/patrol.tscn" id="4_patrol"]
 [ext_resource type="PackedScene" path="res://scenes/characters/enemies/groups/guard_post.tscn" id="5_guard"]
 [ext_resource type="PackedScene" path="res://scenes/characters/enemies/groups/sleepers.tscn" id="6_sleepers"]
+[ext_resource type="PackedScene" path="res://scenes/characters/enemies/groups/casters.tscn" id="g_casters"]
+[ext_resource type="PackedScene" path="res://scenes/characters/enemies/groups/summoner_circle.tscn" id="g_circle"]
+[ext_resource type="PackedScene" path="res://scenes/characters/enemies/groups/battlemage_squad.tscn" id="g_squad"]
 [ext_resource type="PackedScene" path="res://scenes/ui/death_screen.tscn" id="7_death"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="8_hud"]
 [ext_resource type="PackedScene" path="res://scenes/ui/pause_menu.tscn" id="9_pause"]
@@ -407,7 +410,7 @@ script = ExtResource("3_spawner")
 player_spots = NodePath("../Navigation/Pedraalta/PlayerSpots")
 group_spots = NodePath("../Navigation/Pedraalta/GroupSpots")
 boss_spot = NodePath("../Navigation/Pedraalta/BossSpot")
-group_scenes = Array[PackedScene]([ExtResource("4_patrol"), ExtResource("5_guard"), ExtResource("6_sleepers")])
+group_scenes = Array[PackedScene]([ExtResource("4_patrol"), ExtResource("5_guard"), ExtResource("6_sleepers"), ExtResource("g_casters"), ExtResource("g_circle"), ExtResource("g_squad")])
 easy_zone = &"A"
 easy_group = ExtResource("6_sleepers")
 
