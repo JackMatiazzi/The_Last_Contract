@@ -68,3 +68,13 @@ func test_the_privacy_notice_is_next_to_the_online_room() -> void:
 
 	assert_bool(notice.is_visible_in_tree()).is_true()
 	assert_str(notice.text).contains("90 dias")
+
+
+func test_the_host_names_the_group_and_it_goes_to_the_room() -> void:
+	Net.host(Net.PORT, Net.Transport.ENET)
+	lobby._show_room(true)
+
+	lobby.group_name_input.text_submitted.emit("Os Desgarrados")
+
+	assert_bool(lobby.group_name_input.editable).is_true()
+	assert_str(Net.group_name).is_equal("Os Desgarrados")

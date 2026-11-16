@@ -65,3 +65,41 @@ func test_later_attempts_keep_writing_to_the_same_run() -> void:
 	var attempts := _events().filter(func(event: Dictionary) -> bool: return event["type"] == "attempt_started")
 	assert_int(attempts.size()).is_equal(2)
 	assert_int(int(attempts[1]["attempt"])).is_equal(2)
+
+
+func _event(kind: String) -> Dictionary:
+	var found := _events().filter(func(event: Dictionary) -> bool: return event["type"] == kind)
+	return found.front() if not found.is_empty() else {}
+
+
+func test_death_says_who_killed_and_in_which_stage() -> void:
+	var session := await _start_game()
+	var skeleton := session.get_parent().get_node("TestDummy") as Character
+
+	session.player.take_damage(999.0, skeleton)
+
+	var death := _event("player_died")
+	assert_str(death["enemy"]).is_equal(skeleton.get_display_name())
+	assert_str(death["stage"]).is_not_empty()
+	assert_str(death["hits"][-1][0]).is_equal(skeleton.get_display_name())
+	assert_float(death["taken"]).is_greater(0.0)
+
+
+func test_the_fallen_boss_and_the_trapdoor_are_logged() -> void:
+	var session := await _start_game()
+	session.boss = session.get_parent().get_node("TestDummy") as Enemy
+
+	session._on_boss_died()
+
+	assert_dict(_event("boss_killed")).is_not_empty()
+	assert_dict(_event("trapdoor_opened")).is_not_empty()
+
+
+func test_letting_the_trapdoor_close_is_logged() -> void:
+	var session := await _start_game()
+	session.trapdoor_time = 0.2
+	session.open_trapdoor_at(session.player.global_position + Vector3(4, 0, 0))
+
+	await get_tree().create_timer(0.6).timeout
+
+	assert_dict(_event("trapdoor_expired")).is_not_empty()

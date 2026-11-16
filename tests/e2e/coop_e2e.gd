@@ -51,8 +51,12 @@ func _report_to_the_online_room() -> void:
 		return
 	var answer := []
 	Net.match_report_sent.connect(func(accepted: bool) -> void: answer.append(accepted), CONNECT_ONE_SHOT)
-	var deaths: int = RunState.stats_of(multiplayer.get_unique_id()).deaths
-	Net.send_match_report({"classe": RunState.current_adventurer().title, "resultado": "left_party", "tentativas": RunState.attempt, "mortes": deaths, "minutos": 1.0, "eventos": []})
+	if Playtest.is_running() and Playtest.uplink.is_active():
+		# o caminho de verdade: o fim do contrato monta o resumo e manda pela fila do playtest
+		Playtest.finish("left_party")
+	else:
+		var deaths: int = RunState.stats_of(multiplayer.get_unique_id()).deaths
+		Net.send_match_report({"classe": RunState.current_adventurer().title, "resultado": "left_party", "tentativas": RunState.attempt, "mortes": deaths, "minutos": 1.0, "eventos": []})
 	if await wait_until(func() -> bool: return not answer.is_empty(), "resposta da sala ao relatorio"):
 		check(answer[0], "relatorio da partida aceito pela sala online")
 

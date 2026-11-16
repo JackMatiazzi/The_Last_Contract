@@ -12,6 +12,13 @@ const TRAPDOOR := preload("res://scenes/world/trapdoor.tscn")
 ## Segundos que o alçapão fica aberto. Se ninguém descer, o contrato fecha com a tela de vitória.
 const TRAPDOOR_TIME := 30.0
 const PLAYER_SPACING := 1.5
+## golpes guardados no evento de morte: mostram no painel como a morte aconteceu
+const HITS_ON_DEATH := 4
+const STAGE_NAMES := {
+	"res://scenes/levels/pedraalta_level.tscn": "Pedra Alta",
+	"res://scenes/levels/calabouco_escondido_level.tscn": "Calabouço",
+	"res://scenes/levels/village_level.tscn": "Vila",
+}
 
 ## so nas cenas de teste; com encounters o ponto e sorteado
 @export var player_spawn: Marker3D
@@ -59,14 +66,22 @@ func _ready() -> void:
 	_log_attempt()
 
 
+## Nome da fase para o playtest e o painel: o nome legível quando a fase é conhecida, senão o nó raiz.
+func stage_name() -> String:
+	return STAGE_NAMES.get(get_parent().scene_file_path, get_parent().name)
+
+
 func _log_attempt() -> void:
 	if RunState.attempt == 1 and not Playtest.is_running():
 		Playtest.start_run(_adventurer_of(multiplayer.get_unique_id()).title, players.size(), get_parent().name)
 	Playtest.record("attempt_started", {"buffs": Array(RunState.buff_lines())})
+	if get_parent().scene_file_path == BONUS_LEVEL:
+		Playtest.record("dungeon_entered", {"stage": stage_name()})
 
 
 func _log_death() -> void:
-	Playtest.record("player_died", {"position": Playtest.position_of(player), "recap": player.damage_recap()})
+	var details := {"position": Playtest.position_of(player), "recap": player.damage_recap(), "enemy": player.damage_log.death_cause(), "stage": stage_name(), "hits": player.damage_log.last_hits(HITS_ON_DEATH)}
+	Playtest.record("player_died", details.merged(player.damage_log.totals()))
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -162,6 +177,7 @@ func _summon_boss() -> void:
 ## com o grupo inteiro morto junto com ele não abre alçapão: vale a votação de bênção
 func _on_boss_died() -> void:
 	hud.set_objective("")
+	Playtest.record("boss_killed")
 	if multiplayer.is_server() and not _all_players_dead():
 		open_trapdoor_at(boss.global_position)
 
@@ -181,6 +197,7 @@ func _net_open_trapdoor(spot: Vector3) -> void:
 	_trapdoor.global_position = spot
 	_trapdoor_left = trapdoor_time
 	hud.announce("O Necromante caiu e abriu um alçapão no chão")
+	Playtest.record("trapdoor_opened")
 
 
 func _process(delta: float) -> void:
@@ -201,7 +218,9 @@ func _net_close_trapdoor() -> void:
 	_contract_ended = true
 	hud.set_objective("")
 	release_cursor()
-	victory_screen.open(RunState.attempt)
+	Playtest.record("trapdoor_expired")
+	if victory_screen:
+		victory_screen.open(RunState.attempt)
 	Playtest.finish("victory")
 
 
@@ -215,6 +234,7 @@ func descend_to_bonus() -> void:
 func _net_descend() -> void:
 	_trapdoor.close()
 	_contract_ended = true
+	Playtest.record("trapdoor_entered")
 	Net.waiting_for_peers = true
 	get_tree().change_scene_to_file(BONUS_LEVEL)
 
@@ -391,6 +411,7 @@ func end_contract(fulfilled: bool) -> void:
 @rpc("authority", "call_local", "reliable")
 func _net_end_contract(fulfilled: bool) -> void:
 	_contract_ended = true
+	Playtest.record("dungeon_exit", {"stage": stage_name()})
 	if fulfilled:
 		release_cursor()
 		victory_screen.open(RunState.attempt)

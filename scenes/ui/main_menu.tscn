@@ -8,6 +8,7 @@
 [ext_resource type="Script" uid="uid://c3j34pikkvjgh" path="res://scripts/audio/music_cue.gd" id="cue_script"]
 [ext_resource type="AudioStream" uid="uid://p4baon1vmweg" path="res://assets/audio/music/menu_medieval_fair.ogg" id="cue_track"]
 [ext_resource type="Texture2D" path="res://assets/ui/logo_seal_gold.svg" id="seal"]
+[ext_resource type="PackedScene" path="res://scenes/ui/telemetry_consent.tscn" id="consent"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_dusk"]
 sky_top_color = Color(0.12, 0.1, 0.16, 1)
@@ -150,6 +151,10 @@ Avaliação Grau 2 · Modelos: Kay Lousberg e Quaternius (CC0)"
 unique_name_in_owner = true
 grow_horizontal = 2
 grow_vertical = 2
+
+
+[node name="TelemetryConsent" parent="UI" instance=ExtResource("consent")]
+unique_name_in_owner = true
 
 [node name="MusicCue" type="Node" parent="." unique_id=300380614]
 script = ExtResource("cue_script")
