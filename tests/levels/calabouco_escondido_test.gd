@@ -84,6 +84,28 @@ func test_has_mana_potions_to_find() -> void:
 	assert_int(mana_potions.size()).is_greater(0)
 
 
+# morrer no calabouco recomeca do inicio dele: o grupo acha cura logo na entrada e ao chegar em cada andar
+func test_there_is_a_health_potion_at_the_start_and_at_each_floor() -> void:
+	var spots: Array[Vector3] = [_map().get_node("PlayerSpots/Player1").global_position]
+	for area in ["PontosDoEspadachim/AvisoAndar2", "PontosDoEspadachim/AvisoAndar3"]:
+		spots.append((_map().get_node(area) as Node3D).global_position)
+	var potions := _map().find_children("PocaoVida*", "", true, false)
+
+	for spot in spots:
+		var nearest := INF
+		for potion: Node3D in potions:
+			nearest = minf(nearest, potion.global_position.distance_to(spot))
+		assert_float(nearest).override_failure_message("sem poção de vida perto de %s" % spot).is_less(8.0)
+
+
+func test_every_potion_rests_on_the_floor() -> void:
+	var space := level.get_world_3d().direct_space_state
+	for potion: Node3D in _map().find_children("Pocao*", "", true, false):
+		var query := PhysicsRayQueryParameters3D.create(potion.global_position + Vector3.UP, potion.global_position + Vector3.DOWN, 1)
+		var hit := space.intersect_ray(query)
+		assert_bool(not hit.is_empty() and absf(hit.position.y - potion.global_position.y) < 0.3).override_failure_message("%s fora do chão" % potion.name).is_true()
+
+
 func test_the_skeletons_have_a_navigation_mesh() -> void:
 	var navigation := level.get_node("Navigation") as NavigationRegion3D
 
