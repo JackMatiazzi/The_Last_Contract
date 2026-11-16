@@ -36,6 +36,11 @@ const REMOTE_REACH_SLACK := 1.5
 const KNOCKBACK_DECAY := 14.0
 ## o recuo cresce com o dano ate o golpe pesado comum; o rapido empurra pouco para nao quebrar o combo
 const KNOCKBACK_MAX_DAMAGE := 2.0
+## o arremesso do golpe pesado é medido num personagem de empurrão comum: quem empurra pouco (elite,
+## Necromante) voa pouco; os tetos impedem um pedido de outra máquina de jogar alguém longe demais
+const LAUNCH_REFERENCE_KNOCKBACK := 4.0
+const MAX_LAUNCH_SPEED := 14.0
+const MAX_LAUNCH_LIFT := 7.0
 ## pausa da animacao quando o golpe acerta: da peso ao impacto
 const HITSTOP := 0.06
 const HITSTOP_HEAVY := 0.11
@@ -325,6 +330,33 @@ func _push_away_from(source: Node3D, amount: float) -> void:
 	if away.length_squared() < 0.0001:
 		return
 	knockback_velocity = away.normalized() * knockback * clampf(amount / KNOCKBACK_MAX_DAMAGE, 0.5, 1.0)
+
+## Arremessa para longe de quem bateu e para cima (golpe pesado do Knight e do Barbarian).
+## Quem decide é a máquina dona do personagem, como o dano.
+func launch_away_from(source: Node3D, speed: float, lift: float) -> void:
+	if is_dead or source == null:
+		return
+	if not is_multiplayer_authority():
+		_request_launch.rpc_id(get_multiplayer_authority(), speed, lift, source.get_path())
+		return
+	# quem defendeu o golpe com o escudo não voa
+	if _blocks(source):
+		return
+	var away := global_position - source.global_position
+	away.y = 0.0
+	if away.length_squared() < 0.0001:
+		return
+	var weight := clampf(knockback / LAUNCH_REFERENCE_KNOCKBACK, 0.0, 1.0)
+	knockback_velocity = away.normalized() * minf(speed, MAX_LAUNCH_SPEED) * weight
+	velocity.y = minf(lift, MAX_LAUNCH_LIFT) * weight
+
+
+@rpc("any_peer", "reliable")
+func _request_launch(speed: float, lift: float, source_path: NodePath) -> void:
+	var source := get_node_or_null(source_path) as Node3D
+	if accepts_hit_from(multiplayer.get_remote_sender_id(), source):
+		launch_away_from(source, speed, lift)
+
 
 ## Chamado em quem bateu quando o golpe encontra um alvo.
 func on_hit_landed(heavy: bool) -> void:

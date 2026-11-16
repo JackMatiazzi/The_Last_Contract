@@ -196,3 +196,47 @@ func test_the_guard_wears_off_and_the_next_hit_staggers_again() -> void:
 
 	assert_int(skeleton.action_id).is_greater(before)
 	assert_str(skeleton.animation_player.current_animation).is_equal(Character.ANIM_HIT)
+
+
+# o golpe pesado do Knight e do Barbarian arremessa o inimigo para trás, e não só empurra
+func _launch_distance(adventurer_scene: String) -> Dictionary:
+	var hero := arena.spawn(adventurer_scene, Vector3.ZERO) as Adventurer
+	var skeleton := arena.spawn(TestArena.SKELETON, Vector3(0, 0, 1.3))
+	await arena.wait_physics(5)
+	var start := skeleton.global_position
+	var highest := start.y
+
+	hero.heavy_attack()
+	for i in 90:
+		await get_tree().physics_frame
+		highest = maxf(highest, skeleton.global_position.y)
+	return {"distance": (skeleton.global_position - start).slide(Vector3.UP).length(), "height": highest - start.y}
+
+
+func test_the_knight_heavy_hit_throws_the_enemy_back_into_the_air() -> void:
+	var result := await _launch_distance(TestArena.KNIGHT)
+
+	assert_float(result.distance).is_greater(2.5)
+	assert_float(result.height).is_greater(0.3)
+
+
+func test_the_barbarian_spin_throws_the_enemy_back_into_the_air() -> void:
+	var result := await _launch_distance(TestArena.BARBARIAN)
+
+	assert_float(result.distance).is_greater(2.5)
+	assert_float(result.height).is_greater(0.3)
+
+
+func test_a_quick_hit_only_pushes_and_keeps_the_enemy_on_the_ground() -> void:
+	var knight := arena.spawn(TestArena.KNIGHT, Vector3.ZERO) as Adventurer
+	var skeleton := arena.spawn(TestArena.SKELETON, Vector3(0, 0, 1.3))
+	await arena.wait_physics(5)
+	var start_y := skeleton.global_position.y
+	var highest := start_y
+
+	knight.attack.try_attack(knight)
+	for i in 60:
+		await get_tree().physics_frame
+		highest = maxf(highest, skeleton.global_position.y)
+
+	assert_float(highest - start_y).is_less(0.1)
