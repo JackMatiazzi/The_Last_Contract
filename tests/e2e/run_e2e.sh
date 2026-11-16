@@ -10,6 +10,7 @@
 #              alcapao, Michio no grupo e calabouco (uns 8 minutos)
 # Sem argumento roda todos. PLAYERS escolhe o tamanho do grupo (padrao 4). API_DIR aponta a copia da
 # API, com npm ci feito; o padrao e a pasta ao lado do jogo. RELAY_PORT muda a porta da sala local (padrao 8787).
+# HOST_DISPLAY="--position 640,1080 --resolution 1152x648" abre o host com janela (placa de video de verdade).
 # O Godot pode sair com 0 mesmo com erro de script, entao o log tambem decide
 set -u
 
@@ -25,8 +26,10 @@ fi
 mkdir -p "$LOGS"
 failed=0
 
+# cada processo grava o próprio godot.log em $LOGS: os testes não empurram para fora os logs de quem joga
 play() {
-	"$GODOT" --headless --path "$PROJECT" "res://tests/e2e/$1" -- "${@:2}"
+	# shellcheck disable=SC2086
+	"$GODOT" ${E2E_DISPLAY:---headless} --path "$PROJECT" --log-file "$LOGS/godot-${1%.tscn}-$RANDOM$RANDOM.log" "res://tests/e2e/$1" -- "${@:2}"
 }
 
 check_log() {
@@ -62,7 +65,7 @@ run_coop() {
 	local ready="E2E host escutando"
 	[ "$address" = "codigo" ] && ready="E2E sala "
 	# shellcheck disable=SC2086
-	play "${COOP_SCENE:-coop_e2e.tscn}" --role=host "$host_arg" $extra --adventurer=0 --autostart="$PLAYERS" --players="$PLAYERS" --name=Host > "$LOGS/$flow-host.log" 2>&1 &
+	E2E_DISPLAY="${HOST_DISPLAY:---headless}" play "${COOP_SCENE:-coop_e2e.tscn}" --role=host "$host_arg" $extra --adventurer=0 --autostart="$PLAYERS" --players="$PLAYERS" --name=Host > "$LOGS/$flow-host.log" 2>&1 &
 	local host_pid=$!
 	for _ in $(seq 120); do
 		grep -q "$ready" "$LOGS/$flow-host.log" 2>/dev/null && break

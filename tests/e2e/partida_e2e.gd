@@ -37,7 +37,9 @@ func run() -> void:
 	if not await _reach_the_dungeon():
 		return
 	Net.log_network("simulação: calabouço")
-	await _michio_joins()
+	await _interact_like_players()
+	await _host_freezes_like_a_shader_compile()
+	await _everyone_fights_michio()
 	await _play_for(_dungeon_seconds)
 	_release_all()
 	check(Net.is_online() and _in_level(), "a sala aguentou a partida inteira, do começo ao calabouço com o Michio")
@@ -62,10 +64,14 @@ func _reach_the_dungeon() -> bool:
 				Net.log_network("simulação: Necromante")
 			elif not boss_up and game._trapdoor == null:
 				boss_since = -1.0
-			if role == "host":
-				if game._trapdoor and game._trapdoor.is_open:
-					game.descend_to_bonus()
-				elif boss_up and Time.get_ticks_msec() - boss_since > _boss_seconds * 1000.0:
+			# todos correm para o alçapão e apertam E quase juntos, como na partida em que o grupo caiu
+			if game._trapdoor and game._trapdoor.is_open:
+				_release_all()
+				game.player.global_position = game._trapdoor.global_position + Vector3.UP * 0.3
+				await wait_physics(2)
+				press_action(&"interact")
+			elif role == "host":
+				if boss_up and Time.get_ticks_msec() - boss_since > _boss_seconds * 1000.0:
 					game.boss.take_damage(9999.0, game.player)
 				elif not boss_up and Time.get_ticks_msec() >= next_clear:
 					_clear_one_group()
@@ -106,22 +112,56 @@ func _play_for(seconds: float) -> void:
 		check(false, "a sala caiu durante a luta (veja as linhas [rede] do log)")
 
 
-func _michio_joins() -> void:
+func _everyone_fights_michio() -> void:
 	var found := get_tree().current_scene.find_children("*", "FriendlyUndead", true, false)
 	if found.is_empty():
-		check(false, "Michio no calabouço")
 		return
 	var michio := found.front() as FriendlyUndead
-	if role == "host":
-		michio._net_invite.rpc()
-	if not await wait_until(func() -> bool: return michio.awaiting_answer or michio.is_companion, "convite do Michio"):
-		return
+	Net.log_network("simulação: batendo no Michio")
+	var end := Time.get_ticks_msec() + 60000.0
+	while Time.get_ticks_msec() < end and Net.is_online() and is_instance_valid(michio) and not michio.is_dead:
+		_keep_alive()
+		session().player.global_position = michio.global_position + Vector3(1.2, 0.3, 0)
+		michio.take_damage(1.0, session().player)
+		await get_tree().create_timer(0.7).timeout
+	check(Net.is_online(), "a sala aguentou o grupo batendo no Michio")
+	Net.log_network("simulação: Michio caiu" if is_instance_valid(michio) and michio.is_dead else "simulação: Michio ainda de pé")
+
+
+# a partida caiu ao apertar E no Michio e no mímico: aqui os jogadores apertam E de verdade, perto deles
+func _interact_like_players() -> void:
+	var scene := get_tree().current_scene
+	var michio := scene.find_children("*", "FriendlyUndead", true, false).front() as FriendlyUndead
+	var mimics := scene.find_children("*", "Mimic", true, false)
+	var me := session().player
 	if multiplayer.get_unique_id() == _first_client():
-		session().player.global_position = michio.global_position + Vector3(1.5, 0.3, 0)
-		await wait_physics(10)
-		michio._request_answer.rpc_id(HOST_PEER, true)
-	if await wait_until(func() -> bool: return michio.is_companion, "o Michio entrar no grupo"):
-		Net.log_network("simulação: Michio entrou no grupo")
+		for i in 8:
+			if michio.is_companion:
+				break
+			me.global_position = michio.global_position + Vector3(1.2, 0.3, 0)
+			await wait_physics(4)
+			press_action(&"interact")
+			Net.log_network("simulação: E no Michio (convite=%s)" % michio.awaiting_answer)
+			await get_tree().create_timer(1.0).timeout
+	elif role == "host" and not mimics.is_empty():
+		var mimic := mimics.front() as Node3D
+		me.global_position = mimic.global_position + Vector3(1.2, 0.3, 0)
+		await wait_physics(4)
+		press_action(&"interact")
+		Net.log_network("simulação: E no mímico")
+	await get_tree().create_timer(10.0).timeout
+	check(Net.is_online(), "a sala aguentou o E no Michio e no mímico")
+	Net.log_network("simulação: Michio no grupo=%s" % michio.is_companion)
+
+
+# na primeira vez que algo aparece a placa compila o shader e o jogo engasga; a sala precisa aguentar o host
+# parado uns segundos sem derrubar ninguém
+func _host_freezes_like_a_shader_compile() -> void:
+	if role == "host":
+		Net.log_network("simulação: host engasgando 2,5 s")
+		OS.delay_msec(2500)
+	await get_tree().create_timer(5.0).timeout
+	check(Net.is_online(), "a sala aguentou o host engasgar")
 
 
 func _first_client() -> int:
