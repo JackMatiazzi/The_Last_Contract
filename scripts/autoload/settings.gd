@@ -30,7 +30,8 @@ var fullscreen := false
 var vsync := true
 var mouse_sensitivity := 1.0
 var invert_y := false
-var input_device := InputDevice.AUTOMATIC
+## mouse e teclado por padrão; o controle se escolhe em Configurações > Controles
+var input_device := InputDevice.KEYBOARD_MOUSE
 var stick_sensitivity := 1.0
 var player_name := DEFAULT_PLAYER_NAME
 var telemetry_consent := CONSENT_UNSET
@@ -122,7 +123,7 @@ func forget_player_code() -> void:
 	_save()
 
 
-static func new_player_code() -> String:
+func new_player_code() -> String:
 	var crypto := Crypto.new()
 	return crypto.generate_random_bytes(16).hex_encode()
 

@@ -3,6 +3,11 @@ extends Node
 ## pensa a cada think_interval, mas segue o caminho todo quadro para nao andar travado
 
 const MAX_CHAINED_TRANSITIONS := 4
+## tentando andar sem sair do lugar por este tempo conta como preso numa quina ou objeto do cenário
+const STUCK_TIME := 0.7
+const STUCK_DISTANCE := 0.2
+## preso, anda de lado por este tempo e volta ao caminho; se o passo de lado também não andou, troca o lado
+const SIDESTEP_TIME := 0.7
 
 ## intervalo entre as decisoes do cerebro
 @export var think_interval := 0.15
@@ -22,6 +27,11 @@ var _think_accumulator := 0.0
 var _move_target := Vector3.ZERO
 var _has_move_target := false
 var _chained_transitions := 0
+var _watch_point := Vector3.ZERO
+var _watch_time := 0.0
+var _sidestep_left := 0.0
+var _sidestep_from := Vector3.ZERO
+var _sidestep_side := 1.0
 
 
 func _ready() -> void:
@@ -54,6 +64,7 @@ func physics_step(delta: float) -> void:
 		current_state.think(_think_accumulator)
 		_think_accumulator = 0.0
 	_steer()
+	_watch_progress(delta)
 
 
 func move_to(point: Vector3, run := false) -> void:
@@ -92,3 +103,27 @@ func _steer() -> void:
 	if to_next.length() < 0.05:
 		to_next = (_move_target - enemy.global_position).slide(Vector3.UP)
 	desired_direction = to_next.normalized()
+	if _sidestep_left > 0.0:
+		desired_direction = desired_direction.cross(Vector3.UP) * _sidestep_side
+
+
+func _watch_progress(delta: float) -> void:
+	var here := enemy.global_position
+	if _sidestep_left > 0.0:
+		_sidestep_left -= delta
+		if _sidestep_left <= 0.0 and _flat_distance(here, _sidestep_from) < STUCK_DISTANCE:
+			_sidestep_side = -_sidestep_side
+		return
+	if desired_direction == Vector3.ZERO or _flat_distance(here, _watch_point) > STUCK_DISTANCE:
+		_watch_point = here
+		_watch_time = 0.0
+		return
+	_watch_time += delta
+	if _watch_time >= STUCK_TIME:
+		_watch_time = 0.0
+		_sidestep_left = SIDESTEP_TIME
+		_sidestep_from = here
+
+
+static func _flat_distance(a: Vector3, b: Vector3) -> float:
+	return (a - b).slide(Vector3.UP).length()

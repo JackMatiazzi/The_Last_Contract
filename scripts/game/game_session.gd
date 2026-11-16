@@ -236,7 +236,8 @@ func _net_descend() -> void:
 	_contract_ended = true
 	Playtest.record("trapdoor_entered")
 	Net.waiting_for_peers = true
-	get_tree().change_scene_to_file(BONUS_LEVEL)
+	# depois da tecla e da fisica deste quadro: trocar no meio deixa nos fora da arvore ainda processando
+	get_tree().change_scene_to_file.call_deferred(BONUS_LEVEL)
 
 
 # solo e um grupo de um: cai todo mundo, vota todo mundo
@@ -424,4 +425,4 @@ func _net_end_contract(fulfilled: bool) -> void:
 func _execute() -> void:
 	Playtest.finish("executed")
 	RunState.reset()
-	get_tree().change_scene_to_file(EXECUTION)
+	get_tree().change_scene_to_file.call_deferred(EXECUTION)

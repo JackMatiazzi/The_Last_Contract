@@ -61,7 +61,10 @@ func _input(event: InputEvent) -> void:
 	if event is InputEventJoypadMotion and event.axis == JOY_AXIS_LEFT_X:
 		_follow_stick(event.axis_value)
 	elif event.is_action_pressed("pause") or event.is_action_pressed("ui_cancel"):
+		# voltar troca de cena na hora: depois do sinal o seletor ja nao esta na arvore
+		get_viewport().set_input_as_handled()
 		back_requested.emit()
+		return
 	elif event.is_action_pressed("ui_left") or event.is_action_pressed("menu_previous"):
 		select(selected_index - 1)
 	elif event.is_action_pressed("ui_right") or event.is_action_pressed("menu_next"):

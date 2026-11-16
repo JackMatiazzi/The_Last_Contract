@@ -130,3 +130,9 @@ func test_automatic_mode_ignores_a_shaky_mouse() -> void:
 	assert_bool(Settings.uses_gamepad()).is_true()
 	stick.axis_value = 0.0
 	Input.parse_input_event(stick)
+
+
+func test_a_fresh_install_starts_on_keyboard_and_mouse() -> void:
+	var fresh: Node = auto_free(load("res://scripts/autoload/settings.gd").new())
+
+	assert_int(fresh.input_device).is_equal(Settings.InputDevice.KEYBOARD_MOUSE)
