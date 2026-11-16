@@ -59,3 +59,15 @@ func test_client_ids_never_collide_with_the_host() -> void:
 		peer.create_client("ws://127.0.0.1:9", "ABC234")
 		assert_int(peer.get_unique_id()).is_greater(RelayPeer.HOST_ID)
 		peer.close()
+
+
+# dois jogos abertos no mesmo instante sorteavam o mesmo id e a sala recusava o segundo (código 4003)
+func test_client_ids_do_not_follow_the_global_seed() -> void:
+	seed(7)
+	var first := RelayPeer.new_client_id()
+	OS.delay_usec(50)
+	seed(7)
+	var second := RelayPeer.new_client_id()
+
+	assert_int(first).is_not_equal(second)
+	assert_int(first).is_between(RelayPeer.HOST_ID + 1, RelayPeer.MAX_ID)

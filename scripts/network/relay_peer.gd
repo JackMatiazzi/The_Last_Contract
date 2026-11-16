@@ -47,8 +47,15 @@ func create_host(base_url: String) -> Error:
 
 
 func create_client(base_url: String, code: String) -> Error:
-	_id = randi_range(HOST_ID + 1, MAX_ID)
+	_id = new_client_id()
 	return _open("%s/salas/%s?v=%s&id=%d" % [base_url, code.to_upper(), PROTOCOL_VERSION, _id])
+
+
+## a sala recusa um id repetido; jogos abertos no mesmo instante sairiam com a mesma semente do sorteio global
+static func new_client_id() -> int:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = hash([OS.get_process_id(), Time.get_ticks_usec(), Time.get_unix_time_from_system()])
+	return rng.randi_range(HOST_ID + 1, MAX_ID)
 
 
 func _open(url: String) -> Error:
