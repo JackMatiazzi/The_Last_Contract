@@ -30,3 +30,12 @@ func test_without_a_problem_the_menu_shows_no_notice() -> void:
 	var menu := _open_menu()
 
 	assert_bool((menu.get_node("%Notice") as Label).visible).is_false()
+
+
+func test_the_notice_sits_in_the_bottom_right_corner_and_does_not_push_the_menu() -> void:
+	var menu := _open_menu()
+
+	var notice := menu.get_node("%Notice") as Label
+	assert_bool(menu.get_node("UI/MenuPanel").is_ancestor_of(notice)).is_false()
+	assert_float(notice.anchor_left).is_equal(1.0)
+	assert_float(notice.anchor_top).is_equal(1.0)

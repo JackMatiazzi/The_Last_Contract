@@ -106,15 +106,6 @@ theme_type_variation = &"MutedLabel"
 theme_override_font_sizes/font_size = 19
 text = "Um contrato do Lorde. Uma vida por tentativa."
 
-[node name="Notice" type="Label" parent="UI/MenuPanel/Column"]
-unique_name_in_owner = true
-visible = false
-custom_minimum_size = Vector2(420, 0)
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.62, 0.55, 1)
-theme_override_font_sizes/font_size = 17
-autowrap_mode = 3
-
 [node name="Spacer" type="Control" parent="UI/MenuPanel/Column" unique_id=1393881071]
 custom_minimum_size = Vector2(0, 12)
 layout_mode = 2
@@ -161,6 +152,28 @@ theme_type_variation = &"MutedLabel"
 theme_override_font_sizes/font_size = 14
 text = "André Bartzen Araujo · Jackson Matiazzi · José Maciel Camargo
 Avaliação Grau 2 · Modelos: Kay Lousberg e Quaternius (CC0)"
+
+[node name="Notice" type="Label" parent="UI"]
+unique_name_in_owner = true
+visible = false
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -460.0
+offset_top = -96.0
+offset_right = -32.0
+offset_bottom = -28.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_colors/font_color = Color(1, 0.62, 0.55, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 6
+theme_override_font_sizes/font_size = 17
+horizontal_alignment = 2
+vertical_alignment = 2
+autowrap_mode = 3
 
 [node name="SettingsMenu" parent="UI" unique_id=445446436 instance=ExtResource("5_settings")]
 unique_name_in_owner = true
