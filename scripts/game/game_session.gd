@@ -5,6 +5,8 @@ extends Node
 ## captura/liberação do cursor do mouse, votação de bênçãos em caso de derrota e re-inicialização de tentativas.
 
 const EXECUTION := "res://scenes/cutscenes/execution.tscn"
+## tempo para ler o aviso do prazo antes da execução
+const CONTRACT_EXPIRED_DELAY := 3.0
 const MAIN_MENU := "res://scenes/ui/main_menu.tscn"
 ## depois da vitória o grupo volta à vila, e o Lorde cobra o contrato do jeito dele
 const EPILOGUE := "res://scenes/cutscenes/victory_epilogue.tscn"
@@ -40,6 +42,8 @@ var _groups_total := 0
 # peer_id -> indice da bencao votada; so o host conta
 var _votes := {}
 var _vote_paths := PackedStringArray()
+## o grupo caiu na última tentativa e o contrato venceu
+var contract_expired := false
 var _vote_open := false
 var _contract_ended := false
 var trapdoor_time := TRAPDOOR_TIME
@@ -266,7 +270,23 @@ func _on_party_down() -> void:
 			_net_close_trapdoor.rpc()
 		return
 	if multiplayer.is_server() and not _vote_open:
-		_start_vote()
+		if RunState.is_last_attempt():
+			if not contract_expired:
+				_net_contract_expired.rpc()
+		else:
+			_start_vote()
+
+
+## sem mais tentativas o contrato vence: dá tempo de ler o aviso e todos vão para a execução
+@rpc("authority", "call_local", "reliable")
+func _net_contract_expired() -> void:
+	if contract_expired:
+		return
+	contract_expired = true
+	hud.announce("O prazo do contrato acabou. O Lorde não dá outra chance.")
+	Playtest.record("attempts_exhausted")
+	await get_tree().create_timer(CONTRACT_EXPIRED_DELAY).timeout
+	_execute()
 
 
 # cada jogador vota numa das bencaos sorteadas pelo host; empate e sorteado

@@ -79,7 +79,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.17, 0.11, 0.07, 1)
 theme_override_font_sizes/font_size = 15
 text = "I. Limpar a vila de todo morto-vivo e derrubar quem os levanta.
-II. Uma vida por tentativa; caindo, a vila volta a ser ocupada.
+II. Uma vida por tentativa, até dez tentativas; caindo, a vila volta a ser ocupada.
 III. A bênção do Lorde vale para todos dentro da vila, vivos ou não.
 IV. Até quatro podem assinar juntos e erguer quem cair com uma poção.
 V. Desistir é quebra de contrato. A pena é a execução."

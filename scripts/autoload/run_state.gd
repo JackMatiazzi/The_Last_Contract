@@ -22,6 +22,8 @@ const ADVENTURERS: PackedStringArray = [
 const CHOICES_PER_DEATH := 2
 ## a cada tantas tentativas jogadas o aventureiro volta com 1 de vida máxima a mais
 const ATTEMPTS_PER_EXTRA_HEALTH := 2
+## o contrato tem prazo: caindo nesta tentativa, vem a execução em vez de uma nova chance
+const MAX_ATTEMPTS := 10
 ## Tamanho máximo permitido para o texto da causa da morte.
 const MAX_CAUSE_LENGTH := 40
 ## Número da tentativa/mão atual na corrida/partida.
@@ -53,6 +55,10 @@ func roll_choices() -> Array[Buff]:
 ## vida máxima a mais dos aventureiros nesta tentativa: tentativas 1 e 2 nada, 3 e 4 +1, 5 e 6 +2
 func extra_health() -> float:
 	return floorf((attempt - 1) / float(ATTEMPTS_PER_EXTRA_HEALTH))
+
+
+func is_last_attempt() -> bool:
+	return attempt >= MAX_ATTEMPTS
 
 
 ## buff vem null quando todos ja estao no limite

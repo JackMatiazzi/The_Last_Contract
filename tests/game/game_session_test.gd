@@ -92,3 +92,29 @@ func test_only_blessings_from_the_buff_folder_are_loaded() -> void:
 	assert_object(GameSession.buff_at("user://lamina_afiada.tres")).is_null()
 	assert_object(GameSession.buff_at(RunState.BUFF_DIR + "/../items/health_potion.tres")).is_null()
 	assert_object(GameSession.buff_at("")).is_null()
+
+
+# o contrato tem prazo: caindo na última tentativa não tem bênção nem volta, vem a execução
+func test_falling_on_the_last_attempt_ends_the_contract_instead_of_voting() -> void:
+	RunState.attempt = RunState.MAX_ATTEMPTS
+	var game := await _start_game_with("res://resources/adventurers/knight.tres")
+	var session: GameSession = game.get_node("GameSession")
+
+	session.player.take_damage(1000.0)
+	await get_tree().create_timer(DeathScreen.SHOW_DELAY + 0.2).timeout
+
+	assert_bool(session.contract_expired).is_true()
+	assert_bool(session.death_screen.visible).is_false()
+
+
+func test_falling_before_the_last_attempt_still_opens_the_vote() -> void:
+	RunState.attempt = RunState.MAX_ATTEMPTS - 1
+	var game := await _start_game_with("res://resources/adventurers/knight.tres")
+	var session: GameSession = game.get_node("GameSession")
+
+	session.player.take_damage(1000.0)
+	await get_tree().create_timer(DeathScreen.SHOW_DELAY + 0.2).timeout
+
+	assert_bool(session.contract_expired).is_false()
+	assert_bool(session.death_screen.visible).is_true()
+
