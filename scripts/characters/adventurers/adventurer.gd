@@ -4,6 +4,8 @@ extends Character
 signal energy_short(pool: EnergyPool)
 signal ability_changed
 
+## vida de referência do dano dos inimigos: o dano deles é escrito pensando num aventureiro de 10 de vida
+const ENEMY_DAMAGE_REFERENCE_HEALTH := 10.0
 const ATTACK_BUFFER := 0.2
 const PITCH_MIN := deg_to_rad(-60.0)
 const PITCH_MAX := deg_to_rad(30.0)
@@ -152,6 +154,14 @@ func _process(delta: float) -> void:
 
 func blessing_share() -> float:
 	return 1.0
+
+
+## o dano de inimigos e armadilhas vale como parte da vida máxima: um golpe de 1 tira 10% de quem tem 10
+## ou de quem tem 27. Fogo amigo continua em pontos
+func _incoming_damage(amount: float, source: Node3D) -> float:
+	if source is Adventurer:
+		return amount
+	return amount * get_max_health() / ENEMY_DAMAGE_REFERENCE_HEALTH
 
 
 func on_hit_landed(heavy: bool) -> void:

@@ -123,3 +123,31 @@ func test_speed_penalty_never_goes_below_floor() -> void:
 	var knight := arena.spawn(TestArena.KNIGHT, Vector3.ZERO)
 
 	assert_float(knight.get_max_speed()).is_equal_approx(knight.walk_speed * Character.MIN_STAT_FACTOR, 0.001)
+
+
+# o dano dos mortos-vivos vale como porcentagem da vida máxima: vida a mais não deixa o aventureiro imortal
+func test_an_enemy_hit_takes_the_same_share_of_any_max_health() -> void:
+	var skeleton := arena.spawn(TestArena.SKELETON, Vector3(4, 0, 0))
+	var knight := arena.spawn(TestArena.KNIGHT, Vector3.ZERO)
+	knight.take_damage(1.0, skeleton)
+	assert_float(knight.health / knight.get_max_health()).is_equal_approx(0.9, 0.001)
+
+	RunState.buffs.append_array([load("res://resources/buffs/couraca.tres"), load("res://resources/buffs/couraca.tres")])
+	var armored := arena.spawn(TestArena.KNIGHT, Vector3(0, 0, 4))
+	armored.take_damage(1.0, skeleton)
+
+	assert_float(armored.get_max_health()).is_equal(14.0)
+	assert_float(armored.health).is_equal_approx(14.0 - 1.4, 0.001)
+
+
+func test_friendly_fire_and_hits_on_enemies_stay_in_points() -> void:
+	RunState.buffs.append(load("res://resources/buffs/couraca.tres"))
+	var knight := arena.spawn(TestArena.KNIGHT, Vector3.ZERO)
+	var ally := arena.spawn(TestArena.KNIGHT, Vector3(3, 0, 0))
+	var skeleton := arena.spawn(TestArena.SKELETON, Vector3(-3, 0, 0))
+
+	ally.take_damage(1.0, knight)
+	skeleton.take_damage(1.0, knight)
+
+	assert_float(ally.health).is_equal_approx(ally.get_max_health() - 1.0, 0.001)
+	assert_float(skeleton.health).is_equal_approx(skeleton.get_max_health() - 1.0, 0.001)

@@ -167,8 +167,11 @@ func take_damage(amount: float, source: Node3D = null) -> void:
 		_play(block_sound)
 		blocked.emit()
 		return
+	var hit := amount
+	amount = _incoming_damage(amount, source)
 	_note_attacker(source, minf(amount, health))
-	_push_away_from(source, amount)
+	# o empurrão segue o golpe em pontos: não cresce com a vida máxima de quem apanha
+	_push_away_from(source, hit)
 	health = maxf(health - amount, 0.0)
 	health_changed.emit(health, get_max_health())
 	_share_health()
@@ -181,6 +184,11 @@ func take_damage(amount: float, source: Node3D = null) -> void:
 		_flinch_ready_at = now + flinch_guard
 		_on_flinch()
 		play_action(ANIM_HIT, 1.0, 0.0, HIT_RECOVERY)
+
+## dano que de fato chega, aplicado na máquina dona do personagem; por padrão, o valor do golpe
+func _incoming_damage(amount: float, _source: Node3D) -> float:
+	return amount
+
 
 ## Restaura pontos de vida do personagem até o limite máximo permitido.
 func heal(amount: float) -> void:
