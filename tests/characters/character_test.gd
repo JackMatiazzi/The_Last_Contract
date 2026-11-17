@@ -76,18 +76,21 @@ func test_run_buffs_apply_to_adventurers_and_enemies() -> void:
 	var knight := arena.spawn(TestArena.KNIGHT, Vector3.ZERO)
 	var skeleton := arena.spawn(TestArena.SKELETON, Vector3(4, 0, 0))
 
-	assert_float(knight.get_max_health()).is_equal(12.0)
-	assert_float(skeleton.get_max_health()).is_equal_approx(5.4, 0.001)
-	assert_float(skeleton.health).is_equal_approx(5.4, 0.001)
+	assert_float(knight.get_damage_taken_factor()).is_equal_approx(0.8, 0.001)
+	assert_float(skeleton.get_damage_taken_factor()).is_equal_approx(0.96, 0.001)
+
+
+func _stat_buff(stat: StatModifier.Stat, amount: float) -> Buff:
+	var buff := Buff.new()
+	var modifier := StatModifier.new()
+	modifier.stat = stat
+	modifier.amount = amount
+	buff.modifiers.append(modifier)
+	return buff
 
 
 func test_max_health_never_drops_below_one() -> void:
-	var drain := Buff.new()
-	var modifier := StatModifier.new()
-	modifier.stat = StatModifier.Stat.MAX_HEALTH
-	modifier.amount = -50.0
-	drain.modifiers.append(modifier)
-	RunState.buffs.append(drain)
+	RunState.buffs.append(_stat_buff(StatModifier.Stat.MAX_HEALTH, -50.0))
 	var knight := arena.spawn(TestArena.KNIGHT, Vector3.ZERO)
 	var skeleton := arena.spawn(TestArena.SKELETON, Vector3(4, 0, 0))
 
@@ -103,7 +106,8 @@ func test_enemies_feel_a_fifth_of_each_blessing() -> void:
 
 	assert_float(knight.get_stat_bonus(StatModifier.Stat.DAMAGE)).is_equal(3.0)
 	assert_float(skeleton.get_stat_bonus(StatModifier.Stat.DAMAGE)).is_equal_approx(0.6, 0.001)
-	assert_float(skeleton.get_max_health()).is_equal_approx(3.2, 0.001)
+	assert_float(knight.get_damage_taken_factor()).is_equal_approx(1.9, 0.001)
+	assert_float(skeleton.get_damage_taken_factor()).is_equal_approx(1.18, 0.001)
 
 
 func test_speed_buff_raises_max_speed() -> void:
@@ -132,16 +136,37 @@ func test_an_enemy_hit_takes_the_same_share_of_any_max_health() -> void:
 	knight.take_damage(1.0, skeleton)
 	assert_float(knight.health / knight.get_max_health()).is_equal_approx(0.9, 0.001)
 
-	RunState.buffs.append_array([load("res://resources/buffs/couraca.tres"), load("res://resources/buffs/couraca.tres")])
-	var armored := arena.spawn(TestArena.KNIGHT, Vector3(0, 0, 4))
-	armored.take_damage(1.0, skeleton)
+	RunState.buffs.append(_stat_buff(StatModifier.Stat.MAX_HEALTH, 4.0))
+	var sturdy := arena.spawn(TestArena.KNIGHT, Vector3(0, 0, 4))
+	sturdy.take_damage(1.0, skeleton)
 
-	assert_float(armored.get_max_health()).is_equal(14.0)
-	assert_float(armored.health).is_equal_approx(14.0 - 1.4, 0.001)
+	assert_float(sturdy.get_max_health()).is_equal(14.0)
+	assert_float(sturdy.health).is_equal_approx(14.0 - 1.4, 0.001)
+
+
+func test_armor_cuts_a_fifth_of_each_hit() -> void:
+	RunState.buffs.append(load("res://resources/buffs/couraca.tres"))
+	var skeleton := arena.spawn(TestArena.SKELETON, Vector3(4, 0, 0))
+	var knight := arena.spawn(TestArena.KNIGHT, Vector3.ZERO)
+
+	knight.take_damage(1.0, skeleton)
+
+	assert_float(knight.get_max_health()).is_equal(10.0)
+	assert_float(knight.health).is_equal_approx(10.0 - 0.8, 0.001)
+
+
+func test_damage_reduction_never_makes_anyone_immortal() -> void:
+	RunState.buffs.append(_stat_buff(StatModifier.Stat.DAMAGE_TAKEN, -5.0))
+	var knight := arena.spawn(TestArena.KNIGHT, Vector3.ZERO)
+
+	knight.take_damage(1.0)
+
+	assert_float(knight.get_damage_taken_factor()).is_equal(Character.MIN_STAT_FACTOR)
+	assert_float(knight.health).is_equal_approx(10.0 - Character.MIN_STAT_FACTOR, 0.001)
 
 
 func test_friendly_fire_and_hits_on_enemies_stay_in_points() -> void:
-	RunState.buffs.append(load("res://resources/buffs/couraca.tres"))
+	RunState.buffs.append(_stat_buff(StatModifier.Stat.MAX_HEALTH, 2.0))
 	var knight := arena.spawn(TestArena.KNIGHT, Vector3.ZERO)
 	var ally := arena.spawn(TestArena.KNIGHT, Vector3(3, 0, 0))
 	var skeleton := arena.spawn(TestArena.SKELETON, Vector3(-3, 0, 0))

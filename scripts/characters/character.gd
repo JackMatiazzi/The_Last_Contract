@@ -168,7 +168,7 @@ func take_damage(amount: float, source: Node3D = null) -> void:
 		blocked.emit()
 		return
 	var hit := amount
-	amount = _incoming_damage(amount, source)
+	amount = _incoming_damage(amount, source) * get_damage_taken_factor()
 	_note_attacker(source, minf(amount, health))
 	# o empurrão segue o golpe em pontos: não cresce com a vida máxima de quem apanha
 	_push_away_from(source, hit)
@@ -323,6 +323,14 @@ func blessing_share() -> float:
 ## Retorna a vida máxima calculada já com os modificadores dos buffs aplicados.
 func get_max_health() -> float:
 	return maxf(max_health + get_stat_bonus(StatModifier.Stat.MAX_HEALTH), 1.0)
+
+## quanto de cada golpe chega: Couraça e Sangue Frio diminuem, Frenesi e Fúria Cega aumentam
+func get_damage_taken_factor() -> float:
+	return maxf(1.0 + get_stat_bonus(StatModifier.Stat.DAMAGE_TAKEN) - _extra_protection(), MIN_STAT_FACTOR)
+
+
+func _extra_protection() -> float:
+	return 0.0
 
 ## Retorna o ponto no mundo 3D para onde a mira/frente do personagem aponta.
 func get_aim_point() -> Vector3:

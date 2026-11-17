@@ -231,13 +231,18 @@ func test_without_a_right_button_ability_the_left_slot_disappears_but_keeps_its_
 
 # a poção cura uma parte da vida máxima: quem tem mais vida recupera mais
 func test_the_potion_heals_a_fifth_of_max_health() -> void:
-	RunState.buffs.append(load("res://resources/buffs/couraca.tres"))
-	var armored := arena.spawn(TestArena.KNIGHT, Vector3.ZERO) as Adventurer
+	var sturdy := Buff.new()
+	var modifier := StatModifier.new()
+	modifier.stat = StatModifier.Stat.MAX_HEALTH
+	modifier.amount = 2.0
+	sturdy.modifiers.append(modifier)
+	RunState.buffs.append(sturdy)
+	var hearty := arena.spawn(TestArena.KNIGHT, Vector3.ZERO) as Adventurer
 	await arena.wait_physics(2)
-	armored.take_damage(8.0)
-	armored.inventory.add(HEALTH_POTION)
-	var before := armored.health
+	hearty.take_damage(8.0)
+	hearty.inventory.add(HEALTH_POTION)
+	var before := hearty.health
 
-	armored.use_item()
+	hearty.use_item()
 
-	assert_float(armored.health - before).is_equal_approx(12.0 * 0.2, 0.001)
+	assert_float(hearty.health - before).is_equal_approx(12.0 * 0.2, 0.001)

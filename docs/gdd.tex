@@ -275,7 +275,7 @@ Combate & Corpo a corpo e à distância, conforme o aventureiro escolhido. Cliqu
 Energia & Estamina para todos (correr, escudo, golpes físicos) e mana para o Mage (feitiços). Gastar pausa a recarga por um instante; depois ela volta sozinha. O golpe só sai com o custo inteiro disponível. Detalhes em \ref{sec:energia}. \\
 Vida & Aventureiros têm 10; o esqueleto comum tem 5, os atiradores 4 e os mais fortes de 14 a 24 (bestiário em \ref{sec:bestiario}). Uma barra de vida flutua sobre cada personagem (verde para aventureiros, vermelha para mortos-vivos). Ao levar dano, um rastro claro mostra o pedaço perdido antes de encolher e um número de dano sobe acima da cabeça. \\
 Vida única & O jogador possui apenas uma vida por tentativa. Em grupo, um aliado com uma poção no inventário pode reviver quem caiu: perto do caído aparece ``E Reviver'' sobre ele, e ele volta com metade da vida. A poção só é gasta quando o reviver vale: se outro aliado reviveu antes, ela continua no inventário. Se todos caem, abre a tela de morte; na décima tentativa o contrato vence e vem a execução. \\
-Dano dos inimigos & O dano de mortos-vivos e armadilhas vale como porcentagem da vida máxima do aventureiro (um golpe de 1 tira 10\% da vida), para vida a mais não deixar ninguém imortal. A HUD mostra a vida em porcentagem. Fogo amigo continua em pontos. \\
+Dano dos inimigos & O dano de mortos-vivos e armadilhas vale como porcentagem da vida máxima do aventureiro (um golpe de 1 tira 10\% da vida), para vida a mais não deixar ninguém imortal; quem protege é a redução de dano das bênçãos e das tentativas. A HUD mostra a vida em porcentagem. Fogo amigo continua em pontos. \\
 Grupos de inimigos & Sete grupos por tentativa, de dois a quatro mortos-vivos cada, espalhados pelas zonas da vila: primeiro um por zona, depois um segundo grupo nas outras zonas (no máximo dois por zona). \\
 Posições aleatórias & A cada tentativa, o jogador renasce em um ponto sorteado e os grupos de inimigos são reposicionados. \\
 Reviver ou Desistir & Escolha apresentada quando o grupo inteiro cai. Desistir (só o host) encerra a missão com a execução do aventureiro. \\
@@ -323,24 +323,24 @@ As ligações dos dois dispositivos ficam no Input Map do projeto e podem ser tr
 
 \subsection{Buffs}
 
-Ao reviver, o grupo vota numa entre duas bênçãos sorteadas (sozinho, o voto é só seu). Pelo contrato do Lorde, a bênção escolhida vale para o aventureiro \emph{e também para todos os mortos-vivos} nas tentativas seguintes, mas eles recebem só 20\% do efeito (Couraça dá +2 de vida ao aventureiro e +0,4 a cada morto-vivo). Como o aventureiro tem 10 de vida e enfrenta vários mortos-vivos de 5 de vida, o mesmo buff pesa diferente para cada lado: a escolha é decidir qual efeito favorece mais o jogador do que os inimigos. Metade dos buffs tem custo e benefício, pensados para o público experiente.
+Ao reviver, o grupo vota numa entre duas bênçãos sorteadas (sozinho, o voto é só seu). Pelo contrato do Lorde, a bênção escolhida vale para o aventureiro \emph{e também para todos os mortos-vivos} nas tentativas seguintes, mas eles recebem só 20\% do efeito (Couraça corta 20\% do dano que o aventureiro recebe e 4\% do que cada morto-vivo recebe). Como o aventureiro tem 10 de vida e enfrenta vários mortos-vivos de 5 de vida, o mesmo buff pesa diferente para cada lado: a escolha é decidir qual efeito favorece mais o jogador do que os inimigos. Metade dos buffs tem custo e benefício, pensados para o público experiente.
 
 \begin{xltabular}{\textwidth}{@{}lX@{}}
 \toprule
 \textbf{Buff} & \textbf{Efeito no aventureiro (os mortos-vivos recebem 20\%)} \\
 \midrule
 Lâmina Afiada & +0,5 de dano \\
-Couraça & +2 de vida máxima \\
+Couraça & $-$20\% de dano recebido \\
 Passos Leves & +15\% de velocidade \\
-Frenesi & $-$15\% de tempo entre ataques, $-$1 de vida máxima \\
-Fúria Cega & +1 de dano, $-$3 de vida máxima \\
-Sangue Frio & +2 de vida máxima, $-$5\% de velocidade \\
+Frenesi & $-$15\% de tempo entre ataques, +10\% de dano recebido \\
+Fúria Cega & +1 de dano, +30\% de dano recebido \\
+Sangue Frio & $-$20\% de dano recebido, $-$5\% de velocidade \\
 \bottomrule
 \end{xltabular}
 
-Os valores foram reduzidos em 15/11/2026 para o formato roguelike: com os números antigos, três ou quatro bênçãos deixavam o aventureiro forte demais para as tentativas seguintes. Fúria Cega ficou como está porque já cobra caro.
+Os valores foram reduzidos em 15/11/2026 para o formato roguelike: com os números antigos, três ou quatro bênçãos deixavam o aventureiro forte demais para as tentativas seguintes. Fúria Cega ficou como está porque já cobra caro. Em 17/11, com o dano dos inimigos proporcional à vida máxima, os buffs de vida viraram redução (ou aumento) de dano recebido, na mesma proporção: 2 de vida em 10 viraram 20\%.
 
-A cada 2 tentativas jogadas o aventureiro volta com 1 de vida máxima a mais (tentativas 3 e 4: +1; 5 e 6: +2), um alívio só para os jogadores, que não vale para os mortos-vivos. Regras: cada buff acumula até 3 vezes; os dois sorteados são sempre diferentes; vida máxima nunca fica abaixo de 1; velocidade e tempo entre ataques nunca caem abaixo de 20\% do valor base. Desistir na tela de morte, ou abandonar o contrato pela pausa, leva à cena de execução do aventureiro e depois ao menu principal; o próximo contrato começa do zero (tentativas e buffs zerados).
+A cada 2 tentativas jogadas o aventureiro volta recebendo 10\% menos dano (tentativas 3 e 4: $-$10\%; 5 e 6: $-$20\%), um alívio só para os jogadores, que não vale para os mortos-vivos. Regras: cada buff acumula até 3 vezes; os dois sorteados são sempre diferentes; vida máxima nunca fica abaixo de 1; velocidade, tempo entre ataques e dano recebido nunca caem abaixo de 20\% do valor base. Desistir na tela de morte, ou abandonar o contrato pela pausa, leva à cena de execução do aventureiro e depois ao menu principal; o próximo contrato começa do zero (tentativas e buffs zerados).
 
 \subsection{Energia: estamina e mana}
 \label{sec:energia}
