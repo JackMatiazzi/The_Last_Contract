@@ -11,11 +11,18 @@ enum Stat { DAMAGE, MAX_HEALTH, SPEED, ATTACK_COOLDOWN }
 func describe() -> String:
 	match stat:
 		Stat.DAMAGE:
-			return "%+d de dano" % roundi(amount)
+			return "%s de dano" % _points(amount)
 		Stat.MAX_HEALTH:
-			return "%+d de vida máxima" % roundi(amount)
+			return "%s de vida máxima" % _points(amount)
 		Stat.SPEED:
 			return "%+d%% de velocidade" % roundi(amount * 100.0)
 		Stat.ATTACK_COOLDOWN:
 			return "%+d%% de tempo entre ataques" % roundi(amount * 100.0)
 	return ""
+
+
+# meio ponto aparece como meio ponto, com vírgula: arredondar mostrava "+1" na carta que dá +0,5
+static func _points(value: float) -> String:
+	if is_equal_approx(value, roundf(value)):
+		return "%+d" % roundi(value)
+	return ("%+.1f" % value).replace(".", ",")
