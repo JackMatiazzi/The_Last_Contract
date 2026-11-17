@@ -18,6 +18,7 @@ func test_whole_points_stay_without_decimals() -> void:
 	assert_str(_modifier(StatModifier.Stat.DAMAGE, 1.0).describe()).is_equal("+1 de dano")
 	assert_str(_modifier(StatModifier.Stat.MAX_HEALTH, -3.0).describe()).is_equal("-3 de vida máxima")
 	assert_str(_modifier(StatModifier.Stat.DAMAGE_TAKEN, -0.2).describe()).is_equal("-20% de dano recebido")
+	assert_str(_modifier(StatModifier.Stat.MAX_HEALTH_PERCENT, 0.2).describe()).is_equal("+20% de vida máxima")
 
 
 func test_the_sharp_blade_card_says_what_it_gives() -> void:

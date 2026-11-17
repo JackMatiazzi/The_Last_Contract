@@ -156,12 +156,12 @@ func blessing_share() -> float:
 	return 1.0
 
 
-## o dano de inimigos e armadilhas vale como parte da vida máxima: um golpe de 1 tira 10% de quem tem 10
-## ou de quem tem 27. Fogo amigo continua em pontos
+## o dano de inimigos e armadilhas vale como parte da vida base, sem bênção: um golpe de 1 tira 10% dela,
+## e a vida ganha com Vigor fica de colchão. Fogo amigo continua em pontos
 func _incoming_damage(amount: float, source: Node3D) -> float:
 	if source is Adventurer:
 		return amount
-	return amount * get_max_health() / ENEMY_DAMAGE_REFERENCE_HEALTH
+	return amount * max_health / ENEMY_DAMAGE_REFERENCE_HEALTH
 
 
 func on_hit_landed(heavy: bool) -> void:

@@ -3,7 +3,7 @@ extends GdUnitTestSuite
 # o texto do efeito quebra linha dentro do cartão: "-15% de tempo entre ataques" passava da borda
 
 const CARD := preload("res://scenes/ui/buff_card.tscn")
-const BUFFS := ["couraca", "frenesi", "furia_cega", "lamina_afiada", "passos_leves", "sangue_frio"]
+const BUFFS := ["couraca", "frenesi", "furia_cega", "lamina_afiada", "passos_leves", "sangue_frio", "vigor"]
 
 
 func test_every_blessing_text_fits_inside_the_card() -> void:

@@ -322,7 +322,8 @@ func blessing_share() -> float:
 
 ## Retorna a vida máxima calculada já com os modificadores dos buffs aplicados.
 func get_max_health() -> float:
-	return maxf(max_health + get_stat_bonus(StatModifier.Stat.MAX_HEALTH), 1.0)
+	var points := max_health + get_stat_bonus(StatModifier.Stat.MAX_HEALTH)
+	return maxf(points * (1.0 + get_stat_bonus(StatModifier.Stat.MAX_HEALTH_PERCENT)), 1.0)
 
 ## quanto de cada golpe chega: Couraça e Sangue Frio diminuem, Frenesi e Fúria Cega aumentam
 func get_damage_taken_factor() -> float:

@@ -129,19 +129,33 @@ func test_speed_penalty_never_goes_below_floor() -> void:
 	assert_float(knight.get_max_speed()).is_equal_approx(knight.walk_speed * Character.MIN_STAT_FACTOR, 0.001)
 
 
-# o dano dos mortos-vivos vale como porcentagem da vida máxima: vida a mais não deixa o aventureiro imortal
-func test_an_enemy_hit_takes_the_same_share_of_any_max_health() -> void:
+# o dano dos mortos-vivos vale como porcentagem da vida base: a vida ganha com bênção fica de colchão
+func test_an_enemy_hit_is_measured_against_base_health() -> void:
+	RunState.buffs.append(load("res://resources/buffs/vigor.tres"))
 	var skeleton := arena.spawn(TestArena.SKELETON, Vector3(4, 0, 0))
 	var knight := arena.spawn(TestArena.KNIGHT, Vector3.ZERO)
+
 	knight.take_damage(1.0, skeleton)
-	assert_float(knight.health / knight.get_max_health()).is_equal_approx(0.9, 0.001)
 
-	RunState.buffs.append(_stat_buff(StatModifier.Stat.MAX_HEALTH, 4.0))
-	var sturdy := arena.spawn(TestArena.KNIGHT, Vector3(0, 0, 4))
-	sturdy.take_damage(1.0, skeleton)
+	assert_float(knight.get_max_health()).is_equal_approx(12.0, 0.001)
+	assert_float(knight.health).is_equal_approx(11.0, 0.001)
 
-	assert_float(sturdy.get_max_health()).is_equal(14.0)
-	assert_float(sturdy.health).is_equal_approx(14.0 - 1.4, 0.001)
+
+func test_vigor_stacks_and_the_undead_get_a_fifth() -> void:
+	var vigor: Buff = load("res://resources/buffs/vigor.tres")
+	RunState.buffs.append_array([vigor, vigor, vigor])
+	var knight := arena.spawn(TestArena.KNIGHT, Vector3.ZERO)
+	var skeleton := arena.spawn(TestArena.SKELETON, Vector3(4, 0, 0))
+
+	assert_float(knight.get_max_health()).is_equal_approx(16.0, 0.001)
+	assert_float(skeleton.get_max_health()).is_equal_approx(5.0 * 1.12, 0.001)
+
+
+func test_vigor_multiplies_the_health_points_too() -> void:
+	RunState.buffs.append_array([_stat_buff(StatModifier.Stat.MAX_HEALTH, 5.0), load("res://resources/buffs/vigor.tres")])
+	var knight := arena.spawn(TestArena.KNIGHT, Vector3.ZERO)
+
+	assert_float(knight.get_max_health()).is_equal_approx(18.0, 0.001)
 
 
 func test_armor_cuts_a_fifth_of_each_hit() -> void:
