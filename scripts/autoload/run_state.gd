@@ -24,7 +24,7 @@ const CHOICES_PER_DEATH := 2
 const ATTEMPTS_PER_EXTRA_PROTECTION := 2
 const PROTECTION_PER_STEP := 0.1
 ## o contrato tem prazo: caindo nesta tentativa, vem a execução em vez de uma nova chance
-const MAX_ATTEMPTS := 10
+const MAX_ATTEMPTS := 30
 ## Tamanho máximo permitido para o texto da causa da morte.
 const MAX_CAUSE_LENGTH := 40
 ## Número da tentativa/mão atual na corrida/partida.
