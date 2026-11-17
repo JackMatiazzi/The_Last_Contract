@@ -390,6 +390,9 @@ func _request_launch(speed: float, lift: float, source_path: NodePath) -> void:
 ## Chamado em quem bateu quando o golpe encontra um alvo.
 func on_hit_landed(heavy: bool) -> void:
 	freeze_animation(HITSTOP_HEAVY if heavy else HITSTOP)
+	var drain := get_stat_bonus(StatModifier.Stat.LIFESTEAL)
+	if drain > 0.0:
+		heal(get_max_health() * drain)
 
 ## Para a animacao por um instante; so visual, roda em cada maquina.
 func freeze_animation(seconds: float) -> void:

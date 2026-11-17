@@ -190,3 +190,17 @@ func test_friendly_fire_and_hits_on_enemies_stay_in_points() -> void:
 
 	assert_float(ally.health).is_equal_approx(ally.get_max_health() - 1.0, 0.001)
 	assert_float(skeleton.health).is_equal_approx(skeleton.get_max_health() - 1.0, 0.001)
+
+
+func test_reaper_thirst_heals_a_share_of_max_health_per_hit() -> void:
+	RunState.buffs.append(load("res://resources/buffs/sede_do_ceifador.tres"))
+	var knight := arena.spawn(TestArena.KNIGHT, Vector3.ZERO)
+	var skeleton := arena.spawn(TestArena.SKELETON, Vector3(4, 0, 0))
+	knight.take_damage(5.0)
+	skeleton.take_damage(2.0)
+
+	knight.on_hit_landed(false)
+	skeleton.on_hit_landed(false)
+
+	assert_float(knight.health).is_equal_approx(5.0 + 10.0 * 0.02, 0.001)
+	assert_float(skeleton.health).is_equal_approx(3.0 + 5.0 * 0.004, 0.001)
