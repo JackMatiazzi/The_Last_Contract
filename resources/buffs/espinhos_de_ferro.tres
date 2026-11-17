@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="Buff" format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/stat_modifier.gd" id="1_mod"]
+[ext_resource type="Script" path="res://scripts/combat/buff.gd" id="2_buff"]
+
+[sub_resource type="Resource" id="Resource_thorns"]
+script = ExtResource("1_mod")
+stat = 9
+amount = 0.25
+
+[resource]
+script = ExtResource("2_buff")
+title = "Espinhos de Ferro"
+flavor = "Pregos batidos por dentro do gibão. Os ossos aprendem rápido."
+modifiers = Array[ExtResource("1_mod")]([SubResource("Resource_thorns")])
