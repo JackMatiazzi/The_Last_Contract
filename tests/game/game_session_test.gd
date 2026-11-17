@@ -33,7 +33,7 @@ func test_hud_follows_the_spawned_adventurer() -> void:
 
 	session.player.take_damage(2.0)
 
-	assert_str(hud.health_label.text).is_equal("8 / 10")
+	assert_str(hud.health_label.text).is_equal("80%")
 
 
 func test_without_a_choice_the_first_adventurer_is_used() -> void:

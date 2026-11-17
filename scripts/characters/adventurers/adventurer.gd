@@ -282,7 +282,7 @@ func next_ability() -> void:
 
 
 func can_use(item: QuickItem) -> bool:
-	return item.heal_amount > 0.0 or (item.mana_amount > 0.0 and mana != null)
+	return item.heal_fraction > 0.0 or (item.mana_amount > 0.0 and mana != null)
 
 
 ## com a vida e a mana cheias o item nao e gasto
@@ -290,12 +290,12 @@ func use_item() -> bool:
 	var item := inventory.selected()
 	if item == null or is_dead:
 		return false
-	var restores_health := item.heal_amount > 0.0 and health < get_max_health()
+	var restores_health := item.heal_fraction > 0.0 and health < get_max_health()
 	var restores_mana := item.mana_amount > 0.0 and mana != null and mana.current < mana.maximum
 	if not (restores_health or restores_mana):
 		return false
 	if restores_health:
-		heal(item.heal_amount)
+		heal(get_max_health() * item.heal_fraction)
 	if restores_mana:
 		mana.restore(item.mana_amount)
 	inventory.take(item)

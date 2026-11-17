@@ -25,7 +25,7 @@ func test_shows_attempt_and_full_health() -> void:
 	var hud := _spawn_hud(arena.spawn(TestArena.KNIGHT, Vector3.ZERO))
 
 	assert_str(hud.attempt_label.text).is_equal("Tentativa I")
-	assert_str(hud.health_label.text).is_equal("10 / 10")
+	assert_str(hud.health_label.text).is_equal("100%")
 
 
 func test_follows_damage() -> void:
@@ -34,7 +34,7 @@ func test_follows_damage() -> void:
 
 	player.take_damage(3.0)
 
-	assert_str(hud.health_label.text).is_equal("7 / 10")
+	assert_str(hud.health_label.text).is_equal("70%")
 	assert_float(hud.health_bar.value).is_equal(7.0)
 
 

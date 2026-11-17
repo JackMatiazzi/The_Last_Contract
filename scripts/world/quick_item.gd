@@ -4,8 +4,8 @@ extends Resource
 
 @export var title := ""
 @export var icon: Texture2D
-## vida que cura ao usar
-@export var heal_amount := 0.0
+## parte da vida maxima que cura ao usar (0.2 = 20%)
+@export var heal_fraction := 0.0
 ## mana que devolve ao usar
 @export var mana_amount := 0.0
 ## quantos cabem no inventario
