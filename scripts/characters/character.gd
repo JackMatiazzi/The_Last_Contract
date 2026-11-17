@@ -295,6 +295,11 @@ func _hold_pose_locally(animation: String) -> void:
 	animation_player.speed_scale = 1.0
 	animation_player.play(animation, ANIM_BLEND)
 
+## alcance em que os mortos-vivos ouvem ou acordam com este personagem; Pés de Lã diminui
+func get_noise_factor() -> float:
+	return maxf(1.0 + get_stat_bonus(StatModifier.Stat.NOISE), MIN_STAT_FACTOR)
+
+
 ## Retorna se o personagem está se movendo em alta velocidade ou executando uma ação ruidosa.
 func is_making_noise() -> bool:
 	var speed := Vector2(velocity.x, velocity.z).length()

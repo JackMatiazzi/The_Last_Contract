@@ -15,7 +15,7 @@ func exit() -> void:
 
 func think(_delta: float) -> void:
 	var perception := enemy.perception
-	var close := perception.target != null and perception.distance_to_target() <= enemy.profile.awaken_distance
+	var close := perception.target != null and perception.distance_to_target() <= enemy.profile.awaken_distance * perception.target.get_noise_factor()
 	if close:
 		perception.force_awareness(perception.target)
 	if close or perception.is_aware():

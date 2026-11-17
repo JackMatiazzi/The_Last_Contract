@@ -25,3 +25,7 @@ func test_the_sharp_blade_card_says_what_it_gives() -> void:
 	var blade := load("res://resources/buffs/lamina_afiada.tres") as Buff
 
 	assert_str(blade.describe()).contains("+0,5 de dano")
+
+
+func test_new_blessing_effects_describe_themselves() -> void:
+	assert_str(_modifier(StatModifier.Stat.NOISE, -0.3).describe()).is_equal("-30% de barulho")
