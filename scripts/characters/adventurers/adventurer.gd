@@ -150,6 +150,10 @@ func _process(delta: float) -> void:
 	_shake_camera(delta)
 
 
+func blessing_share() -> float:
+	return 1.0
+
+
 func on_hit_landed(heavy: bool) -> void:
 	super(heavy)
 	if not is_multiplayer_authority():

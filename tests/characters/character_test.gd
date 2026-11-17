@@ -70,22 +70,40 @@ func test_death_disables_body_collision() -> void:
 	assert_bool(skeleton.collision_shape.disabled).is_true()
 
 
+# os mortos-vivos recebem só 20% de cada bênção
 func test_run_buffs_apply_to_adventurers_and_enemies() -> void:
 	RunState.buffs.append(load("res://resources/buffs/couraca.tres"))
 	var knight := arena.spawn(TestArena.KNIGHT, Vector3.ZERO)
 	var skeleton := arena.spawn(TestArena.SKELETON, Vector3(4, 0, 0))
 
 	assert_float(knight.get_max_health()).is_equal(12.0)
-	assert_float(skeleton.get_max_health()).is_equal(7.0)
-	assert_float(skeleton.health).is_equal(7.0)
+	assert_float(skeleton.get_max_health()).is_equal_approx(5.4, 0.001)
+	assert_float(skeleton.health).is_equal_approx(5.4, 0.001)
 
 
 func test_max_health_never_drops_below_one() -> void:
+	var drain := Buff.new()
+	var modifier := StatModifier.new()
+	modifier.stat = StatModifier.Stat.MAX_HEALTH
+	modifier.amount = -50.0
+	drain.modifiers.append(modifier)
+	RunState.buffs.append(drain)
+	var knight := arena.spawn(TestArena.KNIGHT, Vector3.ZERO)
+	var skeleton := arena.spawn(TestArena.SKELETON, Vector3(4, 0, 0))
+
+	assert_float(knight.get_max_health()).is_equal(1.0)
+	assert_float(skeleton.get_max_health()).is_equal(1.0)
+
+
+func test_enemies_feel_a_fifth_of_each_blessing() -> void:
 	var fury: Buff = load("res://resources/buffs/furia_cega.tres")
 	RunState.buffs.append_array([fury, fury, fury])
-	var skeleton := arena.spawn(TestArena.SKELETON, Vector3.ZERO)
+	var knight := arena.spawn(TestArena.KNIGHT, Vector3.ZERO)
+	var skeleton := arena.spawn(TestArena.SKELETON, Vector3(4, 0, 0))
 
-	assert_float(skeleton.get_max_health()).is_equal(1.0)
+	assert_float(knight.get_stat_bonus(StatModifier.Stat.DAMAGE)).is_equal(3.0)
+	assert_float(skeleton.get_stat_bonus(StatModifier.Stat.DAMAGE)).is_equal_approx(0.6, 0.001)
+	assert_float(skeleton.get_max_health()).is_equal_approx(3.2, 0.001)
 
 
 func test_speed_buff_raises_max_speed() -> void:
