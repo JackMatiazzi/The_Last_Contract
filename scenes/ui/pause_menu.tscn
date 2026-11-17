@@ -119,6 +119,7 @@ text = "Nenhuma ainda."
 autowrap_mode = 3
 
 [node name="BuffRule" type="Label" parent="Center/MainPanel/Columns/Right"]
+unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"DangerLabel"
 theme_override_font_sizes/font_size = 14

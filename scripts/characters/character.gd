@@ -8,8 +8,6 @@ signal died
 signal revived
 signal blocked
 
-## a bênção escolhida vale para os dois lados, mas os inimigos recebem só 20% dela
-const ENEMY_BLESSING_SHARE := 0.2
 const ANIM_IDLE := "Idle"
 const ANIM_WALK := "Walking_A"
 const ANIM_RUN := "Running_A"
@@ -356,7 +354,7 @@ func get_stat_bonus(stat: StatModifier.Stat) -> float:
 
 ## parte de cada bênção que este personagem sente: os mortos-vivos e o mímico ficam com uma fração
 func blessing_share() -> float:
-	return ENEMY_BLESSING_SHARE
+	return RunState.enemy_blessing_share()
 
 ## Retorna a vida máxima calculada já com os modificadores dos buffs aplicados.
 func get_max_health() -> float:

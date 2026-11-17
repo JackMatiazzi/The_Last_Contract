@@ -32,3 +32,5 @@ func test_new_blessing_effects_describe_themselves() -> void:
 	assert_str(_modifier(StatModifier.Stat.ENERGY_REGEN, 0.25).describe()).is_equal("+25% de recuperação de energia")
 	assert_str(_modifier(StatModifier.Stat.LIFESTEAL, 0.02).describe()).is_equal("cura 2% da vida a cada golpe acertado")
 	assert_str(_modifier(StatModifier.Stat.THORNS, 0.25).describe()).is_equal("devolve 25% do dano recebido")
+	assert_str(_modifier(StatModifier.Stat.EXTRA_CHOICE, 1.0).describe()).is_equal("+1 bênção para escolher")
+	assert_str(_modifier(StatModifier.Stat.ENEMY_SHARE, 0.2).describe()).is_equal("mortos-vivos: +20% de cada bênção")
