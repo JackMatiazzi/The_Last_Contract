@@ -2,7 +2,7 @@ class_name StatModifier
 extends Resource
 ## DAMAGE e MAX_HEALTH em pontos; os outros em fracao (0.2 = +20%)
 
-enum Stat { DAMAGE, MAX_HEALTH, SPEED, ATTACK_COOLDOWN, DAMAGE_TAKEN, MAX_HEALTH_PERCENT, NOISE }
+enum Stat { DAMAGE, MAX_HEALTH, SPEED, ATTACK_COOLDOWN, DAMAGE_TAKEN, MAX_HEALTH_PERCENT, NOISE, ENERGY_REGEN }
 
 @export var stat: Stat
 @export var amount := 0.0
@@ -24,6 +24,8 @@ func describe() -> String:
 			return "%+d%% de vida máxima" % roundi(amount * 100.0)
 		Stat.NOISE:
 			return "%+d%% de barulho" % roundi(amount * 100.0)
+		Stat.ENERGY_REGEN:
+			return "%+d%% de recuperação de energia" % roundi(amount * 100.0)
 	return ""
 
 

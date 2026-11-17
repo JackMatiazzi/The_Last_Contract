@@ -29,3 +29,4 @@ func test_the_sharp_blade_card_says_what_it_gives() -> void:
 
 func test_new_blessing_effects_describe_themselves() -> void:
 	assert_str(_modifier(StatModifier.Stat.NOISE, -0.3).describe()).is_equal("-30% de barulho")
+	assert_str(_modifier(StatModifier.Stat.ENERGY_REGEN, 0.25).describe()).is_equal("+25% de recuperação de energia")
