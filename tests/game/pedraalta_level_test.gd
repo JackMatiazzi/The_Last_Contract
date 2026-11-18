@@ -192,3 +192,42 @@ func test_when_you_fall_with_allies_standing_the_screen_says_so() -> void:
 	session.player.take_damage(999.0)
 
 	assert_str(session.hud.announcement.text).contains("Você caiu")
+
+
+func _chests() -> Array[Node]:
+	return encounters.get_children().filter(func(child: Node) -> bool: return child is Chest or child is Mimic)
+
+
+func test_each_attempt_draws_five_chests_and_one_is_a_mimic() -> void:
+	var chests := _chests()
+
+	assert_int(chests.size()).is_equal(encounters.chest_count)
+	assert_int(chests.filter(func(chest: Node) -> bool: return chest is Mimic).size()).is_equal(1)
+	assert_int(encounters.chest_spots.get_child_count()).is_equal(11)
+
+
+func test_the_chests_land_on_the_drawn_spots() -> void:
+	var spots := encounters.chest_spots.get_children().map(func(spot: Marker3D) -> Vector3: return spot.global_position)
+
+	# o mímico tem física e assenta no chão: compara só a posição no plano
+	for chest: Node3D in _chests():
+		var ground := Vector2(chest.global_position.x, chest.global_position.z)
+		assert_bool(spots.any(func(spot: Vector3) -> bool: return Vector2(spot.x, spot.z).distance_to(ground) < 0.3)).is_true()
+
+
+# no co-op cada máquina sorteia sozinha: com a mesma semente os baús e o mímico têm de sair iguais
+func test_the_same_seed_draws_the_same_chests_on_every_machine() -> void:
+	for chest in _chests():
+		chest.free()
+	var draw := func() -> Array:
+		seed(4242)
+		var spawned := encounters.spawn_chests()
+		var layout := spawned.map(func(chest: Node3D) -> String: return "%s@%s" % [chest.name, chest.global_position])
+		for chest in spawned:
+			chest.free()
+		return layout
+
+	var first: Array = draw.call()
+	var second: Array = draw.call()
+
+	assert_array(first).is_equal(second)

@@ -17,6 +17,8 @@
 [ext_resource type="AudioStream" path="res://assets/audio/music/village_night_ambient.ogg" id="cue_track"]
 [ext_resource type="PackedScene" path="res://scenes/characters/enemies/necromancer.tscn" id="boss"]
 [ext_resource type="PackedScene" path="res://scenes/ui/victory_screen.tscn" id="victory"]
+[ext_resource type="PackedScene" path="res://scenes/world/chest.tscn" id="chest"]
+[ext_resource type="PackedScene" path="res://scenes/characters/enemies/mimic.tscn" id="mimic"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_night"]
 sky_top_color = Color(0.03, 0.04, 0.09, 1)
@@ -405,7 +407,7 @@ navigation_mesh = ExtResource("2_navmesh")
 [node name="Pedraalta" parent="Navigation" instance=ExtResource("1_village")]
 
 
-[node name="Encounters" type="Node3D" parent="." node_paths=PackedStringArray("player_spots", "group_spots", "boss_spot")]
+[node name="Encounters" type="Node3D" parent="." node_paths=PackedStringArray("player_spots", "group_spots", "boss_spot", "chest_spots")]
 script = ExtResource("3_spawner")
 player_spots = NodePath("../Navigation/Pedraalta/PlayerSpots")
 group_spots = NodePath("../Navigation/Pedraalta/GroupSpots")
@@ -413,6 +415,9 @@ boss_spot = NodePath("../Navigation/Pedraalta/BossSpot")
 group_scenes = Array[PackedScene]([ExtResource("4_patrol"), ExtResource("5_guard"), ExtResource("6_sleepers"), ExtResource("g_casters"), ExtResource("g_circle"), ExtResource("g_squad")])
 easy_zone = &"A"
 easy_group = ExtResource("6_sleepers")
+chest_spots = NodePath("../Navigation/Pedraalta/ChestSpots")
+chest_scene = ExtResource("chest")
+mimic_scene = ExtResource("mimic")
 
 [node name="DeathScreen" parent="." instance=ExtResource("7_death")]
 

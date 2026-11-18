@@ -123,6 +123,7 @@ func _spawn_players() -> void:
 	player.camera.make_current()
 	if encounters:
 		_track_groups(encounters.spawn_groups(spawn.global_position))
+		encounters.spawn_chests()
 	hud.bind(player)
 
 ## Retorna a lista de IDs de rede dos jogadores na partida.
