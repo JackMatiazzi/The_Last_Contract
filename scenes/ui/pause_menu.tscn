@@ -122,7 +122,7 @@ autowrap_mode = 3
 layout_mode = 2
 theme_type_variation = &"DangerLabel"
 theme_override_font_sizes/font_size = 14
-text = "Valem também para os mortos-vivos."
+text = "Os mortos-vivos recebem 20% de cada uma."
 
 [node name="GuidePanel" type="PanelContainer" parent="Center"]
 unique_name_in_owner = true

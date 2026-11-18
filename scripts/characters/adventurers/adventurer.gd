@@ -4,6 +4,8 @@ extends Character
 signal energy_short(pool: EnergyPool)
 signal ability_changed
 
+## vida de referência do dano dos inimigos: o dano deles é escrito pensando num aventureiro de 10 de vida
+const ENEMY_DAMAGE_REFERENCE_HEALTH := 10.0
 const ATTACK_BUFFER := 0.2
 const PITCH_MIN := deg_to_rad(-60.0)
 const PITCH_MAX := deg_to_rad(30.0)
@@ -150,6 +152,18 @@ func _process(delta: float) -> void:
 	_shake_camera(delta)
 
 
+func blessing_share() -> float:
+	return 1.0
+
+
+## o dano de inimigos e armadilhas vale como parte da vida base, sem bênção: um golpe de 1 tira 10% dela,
+## e a vida ganha com Vigor fica de colchão. Fogo amigo continua em pontos
+func _incoming_damage(amount: float, source: Node3D) -> float:
+	if source is Adventurer:
+		return amount
+	return amount * max_health / ENEMY_DAMAGE_REFERENCE_HEALTH
+
+
 func on_hit_landed(heavy: bool) -> void:
 	super(heavy)
 	if not is_multiplayer_authority():
@@ -237,9 +251,9 @@ static func peer_can_reach(tree: SceneTree, peer_id: int, point: Vector3, reach:
 	return adventurer.global_position.distance_to(point) <= reach
 
 
-## só os aventureiros ganham a vida a mais por tentativas; os mortos-vivos ficam com a deles
-func get_max_health() -> float:
-	return super() + RunState.extra_health()
+## só os aventureiros ganham a proteção por tentativas; os mortos-vivos ficam sem ela
+func _extra_protection() -> float:
+	return RunState.extra_protection()
 
 
 func set_display_name(display_name: String) -> void:
@@ -278,7 +292,7 @@ func next_ability() -> void:
 
 
 func can_use(item: QuickItem) -> bool:
-	return item.heal_amount > 0.0 or (item.mana_amount > 0.0 and mana != null)
+	return item.heal_fraction > 0.0 or (item.mana_amount > 0.0 and mana != null)
 
 
 ## com a vida e a mana cheias o item nao e gasto
@@ -286,12 +300,12 @@ func use_item() -> bool:
 	var item := inventory.selected()
 	if item == null or is_dead:
 		return false
-	var restores_health := item.heal_amount > 0.0 and health < get_max_health()
+	var restores_health := item.heal_fraction > 0.0 and health < get_max_health()
 	var restores_mana := item.mana_amount > 0.0 and mana != null and mana.current < mana.maximum
 	if not (restores_health or restores_mana):
 		return false
 	if restores_health:
-		heal(item.heal_amount)
+		heal(get_max_health() * item.heal_fraction)
 	if restores_mana:
 		mana.restore(item.mana_amount)
 	inventory.take(item)

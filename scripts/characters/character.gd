@@ -8,6 +8,8 @@ signal died
 signal revived
 signal blocked
 
+## a bênção escolhida vale para os dois lados, mas os inimigos recebem só 20% dela
+const ENEMY_BLESSING_SHARE := 0.2
 const ANIM_IDLE := "Idle"
 const ANIM_WALK := "Walking_A"
 const ANIM_RUN := "Running_A"
@@ -165,8 +167,11 @@ func take_damage(amount: float, source: Node3D = null) -> void:
 		_play(block_sound)
 		blocked.emit()
 		return
+	var hit := amount
+	amount = _incoming_damage(amount, source) * get_damage_taken_factor()
 	_note_attacker(source, minf(amount, health))
-	_push_away_from(source, amount)
+	# o empurrão segue o golpe em pontos: não cresce com a vida máxima de quem apanha
+	_push_away_from(source, hit)
 	health = maxf(health - amount, 0.0)
 	health_changed.emit(health, get_max_health())
 	_share_health()
@@ -179,6 +184,11 @@ func take_damage(amount: float, source: Node3D = null) -> void:
 		_flinch_ready_at = now + flinch_guard
 		_on_flinch()
 		play_action(ANIM_HIT, 1.0, 0.0, HIT_RECOVERY)
+
+## dano que de fato chega, aplicado na máquina dona do personagem; por padrão, o valor do golpe
+func _incoming_damage(amount: float, _source: Node3D) -> float:
+	return amount
+
 
 ## Restaura pontos de vida do personagem até o limite máximo permitido.
 func heal(amount: float) -> void:
@@ -303,11 +313,25 @@ func get_stat_bonus(stat: StatModifier.Stat) -> float:
 		for modifier in buff.modifiers:
 			if modifier.stat == stat:
 				total += modifier.amount
-	return total
+	return total * blessing_share()
+
+
+## parte de cada bênção que este personagem sente: os mortos-vivos e o mímico ficam com uma fração
+func blessing_share() -> float:
+	return ENEMY_BLESSING_SHARE
 
 ## Retorna a vida máxima calculada já com os modificadores dos buffs aplicados.
 func get_max_health() -> float:
-	return maxf(max_health + get_stat_bonus(StatModifier.Stat.MAX_HEALTH), 1.0)
+	var points := max_health + get_stat_bonus(StatModifier.Stat.MAX_HEALTH)
+	return maxf(points * (1.0 + get_stat_bonus(StatModifier.Stat.MAX_HEALTH_PERCENT)), 1.0)
+
+## quanto de cada golpe chega: Couraça e Sangue Frio diminuem, Frenesi e Fúria Cega aumentam
+func get_damage_taken_factor() -> float:
+	return maxf(1.0 + get_stat_bonus(StatModifier.Stat.DAMAGE_TAKEN) - _extra_protection(), MIN_STAT_FACTOR)
+
+
+func _extra_protection() -> float:
+	return 0.0
 
 ## Retorna o ponto no mundo 3D para onde a mira/frente do personagem aponta.
 func get_aim_point() -> Vector3:

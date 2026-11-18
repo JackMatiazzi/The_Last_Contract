@@ -2,7 +2,7 @@
 # testes de ponta a ponta, um fluxo por chamada:
 #   solo       um contrato solo ate a segunda tentativa
 #   alcapao    do chefe morto ao calabouco apertando E no alcapao
-#   vida-extra ate a terceira tentativa, conferindo a vida maxima a mais a cada 2 tentativas
+#   vida-extra ate a terceira tentativa, conferindo o dano recebido menor a cada 2 tentativas
 #   coop-enet  partida em grupo pela rede local (ENet, UDP)
 #   coop-ws    a mesma partida por WebSocket, o caminho do tunel Cloudflare
 #   coop-relay a mesma partida pela sala online com codigo, com a API (the-last-contract-api) rodando local

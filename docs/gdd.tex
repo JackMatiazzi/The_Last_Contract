@@ -95,7 +95,7 @@ A frase que resume o jogo é a última que ele mostra: \emph{``O contrato foi cu
 
 \begin{description}[leftmargin=0pt]
     \item[O contrato é a regra do jogo.] Cada cláusula assinada no menu vira uma mecânica (tabela abaixo). O jogador lê as regras como parte da história, não num tutorial.
-    \item[Toda vantagem tem preço.] A bênção escolhida a cada morte vale também para os mortos-vivos. Escolher é pesar quem ganha mais com ela.
+    \item[Toda vantagem tem preço.] A bênção escolhida a cada morte vale também para os mortos-vivos, que recebem 20\% do efeito. Escolher é pesar quem ganha mais com ela.
     \item[Uma vida, sem seta.] Não há marcador de objetivo nem minimapa: os marcos do cenário (fumaça, velas, braseiros) guiam, e cair custa a tentativa inteira.
     \item[A história está no chão.] Bilhetes, restos e cenário contam o que aconteceu com a Companhia da Lanterna. Quem não lê consegue jogar; quem lê entende o final antes dele chegar.
     \item[Junto ou sozinho, o mesmo jogo.] Jogar sozinho é um grupo de um. O co-op não é um modo à parte, e cada classe tem um momento só dela.
@@ -106,8 +106,8 @@ A frase que resume o jogo é a última que ele mostra: \emph{``O contrato foi cu
 \textbf{Cláusula} & \textbf{Mecânica que ela vira} \\
 \midrule
 I. Do objeto & Grupos de mortos-vivos espalhados por zona e o Necromante no topo da vila \\
-II. Da vida & Vida única e posições sorteadas de novo a cada tentativa \\
-III. Da bênção & Buffs acumulativos que valem para os dois lados \\
+II. Da vida & Vida única, até trinta tentativas, e posições sorteadas de novo a cada tentativa \\
+III. Da bênção & Buffs acumulativos que valem para os dois lados (20\% do efeito para os mortos-vivos) \\
 IV. Da companhia & Co-op de até 4, reviver com poção e votação da bênção \\
 V. Do abandono & Desistir leva à execução em praça pública \\
 Letras miúdas & O calabouço e o epílogo da vitória \\
@@ -157,7 +157,7 @@ O texto que o aventureiro assina resume as regras do jogo em cláusulas. O pagam
 
 \begin{description}[leftmargin=0pt]
     \item[I. Do objeto.] Limpar a vila de todo morto-vivo e derrubar a criatura que os levanta. A vila só é dada por limpa quando o último grupo cai e o Necromante não se levanta mais.
-    \item[II. Da vida.] O Contratado entra com uma vida. Caindo, pode aceitar nova tentativa: a vila volta a ser ocupada e cada morto retorna ao seu posto, em outro lugar.
+    \item[II. Da vida.] O Contratado entra com uma vida. Caindo, pode aceitar nova tentativa: a vila volta a ser ocupada e cada morto retorna ao seu posto, em outro lugar. O contrato tem prazo: caindo na trigésima tentativa, não há outra chance, e o Lorde manda executar.
     \item[III. Da bênção.] A cada nova tentativa o Lorde concede uma bênção, à escolha entre duas. A bênção é do contrato, não da pessoa: vale para todos dentro da vila, vivos ou não.
     \item[IV. Da companhia.] Até quatro podem assinar juntos, cada um com seu ofício. Quem cair pode ser erguido por um companheiro que lhe dê a própria poção. Caindo todos, escolhem juntos a bênção; no empate, decide a sorte.
     \item[V. Do abandono.] Desistir é quebra de contrato. A pena é a execução, em praça pública, diante da vila.
@@ -274,15 +274,16 @@ Movimentação & Terceira pessoa, com exploração livre da vila. Resposta rápi
 Combate & Corpo a corpo e à distância, conforme o aventureiro escolhido. Clique é o ataque rápido; segurar o botão é o ataque pesado (mais lento e mais forte). Cada golpe rápido tira 1 ponto de vida; o alvo reage ao dano e, ao chegar a zero, morre. \\
 Energia & Estamina para todos (correr, escudo, golpes físicos) e mana para o Mage (feitiços). Gastar pausa a recarga por um instante; depois ela volta sozinha. O golpe só sai com o custo inteiro disponível. Detalhes em \ref{sec:energia}. \\
 Vida & Aventureiros têm 10; o esqueleto comum tem 5, os atiradores 4 e os mais fortes de 14 a 24 (bestiário em \ref{sec:bestiario}). Uma barra de vida flutua sobre cada personagem (verde para aventureiros, vermelha para mortos-vivos). Ao levar dano, um rastro claro mostra o pedaço perdido antes de encolher e um número de dano sobe acima da cabeça. \\
-Vida única & O jogador possui apenas uma vida por tentativa. Em grupo, um aliado com uma poção no inventário pode reviver quem caiu: perto do caído aparece ``E Reviver'' sobre ele, e ele volta com metade da vida. A poção só é gasta quando o reviver vale: se outro aliado reviveu antes, ela continua no inventário. Se todos caem, abre a tela de morte. \\
+Vida única & O jogador possui apenas uma vida por tentativa. Em grupo, um aliado com uma poção no inventário pode reviver quem caiu: perto do caído aparece ``E Reviver'' sobre ele, e ele volta com metade da vida. A poção só é gasta quando o reviver vale: se outro aliado reviveu antes, ela continua no inventário. Se todos caem, abre a tela de morte; na trigésima tentativa o contrato vence e vem a execução. \\
+Dano dos inimigos & O dano de mortos-vivos e armadilhas vale como porcentagem da vida base do aventureiro, sem bênçãos (um golpe de 1 tira 10\% dela). A vida ganha com Vigor fica de colchão, e a redução de dano das bênçãos e das tentativas diminui cada golpe. A HUD mostra a vida em porcentagem. Fogo amigo continua em pontos. \\
 Grupos de inimigos & Sete grupos por tentativa, de dois a quatro mortos-vivos cada, espalhados pelas zonas da vila: primeiro um por zona, depois um segundo grupo nas outras zonas (no máximo dois por zona). \\
 Posições aleatórias & A cada tentativa, o jogador renasce em um ponto sorteado e os grupos de inimigos são reposicionados. \\
 Reviver ou Desistir & Escolha apresentada quando o grupo inteiro cai. Desistir (só o host) encerra a missão com a execução do aventureiro. \\
 Bênçãos acumulativas & Ao reviver, o grupo vota numa entre duas bênçãos sorteadas; elas se acumulam entre tentativas. \\
-Bênçãos dos inimigos & Os mortos-vivos recebem as mesmas bênçãos escolhidas nas tentativas anteriores. \\
+Bênçãos dos inimigos & Os mortos-vivos recebem as mesmas bênçãos escolhidas nas tentativas anteriores, com 20\% do efeito. \\
 Boss & O Necromante, um mago esqueleto que surge no Mirante quando todos os grupos caem: mantém distância, dispara rajadas mágicas e levanta uma leva de quatro mortos-vivos (dois esqueletos, um mago e um arqueiro). \\
 Objetos interativos & Baús espalhados pela vila: a cada tentativa, 5 dos 11 pontos de baú da Pedra Alta são sorteados (espalhados por zona, com a mesma semente para todo o grupo), e um deles é um mímico. Perto de um baú, aparece o aviso para abrir; aberto, solta uma poção. Tocar na poção a guarda no inventário (até 4); com o inventário cheio ela fica no chão e é pega assim que sobrar espaço, se o aventureiro ainda estiver em cima dela. Em grupo, dois jogadores na mesma poção não levam uma cada: o host decide quem pegou. Um golpe ou projétil de aventureiro quebra a poção que está no chão, e ela se perde. \\
-Inventário rápido & Itens guardados para usar quando quiser: a poção de vida cura 2 ao ser usada (não é gasta com a vida cheia) e serve para reviver um aliado. A roda do mouse para baixo troca o item selecionado; segurar E por 0,6\,s bebe (o gole deixa o aventureiro exposto). \\
+Inventário rápido & Itens guardados para usar quando quiser: a poção de vida cura 20\% da vida máxima ao ser usada (não é gasta com a vida cheia) e serve para reviver um aliado. A roda do mouse para baixo troca o item selecionado; segurar E por 0,6\,s bebe (o gole deixa o aventureiro exposto). \\
 Objetos quebráveis & Barris, caixotes e barris de bebida quebram com o ataque pesado (golpe ou projétil), soltando lascas; carroças, cercas e tochas aguentam. Evita ficar encurralado contra o cenário. \\
 Troca de habilidade & A roda do mouse para cima troca a habilidade do ataque principal. O Mage alterna entre o Projétil mágico e o Portal; os outros aventureiros têm uma habilidade por enquanto. \\
 Portal & Magia do Mage, 20\% de mana por portal. O primeiro uso abre a entrada no chão onde a mira aponta (até 15\,m), o segundo abre a saída; os 12\,s do par só começam a contar quando as duas pontas estão ligadas (a entrada sozinha espera a saída) e um par novo fecha o anterior. Aventureiro que entra numa ponta sai na frente da outra (0,5\,s de recarga por pessoa); mortos-vivos também atravessam (quem leva cada um é a máquina dona dele). Projéteis de todos (setas, projéteis mágicos e os do Necromante) atravessam e saem pela frente do outro portal, na direção que a janela mostra; o tiro de um aventureiro que atravessa o portal passa a acertar aventureiros também, então atirar pelo portal com um aliado na frente da saída fere o aliado. Uma barra acima do anel esvazia até o portal fechar. O véu do portal mostra o outro lado, como uma janela para a saída, acompanhando o ângulo da câmera de quem olha. Com parede logo à frente da saída, o aventureiro sai no próprio portal. Em grupo, o portal aparece para todos e serve para os aliados. \\
@@ -322,24 +323,25 @@ As ligações dos dois dispositivos ficam no Input Map do projeto e podem ser tr
 
 \subsection{Buffs}
 
-Ao reviver, o grupo vota numa entre duas bênçãos sorteadas (sozinho, o voto é só seu). Pelo contrato do Lorde, a bênção escolhida vale para o aventureiro \emph{e também para todos os mortos-vivos} nas tentativas seguintes. Como o aventureiro tem 10 de vida e enfrenta vários mortos-vivos de 5 de vida, o mesmo buff pesa diferente para cada lado: a escolha é decidir qual efeito favorece mais o jogador do que os inimigos. Metade dos buffs tem custo e benefício, pensados para o público experiente.
+Ao reviver, o grupo vota numa entre duas bênçãos sorteadas (sozinho, o voto é só seu). Pelo contrato do Lorde, a bênção escolhida vale para o aventureiro \emph{e também para todos os mortos-vivos} nas tentativas seguintes, mas eles recebem só 20\% do efeito (Couraça corta 20\% do dano que o aventureiro recebe e 4\% do que cada morto-vivo recebe). Como o aventureiro tem 10 de vida e enfrenta vários mortos-vivos de 5 de vida, o mesmo buff pesa diferente para cada lado: a escolha é decidir qual efeito favorece mais o jogador do que os inimigos. Três dos sete buffs têm custo e benefício, pensados para o público experiente.
 
 \begin{xltabular}{\textwidth}{@{}lX@{}}
 \toprule
-\textbf{Buff} & \textbf{Efeito (em todos os personagens)} \\
+\textbf{Buff} & \textbf{Efeito no aventureiro (os mortos-vivos recebem 20\%)} \\
 \midrule
 Lâmina Afiada & +0,5 de dano \\
-Couraça & +2 de vida máxima \\
+Couraça & $-$20\% de dano recebido \\
 Passos Leves & +15\% de velocidade \\
-Frenesi & $-$15\% de tempo entre ataques, $-$1 de vida máxima \\
-Fúria Cega & +1 de dano, $-$3 de vida máxima \\
-Sangue Frio & +2 de vida máxima, $-$5\% de velocidade \\
+Frenesi & $-$15\% de tempo entre ataques, +10\% de dano recebido \\
+Fúria Cega & +1 de dano, +30\% de dano recebido \\
+Sangue Frio & $-$20\% de dano recebido, $-$5\% de velocidade \\
+Vigor & +20\% de vida máxima \\
 \bottomrule
 \end{xltabular}
 
-Os valores foram reduzidos em 15/11/2026 para o formato roguelike: com os números antigos, três ou quatro bênçãos deixavam o aventureiro forte demais para as tentativas seguintes. Fúria Cega ficou como está porque já cobra caro.
+Os valores foram reduzidos em 15/11/2026 para o formato roguelike: com os números antigos, três ou quatro bênçãos deixavam o aventureiro forte demais para as tentativas seguintes. Fúria Cega ficou como está porque já cobra caro. Em 17/11, os buffs de vida em pontos viraram redução (ou aumento) de dano recebido, na mesma proporção (2 de vida em 10 viraram 20\%), e entrou o Vigor, que dá vida em porcentagem. Como o golpe dos inimigos é medido sobre a vida base, a vida ganha com o Vigor fica de colchão.
 
-A cada 2 tentativas jogadas o aventureiro volta com 1 de vida máxima a mais (tentativas 3 e 4: +1; 5 e 6: +2), um alívio só para os jogadores, que não vale para os mortos-vivos. Regras: cada buff acumula até 3 vezes; os dois sorteados são sempre diferentes; vida máxima nunca fica abaixo de 1; velocidade e tempo entre ataques nunca caem abaixo de 20\% do valor base. Desistir na tela de morte, ou abandonar o contrato pela pausa, leva à cena de execução do aventureiro e depois ao menu principal; o próximo contrato começa do zero (tentativas e buffs zerados).
+A cada 2 tentativas jogadas o aventureiro volta recebendo 10\% menos dano (tentativas 3 e 4: $-$10\%; 5 e 6: $-$20\%), um alívio só para os jogadores, que não vale para os mortos-vivos. Regras: cada buff acumula até 3 vezes; os dois sorteados são sempre diferentes; vida máxima nunca fica abaixo de 1; velocidade, tempo entre ataques e dano recebido nunca caem abaixo de 20\% do valor base. Desistir na tela de morte, ou abandonar o contrato pela pausa, leva à cena de execução do aventureiro e depois ao menu principal; o próximo contrato começa do zero (tentativas e buffs zerados).
 
 \subsection{Energia: estamina e mana}
 \label{sec:energia}
@@ -612,7 +614,7 @@ Configurações & Áudio (geral, música, efeitos), vídeo (tela cheia, VSync), 
 HUD & Segue o estudo de HUD do Figma. No canto superior direito, o objetivo: ``Grupos restantes'' com um losango por grupo, aceso enquanto o grupo vive, e depois ``Derrote o Necromante''. Ele não aponta direção, porque achar os grupos faz parte de explorar a vila. Na primeira tentativa, um aviso no centro lembra que Esc (ou Start) abre a pausa com os controles, e o aviso de que o Necromante despertou fica 5\,s na tela, com som. No canto superior esquerdo, a tentativa em numeral romano com as bênçãos ativas em etiquetas ao lado (nome e acúmulos; o efeito de cada uma fica na pausa), a vida em barra vermelha com número e um rastro claro que mostra por um instante quanto o golpe tirou, e a estamina (âmbar) e a mana (azul, só o Mage), divididas em blocos do custo do golpe atual (bloco que não encheu não pode ser gasto); aviso de abates e quedas no canto e placar segurando Tab. No canto inferior esquerdo, uma cruz de slots com ícones: em cima a habilidade ativa (com o custo em \% num selo âmbar no canto e só o nome ao lado; o resto fica na tela de controles e habilidades da pausa), à esquerda o botão direito (escudo ou segundo machado; some para quem não tem, mantendo o lugar na cruz) e embaixo o item rápido (com a quantidade, o nome e o lembrete ``segure E''; sem item, o slot fica vazio, sem texto). Segurar o ataque ou o E enche um anel dourado em volta do slot correspondente, mostrando quanto falta para o golpe pesado ou o gole. Os ícones são renderizados dos próprios modelos 3D do jogo. Para Mage e Rogue, e com o Portal ativo, uma mira no centro da tela indica o alvo. \\
 Barras 3D & Sobre os mortos-vivos (vermelha, com rastro do dano); escondida enquanto o morto-vivo dorme, aparece quando ele começa a levantar. Sobre os aliados, nome e barra verde; sobre um aliado caído, o aviso de reviver para quem tem poção por perto. O jogador usa a barra do HUD. Números de dano sobem de todos os personagens \\
 Entrada na missão & Cena curta à noite: o aventureiro escolhido chega pela estrada até a entrada da vila (``Contrato aceito.'', ``O Lorde quer a vila livre dos mortos.''); em grupo, os aliados vêm em formação atrás. Qualquer tecla marca ``pronto''; a partida começa quando todos estão prontos \\
-Pausa & Em duas colunas e com pouco texto. À esquerda, o selo, ``Contrato pausado'' e os botões Continuar, Controles e habilidades, Configurações e Abandonar contrato (com confirmação; leva à execução). À direita, só a situação do contrato: tentativa, aventureiro, objetivo atual e as bênçãos ativas com o efeito de cada uma (``valem também para os mortos-vivos''). O botão Controles e habilidades abre uma tela à parte com a tabela de controles, que troca sozinha entre teclado e controle, e a ficha da classe: estilo, descrição e cada habilidade com o custo em \% da barra (rápido e pesado) e o botão direito; Esc volta à pausa. Em grupo, o jogo não congela, mas o aventureiro para de obedecer enquanto o menu está aberto (solta o escudo e cancela o que estava segurado); abandonar tira só quem saiu \\
+Pausa & Em duas colunas e com pouco texto. À esquerda, o selo, ``Contrato pausado'' e os botões Continuar, Controles e habilidades, Configurações e Abandonar contrato (com confirmação; leva à execução). À direita, só a situação do contrato: tentativa, aventureiro, objetivo atual e as bênçãos ativas com o efeito de cada uma (``Os mortos-vivos recebem 20\% de cada uma.''). O botão Controles e habilidades abre uma tela à parte com a tabela de controles, que troca sozinha entre teclado e controle, e a ficha da classe: estilo, descrição e cada habilidade com o custo em \% da barra (rápido e pesado) e o botão direito; Esc volta à pausa. Em grupo, o jogo não congela, mas o aventureiro para de obedecer enquanto o menu está aberto (solta o escudo e cancela o que estava segurado); abandonar tira só quem saiu \\
 Morte & Histórico de dano da vida (de quem veio cada golpe, curas e o golpe final), tentativa, bênçãos acumuladas, Reviver ou Desistir (só o host; com confirmação; leva à execução). Reviver mostra duas cartas de bênção para votar, com o mouse ou as teclas 1 e 2 \\
 Execução & Cena em duas tomadas: o aventureiro escolhido vai embora pela estrada da vila ao entardecer (``Ele deu as costas ao contrato''); corta para a praça pública, onde ele está ajoelhado num cadafalso diante da multidão, ouve o veredito do Lorde e recebe o golpe de machado do carrasco encapuzado, enquanto a multidão comemora; termina em ``Contrato encerrado'' e volta ao menu. Qualquer tecla pula \\
 Vitória e epílogo & A tela ``Contrato cumprido'' mostra quem assinou e em qual tentativa, com ``Voltar à vila''. O epílogo da traição (descrito na História) roda em seguida e volta ao menu; qualquer tecla pula \\
@@ -755,7 +757,7 @@ Histórias & A Companhia da Lanterna (origem, a expedição dia a dia e os cinco
 \textbf{O que mudou depois do Figma.} O arquivo foi montado em 08/11/2026, e algumas coisas andaram desde então; onde há diferença, vale este GDD:
 \begin{itemize}
     \item A fase principal é a Pedra Alta, com sete grupos por tentativa; a planta da encosta e a página de história ainda falam em cinco grupos.
-    \item A poção cura 2 (no Figma, 3), e as bênçãos ficaram mais fracas em 15/11.
+    \item A poção cura 20\% da vida máxima (no Figma, 3 pontos), e as bênçãos ficaram mais fracas em 15/11.
     \item As três perguntas em aberto da página do contrato (o que o Lorde ganha, quem é o Necromante e para que serve o pagamento adiantado) foram respondidas pelo pacto entre o Lorde e o Necromante e pelo epílogo da vitória (ver História).
     \item O calabouço não é mais avulso: é a fase bônus, aberta pelo alçapão do Necromante.
 \end{itemize}

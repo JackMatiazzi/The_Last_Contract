@@ -228,7 +228,7 @@ func _on_health_changed(current: float, maximum: float) -> void:
 		_trail_fall = create_tween()
 		_trail_fall.tween_interval(TRAIL_DELAY)
 		_trail_fall.tween_property(health_trail, "value", current, TRAIL_TIME)
-	health_label.text = "%d / %d" % [roundi(current), roundi(maximum)]
+	health_label.text = "%d%%" % roundi(current / maxf(maximum, 0.001) * 100.0)
 
 
 ## so o nome e os acumulos; o efeito de cada uma fica na pausa
