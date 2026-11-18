@@ -323,11 +323,11 @@ As ligações dos dois dispositivos ficam no Input Map do projeto e podem ser tr
 
 \subsection{Buffs}
 
-Ao reviver, o grupo vota numa entre duas bênçãos sorteadas (sozinho, o voto é só seu). Pelo contrato do Lorde, a bênção escolhida vale para o aventureiro \emph{e também para todos os mortos-vivos} nas tentativas seguintes, mas eles recebem só 20\% do efeito (Couraça corta 20\% do dano que o aventureiro recebe e 4\% do que cada morto-vivo recebe). Como o aventureiro tem 10 de vida e enfrenta vários mortos-vivos de 5 de vida, o mesmo buff pesa diferente para cada lado: a escolha é decidir qual efeito favorece mais o jogador do que os inimigos. Três dos sete buffs têm custo e benefício, pensados para o público experiente.
+Ao reviver, o grupo vota numa entre duas bênçãos sorteadas (sozinho, o voto é só seu). Pelo contrato do Lorde, a bênção escolhida vale para o aventureiro \emph{e também para todos os mortos-vivos} nas tentativas seguintes, mas eles recebem só 20\% do efeito (Couraça corta 20\% do dano que o aventureiro recebe e 4\% do que cada morto-vivo recebe). Como o aventureiro tem 10 de vida e enfrenta vários mortos-vivos de 5 de vida, o mesmo buff pesa diferente para cada lado: a escolha é decidir qual efeito favorece mais o jogador do que os inimigos. Quatro dos doze buffs têm custo e benefício, pensados para o público experiente, e alguns jogam com a própria regra dos 20\%: Sede do Ceifador e Espinhos de Ferro também curam e ferem pelos mortos-vivos, e a Cláusula de Acréscimo troca uma carta a mais por dobrar a parte deles.
 
 \begin{xltabular}{\textwidth}{@{}lX@{}}
 \toprule
-\textbf{Buff} & \textbf{Efeito no aventureiro (os mortos-vivos recebem 20\%)} \\
+\textbf{Buff} & \textbf{Efeito no aventureiro (os mortos-vivos recebem 20\%, ou 40\% com a Cláusula)} \\
 \midrule
 Lâmina Afiada & +0,5 de dano \\
 Couraça & $-$20\% de dano recebido \\
@@ -336,12 +336,17 @@ Frenesi & $-$15\% de tempo entre ataques, +10\% de dano recebido \\
 Fúria Cega & +1 de dano, +30\% de dano recebido \\
 Sangue Frio & $-$20\% de dano recebido, $-$5\% de velocidade \\
 Vigor & +20\% de vida máxima \\
+Pés de Lã & $-$30\% de barulho: os mortos-vivos ouvem e acordam com o aventureiro mais perto \\
+Fôlego de Escudeiro & +25\% de recuperação de estamina e mana \\
+Sede do Ceifador & cura 2\% da vida máxima a cada golpe que encontra alvo, mesmo no escudo ou num aliado (o morto-vivo que acerta também se cura) \\
+Espinhos de Ferro & devolve 25\% do dano que de fato chegou a quem bateu, sem empurrão nem susto e sem espinho de volta; o que volta abaixo de 0,1 se perde, então os 5\% dos mortos-vivos só respondem a golpes de 2 ou mais \\
+Cláusula de Acréscimo & uma carta a mais para escolher a cada morte, mas os mortos-vivos passam a receber 40\% de cada bênção; vem uma vez só \\
 \bottomrule
 \end{xltabular}
 
 Os valores foram reduzidos em 15/11/2026 para o formato roguelike: com os números antigos, três ou quatro bênçãos deixavam o aventureiro forte demais para as tentativas seguintes. Fúria Cega ficou como está porque já cobra caro. Em 17/11, os buffs de vida em pontos viraram redução (ou aumento) de dano recebido, na mesma proporção (2 de vida em 10 viraram 20\%), e entrou o Vigor, que dá vida em porcentagem. Como o golpe dos inimigos é medido sobre a vida base, a vida ganha com o Vigor fica de colchão.
 
-A cada 2 tentativas jogadas o aventureiro volta recebendo 10\% menos dano (tentativas 3 e 4: $-$10\%; 5 e 6: $-$20\%), um alívio só para os jogadores, que não vale para os mortos-vivos. Regras: cada buff acumula até 3 vezes; os dois sorteados são sempre diferentes; vida máxima nunca fica abaixo de 1; velocidade, tempo entre ataques e dano recebido nunca caem abaixo de 20\% do valor base. Desistir na tela de morte, ou abandonar o contrato pela pausa, leva à cena de execução do aventureiro e depois ao menu principal; o próximo contrato começa do zero (tentativas e buffs zerados).
+A cada 2 tentativas jogadas o aventureiro volta recebendo 10\% menos dano (tentativas 3 e 4: $-$10\%; 5 e 6: $-$20\%), um alívio só para os jogadores, que não vale para os mortos-vivos. Regras: cada buff acumula até 3 vezes (a Cláusula, uma); os sorteados são sempre diferentes; vida máxima nunca fica abaixo de 1; velocidade, tempo entre ataques e dano recebido nunca caem abaixo de 20\% do valor base. Desistir na tela de morte, ou abandonar o contrato pela pausa, leva à cena de execução do aventureiro e depois ao menu principal; o próximo contrato começa do zero (tentativas e buffs zerados).
 
 \subsection{Energia: estamina e mana}
 \label{sec:energia}
@@ -615,7 +620,7 @@ HUD & Segue o estudo de HUD do Figma. No canto superior direito, o objetivo: ``G
 Barras 3D & Sobre os mortos-vivos (vermelha, com rastro do dano); escondida enquanto o morto-vivo dorme, aparece quando ele começa a levantar. Sobre os aliados, nome e barra verde; sobre um aliado caído, o aviso de reviver para quem tem poção por perto. O jogador usa a barra do HUD. Números de dano sobem de todos os personagens \\
 Entrada na missão & Cena curta à noite: o aventureiro escolhido chega pela estrada até a entrada da vila (``Contrato aceito.'', ``O Lorde quer a vila livre dos mortos.''); em grupo, os aliados vêm em formação atrás. Qualquer tecla marca ``pronto''; a partida começa quando todos estão prontos \\
 Pausa & Em duas colunas e com pouco texto. À esquerda, o selo, ``Contrato pausado'' e os botões Continuar, Controles e habilidades, Configurações e Abandonar contrato (com confirmação; leva à execução). À direita, só a situação do contrato: tentativa, aventureiro, objetivo atual e as bênçãos ativas com o efeito de cada uma (``Os mortos-vivos recebem 20\% de cada uma.''). O botão Controles e habilidades abre uma tela à parte com a tabela de controles, que troca sozinha entre teclado e controle, e a ficha da classe: estilo, descrição e cada habilidade com o custo em \% da barra (rápido e pesado) e o botão direito; Esc volta à pausa. Em grupo, o jogo não congela, mas o aventureiro para de obedecer enquanto o menu está aberto (solta o escudo e cancela o que estava segurado); abandonar tira só quem saiu \\
-Morte & Histórico de dano da vida (de quem veio cada golpe, curas e o golpe final), tentativa, bênçãos acumuladas, Reviver ou Desistir (só o host; com confirmação; leva à execução). Reviver mostra duas cartas de bênção para votar, com o mouse ou as teclas 1 e 2 \\
+Morte & Histórico de dano da vida (de quem veio cada golpe, curas e o golpe final), tentativa, bênçãos acumuladas, Reviver ou Desistir (só o host; com confirmação; leva à execução). Reviver mostra duas cartas de bênção (três com a Cláusula de Acréscimo) para votar, com o mouse ou as teclas numéricas \\
 Execução & Cena em duas tomadas: o aventureiro escolhido vai embora pela estrada da vila ao entardecer (``Ele deu as costas ao contrato''); corta para a praça pública, onde ele está ajoelhado num cadafalso diante da multidão, ouve o veredito do Lorde e recebe o golpe de machado do carrasco encapuzado, enquanto a multidão comemora; termina em ``Contrato encerrado'' e volta ao menu. Qualquer tecla pula \\
 Vitória e epílogo & A tela ``Contrato cumprido'' mostra quem assinou e em qual tentativa, com ``Voltar à vila''. O epílogo da traição (descrito na História) roda em seguida e volta ao menu; qualquer tecla pula \\
 \bottomrule

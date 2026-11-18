@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="Buff" format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/stat_modifier.gd" id="1_mod"]
+[ext_resource type="Script" path="res://scripts/combat/buff.gd" id="2_buff"]
+
+[sub_resource type="Resource" id="Resource_noise"]
+script = ExtResource("1_mod")
+stat = 6
+amount = -0.3
+
+[resource]
+script = ExtResource("2_buff")
+title = "Pés de Lã"
+flavor = "Botas forradas de lã, roubadas do convento."
+modifiers = Array[ExtResource("1_mod")]([SubResource("Resource_noise")])

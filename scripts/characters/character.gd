@@ -8,8 +8,6 @@ signal died
 signal revived
 signal blocked
 
-## a bênção escolhida vale para os dois lados, mas os inimigos recebem só 20% dela
-const ENEMY_BLESSING_SHARE := 0.2
 const ANIM_IDLE := "Idle"
 const ANIM_WALK := "Walking_A"
 const ANIM_RUN := "Running_A"
@@ -19,6 +17,8 @@ const ANIM_DEATH := "Death_A"
 const ANIM_BLEND := 0.2
 const HIT_RECOVERY := 0.3
 const MIN_STAT_FACTOR := 0.2
+## Espinhos de Ferro não devolvem migalhas: os 5% dos mortos-vivos só respondem a golpes de 2 ou mais
+const MIN_REFLECTED_DAMAGE := 0.1
 ## em rede so quem tem autoridade simula; as outras maquinas seguem o estado enviado
 const NET_SEND_INTERVAL := 0.05
 ## parado nao manda nada; de tempos em tempos repete o estado, para ninguem ficar com um antigo
@@ -169,21 +169,52 @@ func take_damage(amount: float, source: Node3D = null) -> void:
 		return
 	var hit := amount
 	amount = _incoming_damage(amount, source) * get_damage_taken_factor()
-	_note_attacker(source, minf(amount, health))
+	var dealt := minf(amount, health)
 	# o empurrão segue o golpe em pontos: não cresce com a vida máxima de quem apanha
 	_push_away_from(source, hit)
+	_lose_health(amount, source)
+	if not is_dead:
+		_react_to_hit()
+	_reflect_damage(source, dealt)
+
+
+func _lose_health(amount: float, source: Node3D) -> void:
+	_note_attacker(source, minf(amount, health))
 	health = maxf(health - amount, 0.0)
 	health_changed.emit(health, get_max_health())
 	_share_health()
 	if health == 0.0:
 		die()
-		return
+
+
+func _react_to_hit() -> void:
 	_play(hurt_sound)
 	var now := Time.get_ticks_msec() / 1000.0
 	if _can_flinch() and now >= _flinch_ready_at:
 		_flinch_ready_at = now + flinch_guard
 		_on_flinch()
 		play_action(ANIM_HIT, 1.0, 0.0, HIT_RECOVERY)
+
+
+## Espinhos de Ferro: devolve parte do que de fato chegou, sem empurrão, susto nem espinho de volta
+func _reflect_damage(source: Node3D, dealt: float) -> void:
+	var back := dealt * get_stat_bonus(StatModifier.Stat.THORNS)
+	var attacker := source as Character
+	if back < MIN_REFLECTED_DAMAGE or attacker == null or attacker == self or attacker.is_dead:
+		return
+	attacker.take_reflected_damage(back, self)
+
+
+func take_reflected_damage(amount: float, source: Character) -> void:
+	if is_dead:
+		return
+	if not is_multiplayer_authority():
+		_request_reflected_damage.rpc_id(get_multiplayer_authority(), amount, source.get_path())
+		return
+	_lose_health(amount, source)
+	if not is_dead:
+		_play(hurt_sound)
+
 
 ## dano que de fato chega, aplicado na máquina dona do personagem; por padrão, o valor do golpe
 func _incoming_damage(amount: float, _source: Node3D) -> float:
@@ -295,6 +326,11 @@ func _hold_pose_locally(animation: String) -> void:
 	animation_player.speed_scale = 1.0
 	animation_player.play(animation, ANIM_BLEND)
 
+## alcance em que os mortos-vivos ouvem ou acordam com este personagem; Pés de Lã diminui
+func get_noise_factor() -> float:
+	return maxf(1.0 + get_stat_bonus(StatModifier.Stat.NOISE), MIN_STAT_FACTOR)
+
+
 ## Retorna se o personagem está se movendo em alta velocidade ou executando uma ação ruidosa.
 func is_making_noise() -> bool:
 	var speed := Vector2(velocity.x, velocity.z).length()
@@ -318,7 +354,7 @@ func get_stat_bonus(stat: StatModifier.Stat) -> float:
 
 ## parte de cada bênção que este personagem sente: os mortos-vivos e o mímico ficam com uma fração
 func blessing_share() -> float:
-	return ENEMY_BLESSING_SHARE
+	return RunState.enemy_blessing_share()
 
 ## Retorna a vida máxima calculada já com os modificadores dos buffs aplicados.
 func get_max_health() -> float:
@@ -385,6 +421,9 @@ func _request_launch(speed: float, lift: float, source_path: NodePath) -> void:
 ## Chamado em quem bateu quando o golpe encontra um alvo.
 func on_hit_landed(heavy: bool) -> void:
 	freeze_animation(HITSTOP_HEAVY if heavy else HITSTOP)
+	var drain := get_stat_bonus(StatModifier.Stat.LIFESTEAL)
+	if drain > 0.0:
+		heal(get_max_health() * drain)
 
 ## Para a animacao por um instante; so visual, roda em cada maquina.
 func freeze_animation(seconds: float) -> void:
@@ -588,6 +627,12 @@ func _request_damage(amount: float, source_path: NodePath) -> void:
 	var source := get_node_or_null(source_path) as Node3D if not source_path.is_empty() else null
 	if is_valid_remote_amount(amount) and accepts_hit_from(multiplayer.get_remote_sender_id(), source):
 		take_damage(amount, source)
+
+@rpc("any_peer", "reliable")
+func _request_reflected_damage(amount: float, source_path: NodePath) -> void:
+	var source := get_node_or_null(source_path) as Character
+	if source and is_valid_remote_amount(amount) and accepts_hit_from(multiplayer.get_remote_sender_id(), source):
+		take_reflected_damage(amount, source)
 
 ## RPC recebido para processar solicitação de reviver enviada por um aliado.
 @rpc("any_peer", "reliable")

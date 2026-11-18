@@ -20,6 +20,8 @@ const ADVENTURERS: PackedStringArray = [
 ]
 ## Quantidade de opções de buffs apresentadas ao jogador após cada morte/reviver.
 const CHOICES_PER_DEATH := 2
+## a bênção escolhida vale para os dois lados, mas os inimigos recebem só 20% dela
+const ENEMY_BLESSING_SHARE := 0.2
 ## a cada tantas tentativas jogadas o aventureiro volta recebendo menos dano
 const ATTEMPTS_PER_EXTRA_PROTECTION := 2
 const PROTECTION_PER_STEP := 0.1
@@ -49,13 +51,31 @@ func roll_choices() -> Array[Buff]:
 	var available := _pool.filter(func(buff: Buff) -> bool: return stacks_of(buff) < buff.max_stacks)
 	available.shuffle()
 	var choices: Array[Buff] = []
-	choices.assign(available.slice(0, CHOICES_PER_DEATH))
+	choices.assign(available.slice(0, choices_per_death()))
 	return choices
 
 
 ## parte do dano que os aventureiros deixam de receber nesta tentativa: 1 e 2 nada, 3 e 4 10%, 5 e 6 20%
 func extra_protection() -> float:
 	return floorf((attempt - 1) / float(ATTEMPTS_PER_EXTRA_PROTECTION)) * PROTECTION_PER_STEP
+
+
+## a Cláusula de Acréscimo muda as regras da própria bênção: mais cartas, e mais para os mortos-vivos
+func choices_per_death() -> int:
+	return CHOICES_PER_DEATH + roundi(_clause_total(StatModifier.Stat.EXTRA_CHOICE))
+
+
+func enemy_blessing_share() -> float:
+	return ENEMY_BLESSING_SHARE + _clause_total(StatModifier.Stat.ENEMY_SHARE)
+
+
+func _clause_total(stat: StatModifier.Stat) -> float:
+	var total := 0.0
+	for buff in buffs:
+		for modifier in buff.modifiers:
+			if modifier.stat == stat:
+				total += modifier.amount
+	return total
 
 
 func is_last_attempt() -> bool:

@@ -152,6 +152,11 @@ func _process(delta: float) -> void:
 	_shake_camera(delta)
 
 
+## Fôlego de Escudeiro acelera a volta da estamina e da mana, inclusive a pausa antes de voltar
+func get_energy_regen_factor() -> float:
+	return maxf(1.0 + get_stat_bonus(StatModifier.Stat.ENERGY_REGEN), MIN_STAT_FACTOR)
+
+
 func blessing_share() -> float:
 	return 1.0
 
@@ -190,10 +195,11 @@ func _physics_process(delta: float) -> void:
 	if _run_toggled and _read_move_input().length() < MOVE_DEADZONE:
 		_run_toggled = false
 	if not is_dead:
+		var regen_delta := delta * get_energy_regen_factor()
 		if not _drain_for_running(delta) and not _drain_for_blocking(delta):
-			stamina.regenerate(delta)
+			stamina.regenerate(regen_delta)
 		if mana:
-			mana.regenerate(delta)
+			mana.regenerate(regen_delta)
 	_track_attack_hold(delta)
 	_keep_sustaining()
 	_track_interact_hold(delta)

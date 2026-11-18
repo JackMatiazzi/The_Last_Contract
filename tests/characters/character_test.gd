@@ -190,3 +190,81 @@ func test_friendly_fire_and_hits_on_enemies_stay_in_points() -> void:
 
 	assert_float(ally.health).is_equal_approx(ally.get_max_health() - 1.0, 0.001)
 	assert_float(skeleton.health).is_equal_approx(skeleton.get_max_health() - 1.0, 0.001)
+
+
+func test_reaper_thirst_heals_a_share_of_max_health_per_hit() -> void:
+	RunState.buffs.append(load("res://resources/buffs/sede_do_ceifador.tres"))
+	var knight := arena.spawn(TestArena.KNIGHT, Vector3.ZERO)
+	var skeleton := arena.spawn(TestArena.SKELETON, Vector3(4, 0, 0))
+	knight.take_damage(5.0)
+	skeleton.take_damage(2.0)
+
+	knight.on_hit_landed(false)
+	skeleton.on_hit_landed(false)
+
+	assert_float(knight.health).is_equal_approx(5.0 + 10.0 * 0.02, 0.001)
+	assert_float(skeleton.health).is_equal_approx(3.0 + 5.0 * 0.004, 0.001)
+
+
+func test_iron_thorns_hurt_whoever_strikes() -> void:
+	RunState.buffs.append(load("res://resources/buffs/espinhos_de_ferro.tres"))
+	var knight := arena.spawn(TestArena.KNIGHT, Vector3.ZERO)
+	var skeleton := arena.spawn(TestArena.SKELETON, Vector3(4, 0, 0))
+
+	knight.take_damage(1.0, skeleton)
+
+	assert_float(skeleton.health).is_equal_approx(5.0 - 0.25, 0.001)
+
+
+# os mortos-vivos têm 5% de espinhos: golpe leve não volta, golpe pesado volta um pouco
+func test_undead_thorns_only_answer_strong_hits() -> void:
+	RunState.buffs.append(load("res://resources/buffs/espinhos_de_ferro.tres"))
+	var knight := arena.spawn(TestArena.KNIGHT, Vector3.ZERO)
+	var skeleton := arena.spawn(TestArena.SKELETON, Vector3(4, 0, 0))
+
+	skeleton.take_damage(1.0, knight)
+	assert_float(knight.health).is_equal(10.0)
+
+	skeleton.take_damage(3.0, knight)
+	assert_float(knight.health).is_equal_approx(10.0 - 0.15, 0.001)
+
+
+func test_two_thorned_allies_do_not_trade_damage_forever() -> void:
+	RunState.buffs.append(load("res://resources/buffs/espinhos_de_ferro.tres"))
+	var knight := arena.spawn(TestArena.KNIGHT, Vector3.ZERO)
+	var ally := arena.spawn(TestArena.KNIGHT, Vector3(3, 0, 0))
+
+	ally.take_damage(1.0, knight)
+
+	assert_float(ally.health).is_equal_approx(9.0, 0.001)
+	assert_float(knight.health).is_equal_approx(9.75, 0.001)
+
+
+# o que volta sai do dano que de fato chegou, e o refletor morre uma vez só
+func test_thorns_return_only_what_landed_and_the_reflector_dies_once() -> void:
+	RunState.buffs.append(load("res://resources/buffs/espinhos_de_ferro.tres"))
+	var knight := arena.spawn(TestArena.KNIGHT, Vector3.ZERO)
+	var ally := arena.spawn(TestArena.KNIGHT, Vector3(3, 0, 0))
+	knight.health = 1.0
+	var signals := monitor_signals(knight, false)
+
+	knight.take_damage(8.0, ally)
+
+	assert_bool(knight.is_dead).is_true()
+	assert_float(ally.health).is_equal_approx(10.0 - 0.25, 0.001)
+	await assert_signal(signals).wait_until(200).is_emitted("died")
+	assert_int(RunState.stats_of(knight.get_multiplayer_authority()).deaths).is_less_equal(1)
+
+
+func test_thorns_do_not_push_or_stagger_the_attacker() -> void:
+	RunState.buffs.append(load("res://resources/buffs/espinhos_de_ferro.tres"))
+	var knight := arena.spawn(TestArena.KNIGHT, Vector3.ZERO)
+	var skeleton := arena.spawn(TestArena.SKELETON, Vector3(1.5, 0, 0))
+	skeleton.ai_enabled = false
+	await arena.wait_physics(2)
+
+	knight.take_damage(1.0, skeleton)
+
+	assert_float(skeleton.health).is_equal_approx(5.0 - 0.25, 0.001)
+	assert_vector(skeleton.knockback_velocity).is_equal(Vector3.ZERO)
+	assert_bool(skeleton.is_busy).is_false()
