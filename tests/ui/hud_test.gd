@@ -139,3 +139,9 @@ func test_the_boss_bar_does_not_cover_the_ability_cross() -> void:
 
 	var cross := (hud.get_node("Cross") as Control).get_global_rect()
 	assert_bool(cross.intersects((hud.get_node("%BossPanel") as Control).get_global_rect())).is_false()
+
+
+func test_a_sliver_of_health_shows_its_decimals_instead_of_zero() -> void:
+	assert_str(Hud.health_percent_text(0.07, 10.0)).is_equal("0,70%")
+	assert_str(Hud.health_percent_text(0.0, 10.0)).is_equal("0%")
+	assert_str(Hud.health_percent_text(3.4, 10.0)).is_equal("34%")
