@@ -1723,7 +1723,7 @@ transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, -15.5, 3.5, 4.91)
 mesh = SubResource("Box_47")
 
 [node name="FornoBrasa" type="MeshInstance3D" parent="Historia/Construidos"]
-transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, -15.5, 3.45, 4.94)
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, -15.5, 3.45, 4.97)
 mesh = SubResource("Forno_brasa")
 
 [node name="LuzForno" type="OmniLight3D" parent="Historia/Construidos"]
@@ -1816,7 +1816,7 @@ position = Vector3(0, 0.425, 0)
 mesh = SubResource("Lapide_corpo")
 
 [node name="Epitafio" type="Label3D" parent="Historia/Construidos/Cabeceira0"]
-position = Vector3(0, 0.62, 0.085)
+position = Vector3(0, 0.62, 0.095)
 pixel_size = 0.0019
 modulate = Color(0.1, 0.09, 0.08, 1)
 outline_modulate = Color(0.1, 0.09, 0.08, 0.55)
@@ -1843,7 +1843,7 @@ position = Vector3(0, 0.425, 0)
 mesh = SubResource("Lapide_corpo")
 
 [node name="Epitafio" type="Label3D" parent="Historia/Construidos/Cabeceira1"]
-position = Vector3(0, 0.62, 0.085)
+position = Vector3(0, 0.62, 0.095)
 pixel_size = 0.0019
 modulate = Color(0.1, 0.09, 0.08, 1)
 outline_modulate = Color(0.1, 0.09, 0.08, 0.55)
@@ -1870,7 +1870,7 @@ position = Vector3(0, 0.425, 0)
 mesh = SubResource("Lapide_corpo")
 
 [node name="Epitafio" type="Label3D" parent="Historia/Construidos/Cabeceira2"]
-position = Vector3(0, 0.62, 0.085)
+position = Vector3(0, 0.62, 0.095)
 pixel_size = 0.0019
 modulate = Color(0.1, 0.09, 0.08, 1)
 outline_modulate = Color(0.1, 0.09, 0.08, 0.55)
@@ -1897,7 +1897,7 @@ position = Vector3(0, 0.425, 0)
 mesh = SubResource("Lapide_corpo")
 
 [node name="Epitafio" type="Label3D" parent="Historia/Construidos/Cabeceira3"]
-position = Vector3(0, 0.62, 0.085)
+position = Vector3(0, 0.62, 0.095)
 pixel_size = 0.0019
 modulate = Color(0.1, 0.09, 0.08, 1)
 outline_modulate = Color(0.1, 0.09, 0.08, 0.55)
@@ -1924,7 +1924,7 @@ position = Vector3(0, 0.425, 0)
 mesh = SubResource("Lapide_corpo")
 
 [node name="Epitafio" type="Label3D" parent="Historia/Construidos/Cabeceira4"]
-position = Vector3(0, 0.62, 0.085)
+position = Vector3(0, 0.62, 0.095)
 pixel_size = 0.0019
 modulate = Color(0.1, 0.09, 0.08, 1)
 outline_modulate = Color(0.1, 0.09, 0.08, 0.55)
@@ -1951,7 +1951,7 @@ position = Vector3(0, 0.425, 0)
 mesh = SubResource("Lapide_corpo")
 
 [node name="Epitafio" type="Label3D" parent="Historia/Construidos/Cabeceira5"]
-position = Vector3(0, 0.62, 0.085)
+position = Vector3(0, 0.62, 0.095)
 pixel_size = 0.0019
 modulate = Color(0.1, 0.09, 0.08, 1)
 outline_modulate = Color(0.1, 0.09, 0.08, 0.55)
