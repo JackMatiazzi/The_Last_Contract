@@ -672,12 +672,22 @@ roughness = 1.0
 uv1_triplanar = true
 uv1_scale = Vector3(0.8, 0.8, 0.8)
 
+[sub_resource type="StandardMaterial3D" id="Mat_lapide"]
+albedo_color = Color(0.62, 0.61, 0.58, 1)
+albedo_texture = ExtResource("plaster_color")
+normal_enabled = true
+normal_scale = 0.35
+normal_texture = ExtResource("plaster_normal")
+roughness = 0.95
+uv1_triplanar = true
+uv1_scale = Vector3(1.6, 1.6, 1.6)
+
 [sub_resource type="BoxMesh" id="Lapide_corpo"]
-material = SubResource("Mat_stone")
+material = SubResource("Mat_lapide")
 size = Vector3(0.84, 0.85, 0.16)
 
 [sub_resource type="CylinderMesh" id="Lapide_topo"]
-material = SubResource("Mat_stone")
+material = SubResource("Mat_lapide")
 top_radius = 0.42
 bottom_radius = 0.42
 height = 0.16
@@ -1843,16 +1853,16 @@ mesh = SubResource("Lapide_corpo")
 
 [node name="Epitafio" type="Label3D" parent="Historia/Construidos/Cabeceira0"]
 position = Vector3(0, 0.62, 0.085)
-pixel_size = 0.0021
-modulate = Color(0.07, 0.065, 0.06, 1)
-outline_modulate = Color(0.85, 0.82, 0.76, 0.35)
-outline_size = 3
+pixel_size = 0.0019
+modulate = Color(0.1, 0.09, 0.08, 1)
+outline_modulate = Color(0.1, 0.09, 0.08, 0.55)
+outline_size = 5
 text = "ANDRÉ
 foi até a
 tentativa LXII"
 font = ExtResource("fonte_cinzel")
-font_size = 46
-line_spacing = -8.0
+font_size = 54
+line_spacing = -12.0
 
 [node name="Topo" type="MeshInstance3D" parent="Historia/Construidos/Cabeceira0"]
 transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.85, 0)
@@ -1871,16 +1881,16 @@ mesh = SubResource("Lapide_corpo")
 
 [node name="Epitafio" type="Label3D" parent="Historia/Construidos/Cabeceira1"]
 position = Vector3(0, 0.62, 0.085)
-pixel_size = 0.0021
-modulate = Color(0.07, 0.065, 0.06, 1)
-outline_modulate = Color(0.85, 0.82, 0.76, 0.35)
-outline_size = 3
+pixel_size = 0.0019
+modulate = Color(0.1, 0.09, 0.08, 1)
+outline_modulate = Color(0.1, 0.09, 0.08, 0.55)
+outline_size = 5
 text = "HAVOO
 afogado
 na fenda"
 font = ExtResource("fonte_cinzel")
-font_size = 46
-line_spacing = -8.0
+font_size = 54
+line_spacing = -12.0
 
 [node name="Topo" type="MeshInstance3D" parent="Historia/Construidos/Cabeceira1"]
 transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.85, 0)
@@ -1899,16 +1909,16 @@ mesh = SubResource("Lapide_corpo")
 
 [node name="Epitafio" type="Label3D" parent="Historia/Construidos/Cabeceira2"]
 position = Vector3(0, 0.62, 0.085)
-pixel_size = 0.0021
-modulate = Color(0.07, 0.065, 0.06, 1)
-outline_modulate = Color(0.85, 0.82, 0.76, 0.35)
-outline_size = 3
+pixel_size = 0.0019
+modulate = Color(0.1, 0.09, 0.08, 1)
+outline_modulate = Color(0.1, 0.09, 0.08, 0.55)
+outline_size = 5
 text = "ANDRÉ
 abriu o baú
 errado"
 font = ExtResource("fonte_cinzel")
-font_size = 46
-line_spacing = -8.0
+font_size = 54
+line_spacing = -12.0
 
 [node name="Topo" type="MeshInstance3D" parent="Historia/Construidos/Cabeceira2"]
 transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.85, 0)
@@ -1927,16 +1937,16 @@ mesh = SubResource("Lapide_corpo")
 
 [node name="Epitafio" type="Label3D" parent="Historia/Construidos/Cabeceira3"]
 position = Vector3(0, 0.62, 0.085)
-pixel_size = 0.0021
-modulate = Color(0.07, 0.065, 0.06, 1)
-outline_modulate = Color(0.85, 0.82, 0.76, 0.35)
-outline_size = 3
+pixel_size = 0.0019
+modulate = Color(0.1, 0.09, 0.08, 1)
+outline_modulate = Color(0.1, 0.09, 0.08, 0.55)
+outline_size = 5
 text = "HAVOO
 fogo amigo
 do Knight"
 font = ExtResource("fonte_cinzel")
-font_size = 46
-line_spacing = -8.0
+font_size = 54
+line_spacing = -12.0
 
 [node name="Topo" type="MeshInstance3D" parent="Historia/Construidos/Cabeceira3"]
 transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.85, 0)
@@ -1955,16 +1965,16 @@ mesh = SubResource("Lapide_corpo")
 
 [node name="Epitafio" type="Label3D" parent="Historia/Construidos/Cabeceira4"]
 position = Vector3(0, 0.62, 0.085)
-pixel_size = 0.0021
-modulate = Color(0.07, 0.065, 0.06, 1)
-outline_modulate = Color(0.85, 0.82, 0.76, 0.35)
-outline_size = 3
+pixel_size = 0.0019
+modulate = Color(0.1, 0.09, 0.08, 1)
+outline_modulate = Color(0.1, 0.09, 0.08, 0.55)
+outline_size = 5
 text = "ANDRÉ
 confiou
 no Lorde"
 font = ExtResource("fonte_cinzel")
-font_size = 46
-line_spacing = -8.0
+font_size = 54
+line_spacing = -12.0
 
 [node name="Topo" type="MeshInstance3D" parent="Historia/Construidos/Cabeceira4"]
 transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.85, 0)
@@ -1983,16 +1993,16 @@ mesh = SubResource("Lapide_corpo")
 
 [node name="Epitafio" type="Label3D" parent="Historia/Construidos/Cabeceira5"]
 position = Vector3(0, 0.62, 0.085)
-pixel_size = 0.0021
-modulate = Color(0.07, 0.065, 0.06, 1)
-outline_modulate = Color(0.85, 0.82, 0.76, 0.35)
-outline_size = 3
+pixel_size = 0.0019
+modulate = Color(0.1, 0.09, 0.08, 1)
+outline_modulate = Color(0.1, 0.09, 0.08, 0.55)
+outline_size = 5
 text = "AQUI JAZ
 um contratado
 que desistiu"
 font = ExtResource("fonte_cinzel")
-font_size = 46
-line_spacing = -8.0
+font_size = 54
+line_spacing = -12.0
 
 [node name="Topo" type="MeshInstance3D" parent="Historia/Construidos/Cabeceira5"]
 transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.85, 0)
