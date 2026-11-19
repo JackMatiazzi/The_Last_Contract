@@ -34,7 +34,7 @@ jobs:
           # repositorio privado: token fine-grained so com leitura de conteudo da API
           token: ${{ secrets.API_REPO_TOKEN }}
       - if: matrix.flow == 'coop-relay'
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: 24
       - if: matrix.flow == 'coop-relay'
