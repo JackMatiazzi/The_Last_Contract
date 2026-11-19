@@ -51,6 +51,6 @@ func count_of(item: QuickItem) -> int:
 ## qualquer item que cure serve para reviver um aliado
 func first_healing() -> QuickItem:
 	for item in _items:
-		if item.heal_amount > 0.0:
+		if item.heal_fraction > 0.0:
 			return item
 	return null

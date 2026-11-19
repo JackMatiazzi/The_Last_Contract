@@ -18,6 +18,13 @@ extends Node3D
 ## a zona da entrada sempre recebe o grupo mais facil, para o primeiro encontro ensinar
 @export var easy_zone: StringName
 @export var easy_group: PackedScene
+## pontos possiveis dos baus; a cada tentativa so alguns viram bau, e um deles e mimico
+@export var chest_spots: Node3D
+@export var chest_scene: PackedScene
+@export var mimic_scene: PackedScene
+@export var chest_count := 5
+## os mímicos vêm além dos baús: um por jogador da partida
+@export var mimics_per_player := 1
 
 ## Escolhe aleatoriamente um dos marcadores de posição reservados para os jogadores.
 func pick_player_spot() -> Marker3D:
@@ -43,7 +50,33 @@ func spawn_groups(player_position: Vector3) -> Array[EnemyGroup]:
 		spawned.append(group)
 	return spawned
 
-## pontos com metadata zone: primeiro um grupo em cada zona, depois os grupos a mais em zonas que ainda
+## Sorteia os baus da tentativa entre os pontos (espalhados por zona, como os grupos) e quais deles sao
+## mimicos. Usa a mesma semente dos grupos, entao todas as maquinas do grupo veem os mesmos baus.
+func spawn_chests(players := 1) -> Array[Node3D]:
+	var spawned: Array[Node3D] = []
+	if chest_spots == null or chest_scene == null:
+		return spawned
+	var spots: Array = _markers(chest_spots)
+	spots.shuffle()
+	spots = _spread_by_zone(spots)
+	var mimics := players * mimics_per_player if mimic_scene else 0
+	var total := mini(chest_count + mimics, spots.size())
+	if total < chest_count + mimics:
+		push_warning("faltam pontos de baú: %d pedidos, %d pontos" % [chest_count + mimics, spots.size()])
+	var roles: Array[bool] = []
+	for i in total:
+		roles.append(i < mimics)
+	roles.shuffle()
+	for i in total:
+		var is_mimic := roles[i]
+		var chest := (mimic_scene if is_mimic else chest_scene).instantiate() as Node3D
+		chest.name = ("Mimic%d" if is_mimic else "Chest%d") % i
+		chest.transform = global_transform.affine_inverse() * spots[i].global_transform
+		add_child(chest)
+		spawned.append(chest)
+	return spawned
+
+## pontos com metadata zone (grupos e baús): primeiro um em cada zona, depois os a mais em zonas que ainda
 ## têm só um, para não amontoar. Pontos sem zona (mapas antigos) entram todos, como antes
 func _spread_by_zone(spots: Array) -> Array:
 	var per_zone := {}

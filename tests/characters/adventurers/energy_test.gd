@@ -21,6 +21,7 @@ func after_test() -> void:
 	for action in ["attack", "move_forward", "run"]:
 		Input.action_release(action)
 	Settings.set_value(&"input_device", _device_before)
+	RunState.reset()
 
 
 func _tap_attack() -> void:
@@ -344,3 +345,16 @@ func test_a_blocked_hit_costs_two_stamina() -> void:
 	knight.take_damage(1.0, skeleton)
 
 	assert_float(before - knight.stamina.current).is_equal_approx(2.0, 0.3)
+
+
+func test_squire_breath_brings_energy_back_faster() -> void:
+	RunState.buffs.append(load("res://resources/buffs/folego_de_escudeiro.tres"))
+	var blessed := arena.spawn(TestArena.KNIGHT, Vector3(6, 0, 0)) as Adventurer
+	await arena.wait_physics(2)
+	knight.stamina.spend(60.0)
+	blessed.stamina.spend(60.0)
+
+	await arena.wait_seconds(blessed.stamina.regen_delay + 0.5)
+
+	assert_float(blessed.get_energy_regen_factor()).is_equal_approx(1.25, 0.001)
+	assert_float(blessed.stamina.current).is_greater(knight.stamina.current)

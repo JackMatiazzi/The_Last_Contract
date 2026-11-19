@@ -91,3 +91,16 @@ func test_a_death_report_from_outside_the_match_is_ignored() -> void:
 	RunState._report_death({"cause": "Esqueleto"})
 
 	assert_bool(RunState.stats.is_empty()).is_true()
+
+
+func test_the_clause_adds_a_choice_and_doubles_the_undead_share() -> void:
+	var clause: Buff = load("res://resources/buffs/clausula_de_acrescimo.tres")
+	assert_float(RunState.enemy_blessing_share()).is_equal_approx(0.2, 0.001)
+
+	RunState.start_next_attempt(clause)
+
+	assert_float(RunState.enemy_blessing_share()).is_equal_approx(0.4, 0.001)
+	for i in 30:
+		var choices := RunState.roll_choices()
+		assert_int(choices.size()).is_equal(3)
+		assert_bool(choices.has(clause)).is_false()

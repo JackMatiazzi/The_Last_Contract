@@ -4,7 +4,7 @@ extends Area3D
 ## Cada máquina só mata quem ela controla, como o resto do dano do jogo
 
 const DEFAULT_CAUSE := "Afogado na fenda"
-## acima de qualquer vida do jogo, mesmo com Couraça ou com o golpe reduzido do Michio
+## acima de qualquer vida do jogo, mesmo com a maior redução de dano ou com o golpe reduzido do Michio
 const LETHAL_DAMAGE := 999.0
 const ADVENTURERS_AND_UNDEAD := 6
 

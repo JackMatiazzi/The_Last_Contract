@@ -83,7 +83,7 @@ func test_damage_buff_adds_to_hit() -> void:
 	knight.attack.try_attack(knight)
 	await arena.wait_seconds(0.6)
 
-	assert_float(skeleton.health).is_equal(3.5)
+	assert_float(skeleton.health).is_equal(3.0)
 
 
 func test_cooldown_buff_shortens_recharge() -> void:

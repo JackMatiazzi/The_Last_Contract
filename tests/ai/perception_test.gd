@@ -15,6 +15,7 @@ func before_test() -> void:
 
 func after_test() -> void:
 	Input.action_release("move_forward")
+	RunState.reset()
 
 
 func _sense_with_player_at(position: Vector3) -> Adventurer:
@@ -149,3 +150,23 @@ func test_after_a_while_without_being_hit_it_goes_back_to_the_closest() -> void:
 	skeleton.perception.sense(Perception.PROVOKED_TIME + 0.1)
 
 	assert_object(skeleton.perception.target).is_same(players[0])
+
+
+# Pés de Lã: o mesmo passo de corrida, a 85% do alcance do ouvido, só é ouvido sem a bênção
+func test_quiet_feet_shrink_the_hearing_range() -> void:
+	var distance := skeleton.profile.hearing_range * 0.85
+	var loud := await _sense_with_player_at(Vector3(0, 0, -distance))
+	loud.velocity = Vector3(0, 0, loud.run_speed)
+	skeleton.perception.sense(0.1)
+	assert_bool(skeleton.perception.is_aware()).is_true()
+
+	loud.queue_free()
+	skeleton.perception.target = null
+	skeleton.perception.time_since_aware = INF
+	RunState.buffs.append(load("res://resources/buffs/pes_de_la.tres"))
+	var quiet := await _sense_with_player_at(Vector3(0, 0, -distance))
+	quiet.velocity = Vector3(0, 0, quiet.run_speed)
+	skeleton.perception.sense(0.1)
+
+	assert_float(quiet.get_noise_factor()).is_equal_approx(0.7, 0.001)
+	assert_bool(skeleton.perception.is_aware()).is_false()

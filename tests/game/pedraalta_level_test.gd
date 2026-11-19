@@ -192,3 +192,157 @@ func test_when_you_fall_with_allies_standing_the_screen_says_so() -> void:
 	session.player.take_damage(999.0)
 
 	assert_str(session.hud.announcement.text).contains("Você caiu")
+
+
+func _chests() -> Array[Node]:
+	return encounters.get_children().filter(func(child: Node) -> bool: return child is Chest or child is Mimic)
+
+
+func test_solo_draws_five_chests_and_one_mimic() -> void:
+	var chests := _chests()
+
+	assert_int(chests.filter(func(chest: Node) -> bool: return chest is Chest).size()).is_equal(encounters.chest_count)
+	assert_int(chests.filter(func(chest: Node) -> bool: return chest is Mimic).size()).is_equal(1)
+	assert_int(encounters.chest_spots.get_child_count()).is_equal(11)
+
+
+# quatro jogadores: os cinco baús continuam e entram quatro mímicos, em pontos que mudam a cada sorteio
+func test_each_player_adds_a_mimic_in_a_drawn_spot() -> void:
+	for chest in _chests():
+		chest.free()
+	var mimic_spots := {}
+	for draw in 6:
+		var spawned := encounters.spawn_chests(4)
+		var mimics := spawned.filter(func(chest: Node3D) -> bool: return chest is Mimic)
+		assert_int(spawned.size()).is_equal(encounters.chest_count + 4)
+		assert_int(mimics.size()).is_equal(4)
+		for mimic: Node3D in mimics:
+			mimic_spots[Vector2i(roundi(mimic.global_position.x), roundi(mimic.global_position.z))] = true
+		for chest in spawned:
+			chest.free()
+
+	assert_int(mimic_spots.size()).is_greater(4)
+
+
+func test_the_chests_land_on_the_drawn_spots() -> void:
+	var spots := encounters.chest_spots.get_children().map(func(spot: Marker3D) -> Vector3: return spot.global_position)
+
+	# o mímico tem física e assenta no chão: compara só a posição no plano
+	for chest: Node3D in _chests():
+		var ground := Vector2(chest.global_position.x, chest.global_position.z)
+		assert_bool(spots.any(func(spot: Vector3) -> bool: return Vector2(spot.x, spot.z).distance_to(ground) < 0.3)).is_true()
+
+
+# no co-op cada máquina sorteia sozinha: com a mesma semente os baús e o mímico têm de sair iguais
+func test_the_same_seed_draws_the_same_chests_on_every_machine() -> void:
+	for chest in _chests():
+		chest.free()
+	var draw := func() -> Array:
+		seed(4242)
+		var spawned := encounters.spawn_chests()
+		var layout := spawned.map(func(chest: Node3D) -> String: return "%s@%s" % [chest.name, chest.global_position])
+		for chest in spawned:
+			chest.free()
+		return layout
+
+	var first: Array = draw.call()
+	var second: Array = draw.call()
+
+	assert_array(first).is_equal(second)
+
+
+# o portal do mago sobe terraço, mas não põe ninguém em cima da muralha nem do paredão norte
+func test_the_portal_reaches_terraces_but_not_the_walls() -> void:
+	await _wait_for_navigation()
+	var mage := (load("res://scenes/characters/adventurers/mage.tscn") as PackedScene).instantiate() as Adventurer
+	level.add_child(mage)
+	mage.global_position = Vector3(0, 0, 30)
+	var spell := PortalSpell.new()
+
+	assert_bool(spell._walkable_from(mage, Vector3(9, 6, -22))).is_true()
+	assert_bool(spell._walkable_from(mage, Vector3(-23.5, 18, -9))).is_false()
+	assert_bool(spell._walkable_from(mage, Vector3(0, 20, -71.5))).is_false()
+	spell.free()
+
+
+func _structures_around(grid: GridMap, spot: Vector3, radius: float) -> int:
+	var count := 0
+	var center := grid.local_to_map(grid.to_local(spot))
+	var reach := ceili(radius / grid.cell_size.x) + 1
+	for dx in range(-reach, reach + 1):
+		for dy in range(-1, 5):
+			for dz in range(-reach, reach + 1):
+				var cell := center + Vector3i(dx, dy, dz)
+				if grid.get_cell_item(cell) == GridMap.INVALID_CELL_ITEM:
+					continue
+				var world := grid.to_global(grid.map_to_local(cell))
+				if Vector2(world.x - spot.x, world.z - spot.z).length() < radius:
+					count += 1
+	return count
+
+
+func _on_navigation(map: RID, point: Vector3) -> bool:
+	var closest := NavigationServer3D.map_get_closest_point(map, point)
+	return Vector2(closest.x - point.x, closest.z - point.z).length() < 0.35 and absf(closest.y - point.y) < 0.7
+
+
+# baú colado em casa afundava na parede e soltava a poção lá dentro; na beira, a poção caía do terraço
+func test_every_chest_spot_stands_clear_with_room_for_the_loot() -> void:
+	var map := await _wait_for_navigation()
+	var houses := level.get_node("Navigation/Pedraalta/Estrutura") as GridMap
+	var spawn: Vector3 = encounters.player_spots.get_child(0).global_position
+	for spot: Marker3D in encounters.chest_spots.get_children():
+		var at := spot.global_position
+		var loot := spot.global_transform * Vector3(0, 0, 1.6)
+		var path := NavigationServer3D.map_get_path(map, spawn, at, true)
+		var end: Vector3 = path[path.size() - 1] if not path.is_empty() else Vector3.INF
+
+		assert_int(_structures_around(houses, at, 2.5)).override_failure_message("%s colado numa casa" % spot.name).is_equal(0)
+		assert_bool(_on_navigation(map, at)).override_failure_message("%s fora do chão andável" % spot.name).is_true()
+		assert_float(Vector2(end.x - at.x, end.z - at.z).length()).override_failure_message("%s sem caminho a pé" % spot.name).is_less(0.5)
+		assert_bool(_on_navigation(map, loot)).override_failure_message("%s solta a poção fora do chão" % spot.name).is_true()
+
+
+# caído com o grupo de pé, a câmera passa a seguir um aliado; o ataque troca de aliado e reviver volta para si
+func test_a_fallen_player_watches_the_allies_still_standing() -> void:
+	var first := _ally()
+	var second := _ally()
+	second.set_display_name("Iris")
+	await get_tree().physics_frame
+
+	session.player.take_damage(999.0)
+	assert_object(session.player.camera_subject).is_same(first)
+	assert_str(session.hud.announcement.text).contains("Assistindo Brann")
+
+	# sem mouse capturado (como no CI) o ataque só troca de aliado no controle
+	var device_before: int = Settings.input_device
+	Settings.input_device = Settings.InputDevice.GAMEPAD
+	session._unhandled_input(_attack_press())
+	Settings.input_device = device_before
+	assert_object(session.player.camera_subject).is_same(second)
+
+	second.take_damage(999.0)
+	assert_object(session.player.camera_subject).is_same(first)
+
+	session.player.revive(5.0)
+	assert_object(session.player.camera_subject).is_null()
+
+
+
+func test_when_the_watched_ally_leaves_the_camera_moves_to_another() -> void:
+	var first := _ally()
+	var second := _ally()
+	await get_tree().physics_frame
+	first.name = "4242"
+	session.player.take_damage(999.0)
+	assert_object(session.player.camera_subject).is_same(first)
+
+	session._on_player_left(4242)
+
+	assert_object(session.player.camera_subject).is_same(second)
+
+func _attack_press() -> InputEventAction:
+	var press := InputEventAction.new()
+	press.action = "attack"
+	press.pressed = true
+	return press

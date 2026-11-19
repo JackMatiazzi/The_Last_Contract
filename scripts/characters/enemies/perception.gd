@@ -108,4 +108,4 @@ func _has_clear_line(candidate: Character) -> bool:
 
 func _hears(candidate: Character) -> bool:
 	var distance := distance_to_target()
-	return distance <= enemy.profile.hearing_range and candidate.is_making_noise()
+	return distance <= enemy.profile.hearing_range * candidate.get_noise_factor() and candidate.is_making_noise()

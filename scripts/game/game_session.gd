@@ -4,7 +4,10 @@ extends Node
 ## Gerencia a criação dos jogadores, fluxo de objetivos, invocação do chefe,
 ## captura/liberação do cursor do mouse, votação de bênçãos em caso de derrota e re-inicialização de tentativas.
 
+const SPECTATE_LINE := "Assistindo %s. Ataque para ver outro aliado."
 const EXECUTION := "res://scenes/cutscenes/execution.tscn"
+## tempo para ler o aviso do prazo antes da execução
+const CONTRACT_EXPIRED_DELAY := 3.0
 const MAIN_MENU := "res://scenes/ui/main_menu.tscn"
 ## depois da vitória o grupo volta à vila, e o Lorde cobra o contrato do jeito dele
 const EPILOGUE := "res://scenes/cutscenes/victory_epilogue.tscn"
@@ -40,6 +43,8 @@ var _groups_total := 0
 # peer_id -> indice da bencao votada; so o host conta
 var _votes := {}
 var _vote_paths := PackedStringArray()
+## o grupo caiu na última tentativa e o contrato venceu
+var contract_expired := false
 var _vote_open := false
 var _contract_ended := false
 var trapdoor_time := TRAPDOOR_TIME
@@ -87,6 +92,15 @@ func _log_death() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	var watching := player.is_dead and is_instance_valid(player.camera_subject) and not pause_menu.visible
+	if watching and event.is_action_pressed("attack") and (Input.mouse_mode == Input.MOUSE_MODE_CAPTURED or Settings.uses_gamepad()):
+		hud.announce(_spectate_next())
+		get_viewport().set_input_as_handled()
+		return
+	if watching and event is InputEventMouseButton and event.pressed and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
+		capture_cursor()
+		get_viewport().set_input_as_handled()
+		return
 	# Impede interações de jogo se o jogador estiver morto ou menus estiverem abertos
 	if player.is_dead or pause_menu.visible or (victory_screen and victory_screen.visible):
 		return
@@ -123,6 +137,7 @@ func _spawn_players() -> void:
 	player.camera.make_current()
 	if encounters:
 		_track_groups(encounters.spawn_groups(spawn.global_position))
+		encounters.spawn_chests(peers.size())
 	hud.bind(player)
 
 ## Retorna a lista de IDs de rede dos jogadores na partida.
@@ -251,11 +266,25 @@ func watch_player(adventurer: Adventurer) -> void:
 func _on_player_died(fallen: Adventurer) -> void:
 	if not _all_players_dead():
 		if fallen == player:
-			hud.announce("Você caiu. Seus aliados ainda lutam.")
+			hud.announce("Você caiu. Seus aliados ainda lutam. " + _spectate_next())
 		else:
 			hud.announce("%s caiu. Leve uma poção para reviver." % fallen.get_display_name())
+			if player.is_dead and player.camera_subject == fallen:
+				_spectate_next()
 		return
+	player.camera_subject = null
 	_on_party_down()
+
+
+## caído em grupo, assiste um aliado de pé; o ataque passa para o próximo. Devolve a linha para o aviso
+func _spectate_next() -> String:
+	var standing := players.filter(func(adventurer: Adventurer) -> bool: return adventurer != player and not adventurer.is_dead)
+	if standing.is_empty():
+		player.camera_subject = null
+		return ""
+	var next: Adventurer = standing[(standing.find(player.camera_subject) + 1) % standing.size()]
+	player.camera_subject = next
+	return SPECTATE_LINE % next.get_display_name()
 
 ## Executado quando todos os jogadores do grupo são derrotados.
 func _on_party_down() -> void:
@@ -265,7 +294,23 @@ func _on_party_down() -> void:
 			_net_close_trapdoor.rpc()
 		return
 	if multiplayer.is_server() and not _vote_open:
-		_start_vote()
+		if RunState.is_last_attempt():
+			if not contract_expired:
+				_net_contract_expired.rpc()
+		else:
+			_start_vote()
+
+
+## sem mais tentativas o contrato vence: dá tempo de ler o aviso e todos vão para a execução
+@rpc("authority", "call_local", "reliable")
+func _net_contract_expired() -> void:
+	if contract_expired:
+		return
+	contract_expired = true
+	hud.announce("O prazo do contrato acabou. O Lorde não dá outra chance.")
+	Playtest.record("attempts_exhausted")
+	await get_tree().create_timer(CONTRACT_EXPIRED_DELAY).timeout
+	_execute()
 
 
 # cada jogador vota numa das bencaos sorteadas pelo host; empate e sorteado
@@ -356,6 +401,8 @@ func _on_player_left(peer_id: int) -> void:
 		_try_close_vote()
 	elif _all_players_dead():
 		_on_party_down()
+	elif player.is_dead and player.camera_subject == adventurer:
+		hud.announce(_spectate_next())
 
 ## Callback de retomada de jogo através do menu de pausa.
 func _on_resumed() -> void:

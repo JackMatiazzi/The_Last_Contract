@@ -115,3 +115,20 @@ func test_the_heavy_hit_lands_while_the_sword_comes_down() -> void:
 	var falling: float = before - await _sword_height_at(knight, impact)
 
 	assert_float(falling).is_greater(0.05)
+
+
+# cada golpe rápido da sequência acerta com a espada descendo, não ainda erguida
+func test_the_quick_chop_lands_while_the_sword_comes_down() -> void:
+	var knight := arena.spawn(SCENE, Vector3.ZERO) as Adventurer
+	await arena.wait_physics(2)
+	var chop: String = knight.attack.animations[0]
+	var impact: float = knight.attack.impact_delays[0] * knight.attack.animation_speed
+
+	knight.animation_player.play(chop)
+	knight.animation_player.seek(impact - 0.05, true)
+	await arena.wait_physics(1)
+	var before := _sword_of(knight).global_position.y
+	knight.animation_player.seek(impact, true)
+	await arena.wait_physics(1)
+
+	assert_float(before - _sword_of(knight).global_position.y).is_greater(0.05)

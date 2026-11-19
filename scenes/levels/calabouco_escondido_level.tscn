@@ -1,4 +1,4 @@
-[gd_scene load_steps=38 format=3]
+[gd_scene load_steps=39 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/maps/calabouco_escondido.tscn" id="1_map"]
 [ext_resource type="PackedScene" path="res://scenes/characters/enemies/groups/guard_post.tscn" id="2_guard"]
@@ -20,6 +20,7 @@
 [ext_resource type="Script" path="res://scripts/characters/npcs/dialogue_topic.gd" id="17_topic"]
 
 [ext_resource type="PackedScene" path="res://scenes/characters/npcs/bone_kid.tscn" id="18_kid"]
+[ext_resource type="Script" path="res://scripts/game/bounds_guard.gd" id="bounds_guard"]
 
 [sub_resource type="Resource" id="DialogueTopic_1"]
 script = ExtResource("17_topic")
@@ -250,3 +251,8 @@ victory_screen = NodePath("../VictoryScreen")
 [node name="MusicCue" type="Node" parent="."]
 script = ExtResource("7_cue")
 track = ExtResource("8_track")
+
+[node name="BoundsGuard" type="Node" parent="." node_paths=PackedStringArray("session")]
+script = ExtResource("bounds_guard")
+session = NodePath("../GameSession")
+fall_limit_y = -14.0

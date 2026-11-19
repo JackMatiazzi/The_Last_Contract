@@ -5,7 +5,6 @@
 [ext_resource type="MeshLibrary" path="res://resources/mesh_libraries/props.res" id="props_lib"]
 [ext_resource type="Script" path="res://scripts/world/breakable_props.gd" id="breakable_script"]
 [ext_resource type="PackedScene" path="res://scenes/world/prop_debris.tscn" id="debris_scene"]
-[ext_resource type="PackedScene" path="res://scenes/world/chest.tscn" id="chest"]
 [ext_resource type="Script" path="res://scripts/world/kill_zone.gd" id="kill_zone_script"]
 [ext_resource type="Texture2D" path="res://assets/quaternius_village/models/T_RockTrim_BaseColor.png" id="rock_color"]
 [ext_resource type="Texture2D" path="res://assets/quaternius_village/models/T_RockTrim_ORM.png" id="rock_orm"]
@@ -13,6 +12,15 @@
 [ext_resource type="Texture2D" path="res://assets/quaternius_village/models/T_UnevenBrick_BaseColor.png" id="brick_color"]
 [ext_resource type="Texture2D" path="res://assets/quaternius_village/models/T_UnevenBrick_Normal.png" id="brick_normal"]
 [ext_resource type="Texture2D" path="res://assets/quaternius_village/models/T_UnevenBrick_Roughness.png" id="brick_rough"]
+[ext_resource type="Texture2D" path="res://assets/quaternius_village/models/T_WoodTrim_BaseColor.png" id="wood_color"]
+[ext_resource type="Texture2D" path="res://assets/quaternius_village/models/T_WoodTrim_Normal.png" id="wood_normal"]
+[ext_resource type="Texture2D" path="res://assets/quaternius_village/models/T_WoodTrim_Roughness.png" id="wood_rough"]
+[ext_resource type="Texture2D" path="res://assets/quaternius_village/models/T_MetalOrnaments_BaseColor.png" id="metal_color"]
+[ext_resource type="Texture2D" path="res://assets/quaternius_village/models/T_MetalOrnaments_Roughness.png" id="metal_rough"]
+[ext_resource type="Texture2D" path="res://assets/quaternius_village/models/T_Plaster_BaseColor.png" id="plaster_color"]
+[ext_resource type="Texture2D" path="res://assets/quaternius_village/models/T_Plaster_Normal.png" id="plaster_normal"]
+[ext_resource type="Texture2D" path="res://assets/quaternius_village/models/T_RedBrick_BaseColor.png" id="redbrick_color"]
+[ext_resource type="FontFile" path="res://assets/fonts/Cinzel-wght.ttf" id="fonte_cinzel"]
 [ext_resource type="PackedScene" path="res://assets/quaternius_village/models/Prop_Wagon.gltf" id="deco_wagon"]
 [ext_resource type="PackedScene" path="res://assets/quaternius_village/models/Prop_Chimney.gltf" id="deco_chimney"]
 [ext_resource type="PackedScene" path="res://assets/quaternius_village/models/Prop_Support.gltf" id="deco_support"]
@@ -22,8 +30,8 @@
 [ext_resource type="PackedScene" path="res://assets/kaykit_dungeon/models/wall_gated.gltf" id="deco_gated"]
 [ext_resource type="PackedScene" path="res://assets/kaykit_dungeon/models/banner_red.gltf" id="deco_banner_red"]
 [ext_resource type="PackedScene" path="res://assets/kaykit_dungeon/models/banner_thin_white.gltf" id="deco_banner_white"]
-[ext_resource type="PackedScene" path="res://assets/kaykit_dungeon/models/bed_floor.gltf" id="deco_bed"]
-[ext_resource type="PackedScene" path="res://assets/kaykit_dungeon/models/bed_frame.gltf" id="deco_bed_frame"]
+[ext_resource type="PackedScene" path="res://assets/kaykit_dungeon/models/table_long_tablecloth_decorated_A.gltf" id="deco_mesa_longa"]
+[ext_resource type="PackedScene" path="res://assets/kaykit_dungeon/models/table_medium_tablecloth_decorated_B.gltf" id="deco_mesa_media"]
 [ext_resource type="PackedScene" path="res://assets/kaykit_dungeon/models/table_long_broken.gltf" id="deco_table_broken"]
 [ext_resource type="PackedScene" path="res://assets/kaykit_dungeon/models/box_small.gltf" id="deco_box"]
 [ext_resource type="PackedScene" path="res://assets/kaykit_dungeon/models/barrel_small.gltf" id="deco_barrel"]
@@ -42,7 +50,6 @@
 [ext_resource type="PackedScene" path="res://assets/kaykit_adventurers/accessories/axe_1handed.gltf" id="deco_axe1"]
 [ext_resource type="PackedScene" path="res://assets/kaykit_adventurers/accessories/quiver.gltf" id="deco_quiver"]
 [ext_resource type="PackedScene" path="res://assets/kaykit_adventurers/accessories/arrow_bundle.gltf" id="deco_arrows"]
-[ext_resource type="PackedScene" path="res://scenes/props/scaffold.tscn" id="deco_scaffold"]
 
 
 [sub_resource type="Gradient" id="Ramp_rock"]
@@ -78,12 +85,22 @@ uv1_triplanar = true
 uv1_scale = Vector3(0.5, 0.5, 0.5)
 
 [sub_resource type="StandardMaterial3D" id="Mat_wood"]
-albedo_color = Color(0.36, 0.24, 0.14, 1)
-roughness = 0.9
+albedo_color = Color(0.8, 0.68, 0.56, 1)
+albedo_texture = ExtResource("wood_color")
+normal_enabled = true
+normal_texture = ExtResource("wood_normal")
+roughness_texture = ExtResource("wood_rough")
+uv1_triplanar = true
+uv1_scale = Vector3(0.7, 0.7, 0.7)
 
-[sub_resource type="StandardMaterial3D" id="Mat_stone"]
-albedo_color = Color(0.42, 0.42, 0.43, 1)
-roughness = 1.0
+[sub_resource type="ORMMaterial3D" id="Mat_stone"]
+albedo_color = Color(0.8, 0.78, 0.76, 1)
+albedo_texture = ExtResource("rock_color")
+orm_texture = ExtResource("rock_orm")
+normal_enabled = true
+normal_texture = ExtResource("rock_normal")
+uv1_triplanar = true
+uv1_scale = Vector3(0.8, 0.8, 0.8)
 
 [sub_resource type="StandardMaterial3D" id="Mat_water"]
 albedo_color = Color(0.06, 0.12, 0.16, 1)
@@ -101,9 +118,12 @@ emission = Color(0.55, 0.8, 1, 1)
 emission_energy_multiplier = 1.6
 
 [sub_resource type="StandardMaterial3D" id="Mat_iron"]
-albedo_color = Color(0.12, 0.12, 0.13, 1)
+albedo_color = Color(0.35, 0.35, 0.37, 1)
+albedo_texture = ExtResource("metal_color")
 metallic = 0.7
-roughness = 0.5
+roughness_texture = ExtResource("metal_rough")
+uv1_triplanar = true
+uv1_scale = Vector3(1.5, 1.5, 1.5)
 
 [sub_resource type="StandardMaterial3D" id="Mat_glass"]
 transparency = 1
@@ -111,23 +131,63 @@ albedo_color = Color(0.9, 0.8, 0.5, 0.35)
 roughness = 0.1
 
 [sub_resource type="StandardMaterial3D" id="Mat_bronze"]
-albedo_color = Color(0.55, 0.38, 0.18, 1)
+albedo_color = Color(0.85, 0.6, 0.32, 1)
+albedo_texture = ExtResource("metal_color")
 metallic = 0.85
-roughness = 0.35
+roughness_texture = ExtResource("metal_rough")
+uv1_triplanar = true
+uv1_scale = Vector3(1.5, 1.5, 1.5)
 
 [sub_resource type="StandardMaterial3D" id="Mat_cloth"]
-albedo_color = Color(0.85, 0.82, 0.74, 1)
+albedo_color = Color(0.95, 0.9, 0.8, 1)
+albedo_texture = ExtResource("plaster_color")
+normal_enabled = true
+normal_texture = ExtResource("plaster_normal")
+normal_scale = 0.5
 roughness = 1.0
 cull_mode = 2
+uv1_triplanar = true
+uv1_scale = Vector3(1.2, 1.2, 1.2)
 
 [sub_resource type="StandardMaterial3D" id="Mat_cloth_dark"]
-albedo_color = Color(0.55, 0.42, 0.32, 1)
+albedo_color = Color(0.62, 0.45, 0.32, 1)
+albedo_texture = ExtResource("plaster_color")
+normal_enabled = true
+normal_texture = ExtResource("plaster_normal")
+normal_scale = 0.5
 roughness = 1.0
 cull_mode = 2
+uv1_triplanar = true
+uv1_scale = Vector3(1.2, 1.2, 1.2)
+
+[sub_resource type="StandardMaterial3D" id="Mat_cloth_red"]
+albedo_color = Color(0.7, 0.32, 0.26, 1)
+albedo_texture = ExtResource("plaster_color")
+normal_enabled = true
+normal_texture = ExtResource("plaster_normal")
+normal_scale = 0.5
+roughness = 1.0
+cull_mode = 2
+uv1_triplanar = true
+uv1_scale = Vector3(1.2, 1.2, 1.2)
+
+[sub_resource type="StandardMaterial3D" id="Mat_cloth_blue"]
+albedo_color = Color(0.38, 0.48, 0.62, 1)
+albedo_texture = ExtResource("plaster_color")
+normal_enabled = true
+normal_texture = ExtResource("plaster_normal")
+normal_scale = 0.5
+roughness = 1.0
+cull_mode = 2
+uv1_triplanar = true
+uv1_scale = Vector3(1.2, 1.2, 1.2)
 
 [sub_resource type="StandardMaterial3D" id="Mat_arena"]
-albedo_color = Color(0.32, 0.12, 0.12, 1)
+albedo_color = Color(0.62, 0.35, 0.32, 1)
+albedo_texture = ExtResource("redbrick_color")
 roughness = 1.0
+uv1_triplanar = true
+uv1_scale = Vector3(0.5, 0.5, 0.5)
 
 [sub_resource type="CylinderMesh" id="Arena_mesh"]
 material = SubResource("Mat_arena")
@@ -221,6 +281,14 @@ size = Vector3(48.000, 5.000, 3.000)
 [sub_resource type="BoxShape3D" id="Shape_10"]
 size = Vector3(48.000, 5.000, 3.000)
 
+[sub_resource type="PrismMesh" id="Prism_rampa"]
+material = SubResource("Mat_rock")
+left_to_right = 0.0
+size = Vector3(8.08, 3.03, 3.96)
+
+[sub_resource type="ConvexPolygonShape3D" id="Shape_rampa_base"]
+points = PackedVector3Array(-4.04, -1.515, -1.98, 4.04, -1.515, -1.98, -4.04, 1.515, -1.98, -4.04, -1.515, 1.98, 4.04, -1.515, 1.98, -4.04, 1.515, 1.98)
+
 [sub_resource type="BoxMesh" id="Box_11"]
 material = SubResource("Mat_ramp")
 size = Vector3(4.000, 0.400, 9.144)
@@ -279,6 +347,24 @@ roughness = 0.05
 [sub_resource type="PlaneMesh" id="Mesh_water"]
 material = SubResource("Mat_water")
 size = Vector2(4, 20)
+
+[sub_resource type="StandardMaterial3D" id="Mat_lago"]
+albedo_color = Color(0.09, 0.2, 0.27, 1)
+metallic = 0.65
+roughness = 0.08
+emission_enabled = true
+emission = Color(0.02, 0.05, 0.08, 1)
+
+[sub_resource type="BoxMesh" id="Penhasco_mesh"]
+material = SubResource("Mat_rock")
+size = Vector3(48.2, 6, 126.2)
+
+[sub_resource type="PlaneMesh" id="Mesh_lago"]
+material = SubResource("Mat_lago")
+size = Vector2(400, 400)
+
+[sub_resource type="BoxShape3D" id="Shape_lago"]
+size = Vector3(400, 2, 400)
 
 [sub_resource type="BoxShape3D" id="Shape_water"]
 size = Vector3(4, 1.6, 20)
@@ -368,13 +454,13 @@ size = Vector3(8.13, 3.5, 3.18)
 size = Vector3(4.0, 3.5, 3.0)
 
 [sub_resource type="BoxShape3D" id="Deco_B_Fornos_0"]
-size = Vector3(1.5, 0.56, 3.0)
+size = Vector3(2.06, 1, 4)
 
 [sub_resource type="BoxShape3D" id="Deco_B_Fornos_1"]
-size = Vector3(1.5, 0.56, 3.0)
+size = Vector3(2, 1, 2)
 
 [sub_resource type="BoxShape3D" id="Deco_B_Fornos_2"]
-size = Vector3(1.5, 1.06, 3.0)
+size = Vector3(2.06, 1, 4)
 
 [sub_resource type="BoxShape3D" id="Deco_B_Fornos_3"]
 size = Vector3(2.41, 1.27, 4.4)
@@ -418,20 +504,44 @@ size = Vector3(3.000, 1.400, 2.000)
 [sub_resource type="BoxShape3D" id="Shape_34"]
 size = Vector3(3.000, 1.400, 2.000)
 
-[sub_resource type="BoxMesh" id="Box_35"]
+[sub_resource type="CylinderMesh" id="Box_35"]
 material = SubResource("Mat_stone")
-size = Vector3(3.200, 0.700, 3.200)
+top_radius = 1.6
+bottom_radius = 1.5
+height = 0.7
+radial_segments = 32
 
 [sub_resource type="BoxShape3D" id="Shape_35"]
 size = Vector3(3.200, 0.700, 3.200)
 
-[sub_resource type="BoxMesh" id="Box_36"]
-material = SubResource("Mat_water")
-size = Vector3(2.700, 0.040, 2.700)
-
-[sub_resource type="BoxMesh" id="Box_37"]
+[sub_resource type="TorusMesh" id="Fonte_borda"]
 material = SubResource("Mat_stone")
-size = Vector3(0.500, 1.900, 0.500)
+inner_radius = 1.3
+outer_radius = 1.62
+rings = 48
+ring_segments = 16
+
+[sub_resource type="StandardMaterial3D" id="Mat_fonte"]
+transparency = 1
+albedo_color = Color(0.22, 0.45, 0.55, 0.85)
+metallic = 0.2
+roughness = 0.05
+emission_enabled = true
+emission = Color(0.05, 0.12, 0.16, 1)
+
+[sub_resource type="CylinderMesh" id="Box_36"]
+material = SubResource("Mat_fonte")
+top_radius = 1.45
+bottom_radius = 1.45
+height = 0.04
+radial_segments = 32
+
+[sub_resource type="CylinderMesh" id="Box_37"]
+material = SubResource("Mat_stone")
+top_radius = 0.22
+bottom_radius = 0.3
+height = 1.9
+radial_segments = 16
 
 [sub_resource type="BoxShape3D" id="Shape_37"]
 size = Vector3(0.500, 1.900, 0.500)
@@ -463,7 +573,7 @@ material = SubResource("Mat_cloth_dark")
 size = Vector3(0.900, 1.400, 0.030)
 
 [sub_resource type="BoxMesh" id="Box_43"]
-material = SubResource("Mat_cloth")
+material = SubResource("Mat_cloth_red")
 size = Vector3(0.900, 0.900, 0.030)
 
 [sub_resource type="BoxMesh" id="Box_44"]
@@ -471,19 +581,50 @@ material = SubResource("Mat_cloth_dark")
 size = Vector3(0.900, 1.300, 0.030)
 
 [sub_resource type="BoxMesh" id="Box_45"]
-material = SubResource("Mat_cloth")
+material = SubResource("Mat_cloth_blue")
 size = Vector3(0.900, 1.000, 0.030)
 
 [sub_resource type="BoxMesh" id="Box_46"]
+material = SubResource("Mat_ramp")
+size = Vector3(2.2, 1, 1.8)
+
+[sub_resource type="SphereMesh" id="Forno_cupula"]
 material = SubResource("Mat_stone")
-size = Vector3(2.200, 1.500, 1.800)
+radius = 0.95
+height = 0.95
+is_hemisphere = true
+radial_segments = 32
+rings = 12
+
+[sub_resource type="CylinderMesh" id="Forno_chamine"]
+material = SubResource("Mat_ramp")
+top_radius = 0.14
+bottom_radius = 0.18
+height = 0.9
+radial_segments = 12
+
+[sub_resource type="StandardMaterial3D" id="Mat_brasa"]
+albedo_color = Color(0.12, 0.03, 0.01, 1)
+emission_enabled = true
+emission = Color(0.85, 0.22, 0.04, 1)
+emission_energy_multiplier = 1.1
+
+[sub_resource type="CylinderMesh" id="Forno_brasa"]
+material = SubResource("Mat_brasa")
+top_radius = 0.3
+bottom_radius = 0.3
+height = 0.02
+radial_segments = 24
 
 [sub_resource type="BoxShape3D" id="Shape_46"]
 size = Vector3(2.200, 1.500, 1.800)
 
-[sub_resource type="BoxMesh" id="Box_47"]
+[sub_resource type="CylinderMesh" id="Box_47"]
 material = SubResource("Mat_soot")
-size = Vector3(1.000, 0.700, 0.050)
+top_radius = 0.42
+bottom_radius = 0.42
+height = 0.05
+radial_segments = 24
 
 [sub_resource type="BoxMesh" id="Box_48"]
 material = SubResource("Mat_ore")
@@ -513,63 +654,73 @@ size = Vector3(0.320, 0.450, 0.320)
 material = SubResource("Mat_glass")
 size = Vector3(0.260, 0.300, 0.260)
 
-[sub_resource type="BoxMesh" id="Box_55"]
-material = SubResource("Mat_soot")
-size = Vector3(1.000, 0.030, 2.000)
+[sub_resource type="ORMMaterial3D" id="Mat_cova"]
+albedo_color = Color(0.5, 0.36, 0.26, 1)
+albedo_texture = ExtResource("rock_color")
+orm_texture = ExtResource("rock_orm")
+normal_enabled = true
+normal_texture = ExtResource("rock_normal")
+uv1_triplanar = true
+uv1_scale = Vector3(1.6, 1.6, 1.6)
+
+[sub_resource type="BoxMesh" id="Cova_terra"]
+material = SubResource("Mat_cova")
+size = Vector3(1.05, 0.08, 2.05)
+
+[sub_resource type="StandardMaterial3D" id="Mat_lapide"]
+albedo_color = Color(0.62, 0.61, 0.58, 1)
+albedo_texture = ExtResource("plaster_color")
+normal_enabled = true
+normal_scale = 0.35
+normal_texture = ExtResource("plaster_normal")
+roughness = 0.95
+uv1_triplanar = true
+uv1_scale = Vector3(1.6, 1.6, 1.6)
+
+[sub_resource type="BoxMesh" id="Lapide_corpo"]
+material = SubResource("Mat_lapide")
+size = Vector3(0.84, 0.85, 0.16)
+
+[sub_resource type="CylinderMesh" id="Lapide_topo"]
+material = SubResource("Mat_lapide")
+top_radius = 0.42
+bottom_radius = 0.42
+height = 0.16
+radial_segments = 20
 
 [sub_resource type="BoxMesh" id="Box_56"]
 material = SubResource("Mat_stone")
 size = Vector3(0.250, 0.500, 2.000)
 
-[sub_resource type="BoxMesh" id="Box_57"]
-material = SubResource("Mat_soot")
-size = Vector3(1.000, 0.030, 2.000)
-
 [sub_resource type="BoxMesh" id="Box_58"]
 material = SubResource("Mat_stone")
 size = Vector3(0.250, 0.500, 2.000)
-
-[sub_resource type="BoxMesh" id="Box_59"]
-material = SubResource("Mat_soot")
-size = Vector3(1.000, 0.030, 2.000)
 
 [sub_resource type="BoxMesh" id="Box_60"]
 material = SubResource("Mat_stone")
 size = Vector3(0.250, 0.500, 2.000)
 
-[sub_resource type="BoxMesh" id="Box_61"]
-material = SubResource("Mat_soot")
-size = Vector3(1.000, 0.030, 2.000)
-
 [sub_resource type="BoxMesh" id="Box_62"]
 material = SubResource("Mat_stone")
 size = Vector3(0.250, 0.500, 2.000)
 
-[sub_resource type="BoxMesh" id="Box_63"]
-material = SubResource("Mat_soot")
-size = Vector3(1.000, 0.030, 2.000)
-
 [sub_resource type="BoxMesh" id="Box_64"]
 material = SubResource("Mat_stone")
 size = Vector3(0.250, 0.500, 2.000)
-
-[sub_resource type="BoxMesh" id="Box_65"]
-material = SubResource("Mat_soot")
-size = Vector3(1.000, 0.030, 2.000)
 
 [sub_resource type="BoxMesh" id="Box_66"]
 material = SubResource("Mat_stone")
 size = Vector3(0.250, 0.500, 2.000)
 
 [sub_resource type="BoxMesh" id="Box_67"]
-material = SubResource("Mat_stone")
+material = SubResource("Mat_wood")
 size = Vector3(0.500, 5.200, 0.500)
 
 [sub_resource type="BoxShape3D" id="Shape_67"]
 size = Vector3(0.500, 5.200, 0.500)
 
 [sub_resource type="BoxMesh" id="Box_68"]
-material = SubResource("Mat_stone")
+material = SubResource("Mat_wood")
 size = Vector3(0.500, 5.200, 0.500)
 
 [sub_resource type="BoxShape3D" id="Shape_68"]
@@ -586,44 +737,62 @@ size = Vector3(4.600, 0.400, 0.500)
 material = SubResource("Mat_soot")
 size = Vector3(0.060, 0.900, 0.040)
 
-[sub_resource type="BoxMesh" id="Box_71"]
-material = SubResource("Mat_stone")
-size = Vector3(0.600, 1.200, 0.600)
+[sub_resource type="CylinderMesh" id="Box_71"]
+material = SubResource("Mat_iron")
+top_radius = 0.36
+bottom_radius = 0.2
+height = 1.2
+radial_segments = 12
 
 [sub_resource type="BoxShape3D" id="Shape_71"]
 size = Vector3(0.600, 1.200, 0.600)
 
-[sub_resource type="BoxMesh" id="Box_72"]
-material = SubResource("Mat_stone")
-size = Vector3(0.600, 1.200, 0.600)
+[sub_resource type="CylinderMesh" id="Box_72"]
+material = SubResource("Mat_iron")
+top_radius = 0.36
+bottom_radius = 0.2
+height = 1.2
+radial_segments = 12
 
 [sub_resource type="BoxShape3D" id="Shape_72"]
 size = Vector3(0.600, 1.200, 0.600)
 
-[sub_resource type="BoxMesh" id="Box_73"]
-material = SubResource("Mat_stone")
-size = Vector3(0.600, 1.200, 0.600)
+[sub_resource type="CylinderMesh" id="Box_73"]
+material = SubResource("Mat_iron")
+top_radius = 0.36
+bottom_radius = 0.2
+height = 1.2
+radial_segments = 12
 
 [sub_resource type="BoxShape3D" id="Shape_73"]
 size = Vector3(0.600, 1.200, 0.600)
 
-[sub_resource type="BoxMesh" id="Box_74"]
-material = SubResource("Mat_stone")
-size = Vector3(0.600, 1.200, 0.600)
+[sub_resource type="CylinderMesh" id="Box_74"]
+material = SubResource("Mat_iron")
+top_radius = 0.36
+bottom_radius = 0.2
+height = 1.2
+radial_segments = 12
 
 [sub_resource type="BoxShape3D" id="Shape_74"]
 size = Vector3(0.600, 1.200, 0.600)
 
-[sub_resource type="BoxMesh" id="Box_75"]
-material = SubResource("Mat_stone")
-size = Vector3(0.600, 1.200, 0.600)
+[sub_resource type="CylinderMesh" id="Box_75"]
+material = SubResource("Mat_iron")
+top_radius = 0.36
+bottom_radius = 0.2
+height = 1.2
+radial_segments = 12
 
 [sub_resource type="BoxShape3D" id="Shape_75"]
 size = Vector3(0.600, 1.200, 0.600)
 
-[sub_resource type="BoxMesh" id="Box_76"]
-material = SubResource("Mat_stone")
-size = Vector3(0.600, 1.200, 0.600)
+[sub_resource type="CylinderMesh" id="Box_76"]
+material = SubResource("Mat_iron")
+top_radius = 0.36
+bottom_radius = 0.2
+height = 1.2
+radial_segments = 12
 
 [sub_resource type="BoxShape3D" id="Shape_76"]
 size = Vector3(0.600, 1.200, 0.600)
@@ -645,7 +814,7 @@ cell_center_x = false
 cell_center_y = false
 cell_center_z = false
 data = {
-"cells": PackedInt32Array(262126, 65535, 79, 458734, 65527, 655444, 458734, 65535, 84, 262128, 65527, 655440, 262128, 65535, 83, 262129, 65528, 1048659, 262129, 65530, 1048656, 262129, 65532, 1048657, 262129, 65534, 1048655, 262123, 65528, 1441873, 262123, 65530, 1441871, 262123, 65532, 1441875, 262123, 65534, 1441875, 262124, 65527, 655443, 262124, 65535, 81, 262126, 65527, 655443, 524270, 65531, 90, 196622, 11, 1441872, 196622, 13, 1441873, 196622, 15, 1441871, 196622, 17, 1441875, 196623, 10, 655439, 196623, 18, 80, 196625, 10, 655443, 196625, 18, 81, 393233, 10, 655444, 393233, 18, 84, 196627, 10, 655443, 196627, 18, 79, 196628, 11, 1048659, 196628, 13, 1048659, 196628, 15, 1048656, 196628, 17, 1048657, 458769, 14, 90, 262123, 13, 1441873, 262123, 15, 1441871, 262123, 17, 1441875, 262123, 19, 1441875, 262128, 12, 655443, 262128, 20, 79, 262124, 12, 655439, 262130, 12, 655440, 262130, 20, 83, 262124, 20, 80, 262131, 15, 1048656, 262126, 12, 655443, 262126, 20, 81, 458735, 20, 87, 262131, 13, 1048659, 458735, 12, 655447, 262131, 17, 1048657, 262131, 19, 1048655, 524271, 16, 91, 393229, 65507, 1441875, 393229, 65509, 1441875, 393229, 65511, 1441872, 393229, 65513, 1441873, 589837, 65507, 1441868, 589837, 65509, 1441865, 589837, 65511, 1441868, 589837, 65513, 1441865, 393230, 65506, 655443, 393230, 65514, 79, 589838, 65506, 655436, 589838, 65514, 77, 393232, 65506, 655440, 393232, 65514, 83, 589840, 65506, 655433, 589840, 65514, 77, 786449, 65506, 655447, 786449, 65514, 87, 393234, 65506, 655441, 393234, 65514, 83, 589842, 65506, 655436, 589842, 65514, 77, 393236, 65506, 655439, 393236, 65514, 80, 589844, 65506, 655433, 589844, 65514, 77, 393237, 65507, 1048657, 393237, 65509, 1048655, 393237, 65511, 1048659, 393237, 65513, 1048659, 589845, 65507, 1048653, 589845, 65509, 1048653, 589845, 65511, 1048653, 589845, 65513, 1048653, 851985, 65510, 91, 458736, 65518, 655443, 458736, 65526, 81, 458731, 65519, 1441872, 458732, 65518, 655441, 458738, 65518, 655443, 458738, 65526, 79, 458732, 65526, 83, 655343, 65526, 87, 458734, 65518, 655439, 458739, 65519, 1048659, 458739, 65521, 1048659, 458739, 65523, 1048656, 458739, 65525, 1048657, 458734, 65526, 80, 655343, 65518, 655447, 458731, 65521, 1441873, 458731, 65523, 1441871, 458731, 65525, 1441875, 720879, 65522, 91, 655339, 65487, 1441871, 655339, 65489, 1441875, 655339, 65491, 1441875, 655339, 65493, 1441872, 851947, 65487, 1441865, 851947, 65489, 1441868, 851947, 65491, 1441865, 851947, 65493, 1441868, 655340, 65486, 655443, 655340, 65494, 81, 851948, 65486, 655433, 851948, 65494, 77, 655342, 65486, 655443, 655342, 65494, 79, 851950, 65486, 655436, 851950, 65494, 77, 1048559, 65486, 655447, 1048559, 65494, 87, 655344, 65486, 655440, 655344, 65494, 83, 851952, 65486, 655433, 851952, 65494, 77, 655346, 65486, 655441, 655346, 65494, 83, 851954, 65486, 655436, 851954, 65494, 77, 655347, 65487, 1048656, 655347, 65489, 1048657, 655347, 65491, 1048655, 655347, 65493, 1048659, 851955, 65487, 1048653, 851955, 65489, 1048653, 851955, 65491, 1048653, 851955, 65493, 1048653, 1114095, 65490, 91, 16, 34, 655441, 16, 42, 83, 13, 35, 1441875, 13, 37, 1441872, 13, 39, 1441873, 13, 41, 1441871, 196625, 34, 655447, 21, 35, 1048655, 21, 37, 1048659, 21, 39, 1048659, 21, 41, 1048656, 196625, 42, 87, 18, 34, 655439, 18, 42, 80, 14, 34, 655440, 14, 42, 83, 20, 34, 655443, 20, 42, 81, 262161, 38, 91)
+"cells": PackedInt32Array(262126, 65535, 79, 458734, 65527, 655444, 458734, 65535, 84, 262128, 65527, 655440, 262128, 65535, 83, 262129, 65528, 1048659, 262129, 65530, 1048656, 262129, 65532, 1048657, 262129, 65534, 1048655, 262123, 65528, 1441873, 262123, 65530, 1441871, 262123, 65532, 1441875, 262123, 65534, 1441875, 262124, 65527, 655443, 262124, 65535, 81, 262126, 65527, 655443, 458734, 65531, 90, 196622, 11, 1441872, 196622, 13, 1441873, 196622, 15, 1441871, 196622, 17, 1441875, 196623, 10, 655439, 196623, 18, 80, 196625, 10, 655443, 196625, 18, 81, 393233, 10, 655444, 393233, 18, 84, 196627, 10, 655443, 196627, 18, 79, 196628, 11, 1048659, 196628, 13, 1048659, 196628, 15, 1048656, 196628, 17, 1048657, 393233, 14, 90, 262123, 13, 1441873, 262123, 15, 1441871, 262123, 17, 1441875, 262123, 19, 1441875, 262128, 12, 655443, 262128, 20, 79, 262124, 12, 655439, 262130, 12, 655440, 262130, 20, 83, 262124, 20, 80, 262131, 15, 1048656, 262126, 12, 655443, 262126, 20, 81, 458735, 20, 87, 262131, 13, 1048659, 458735, 12, 655447, 262131, 17, 1048657, 262131, 19, 1048655, 458735, 16, 91, 393229, 65507, 1441875, 393229, 65509, 1441875, 393229, 65511, 1441872, 393229, 65513, 1441873, 589837, 65507, 1441868, 589837, 65509, 1441865, 589837, 65511, 1441868, 589837, 65513, 1441865, 393230, 65506, 655443, 393230, 65514, 79, 589838, 65506, 655436, 589838, 65514, 77, 393232, 65506, 655440, 393232, 65514, 83, 589840, 65506, 655433, 589840, 65514, 77, 786449, 65506, 655447, 786449, 65514, 87, 393234, 65506, 655441, 393234, 65514, 83, 589842, 65506, 655436, 589842, 65514, 77, 393236, 65506, 655439, 393236, 65514, 80, 589844, 65506, 655433, 589844, 65514, 77, 393237, 65507, 1048657, 393237, 65509, 1048655, 393237, 65511, 1048659, 393237, 65513, 1048659, 589845, 65507, 1048653, 589845, 65509, 1048653, 589845, 65511, 1048653, 589845, 65513, 1048653, 786449, 65510, 91, 458736, 65518, 655443, 458736, 65526, 81, 458731, 65519, 1441872, 458732, 65518, 655441, 458738, 65518, 655443, 458738, 65526, 79, 458732, 65526, 83, 655343, 65526, 87, 458734, 65518, 655439, 458739, 65519, 1048659, 458739, 65521, 1048659, 458739, 65523, 1048656, 458739, 65525, 1048657, 458734, 65526, 80, 655343, 65518, 655447, 458731, 65521, 1441873, 458731, 65523, 1441871, 458731, 65525, 1441875, 655343, 65522, 91, 655339, 65487, 1441871, 655339, 65489, 1441875, 655339, 65491, 1441875, 655339, 65493, 1441872, 851947, 65487, 1441865, 851947, 65489, 1441868, 851947, 65491, 1441865, 851947, 65493, 1441868, 655340, 65486, 655443, 655340, 65494, 81, 851948, 65486, 655433, 851948, 65494, 77, 655342, 65486, 655443, 655342, 65494, 79, 851950, 65486, 655436, 851950, 65494, 77, 1048559, 65486, 655447, 1048559, 65494, 87, 655344, 65486, 655440, 655344, 65494, 83, 851952, 65486, 655433, 851952, 65494, 77, 655346, 65486, 655441, 655346, 65494, 83, 851954, 65486, 655436, 851954, 65494, 77, 655347, 65487, 1048656, 655347, 65489, 1048657, 655347, 65491, 1048655, 655347, 65493, 1048659, 851955, 65487, 1048653, 851955, 65489, 1048653, 851955, 65491, 1048653, 851955, 65493, 1048653, 1048559, 65490, 91, 16, 34, 655441, 16, 42, 83, 13, 35, 1441875, 13, 37, 1441872, 13, 39, 1441873, 13, 41, 1441871, 196625, 34, 655447, 21, 35, 1048655, 21, 37, 1048659, 21, 39, 1048659, 21, 41, 1048656, 196625, 42, 87, 18, 34, 655439, 18, 42, 80, 14, 34, 655440, 14, 42, 83, 20, 34, 655443, 20, 42, 81, 196625, 38, 91)
 }
 
 [node name="Objetos" type="GridMap" parent="."]
@@ -790,6 +959,42 @@ mesh = SubResource("Box_14")
 [node name="Shape" type="CollisionShape3D" parent="Rampas/Rampa4"]
 shape = SubResource("Shape_14")
 
+[node name="Rampa1Base" type="StaticBody3D" parent="Rampas"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -8, 1.405, 23.46)
+
+[node name="Mesh" type="MeshInstance3D" parent="Rampas/Rampa1Base"]
+mesh = SubResource("Prism_rampa")
+
+[node name="Shape" type="CollisionShape3D" parent="Rampas/Rampa1Base"]
+shape = SubResource("Shape_rampa_base")
+
+[node name="Rampa2Base" type="StaticBody3D" parent="Rampas"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 10, 4.405, -6.54)
+
+[node name="Mesh" type="MeshInstance3D" parent="Rampas/Rampa2Base"]
+mesh = SubResource("Prism_rampa")
+
+[node name="Shape" type="CollisionShape3D" parent="Rampas/Rampa2Base"]
+shape = SubResource("Shape_rampa_base")
+
+[node name="Rampa3Base" type="StaticBody3D" parent="Rampas"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -10, 7.405, -28.54)
+
+[node name="Mesh" type="MeshInstance3D" parent="Rampas/Rampa3Base"]
+mesh = SubResource("Prism_rampa")
+
+[node name="Shape" type="CollisionShape3D" parent="Rampas/Rampa3Base"]
+shape = SubResource("Shape_rampa_base")
+
+[node name="Rampa4Base" type="StaticBody3D" parent="Rampas"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 0, 10.405, -48.54)
+
+[node name="Mesh" type="MeshInstance3D" parent="Rampas/Rampa4Base"]
+mesh = SubResource("Prism_rampa")
+
+[node name="Shape" type="CollisionShape3D" parent="Rampas/Rampa4Base"]
+shape = SubResource("Shape_rampa_base")
+
 [node name="Ponte" type="Node3D" parent="."]
 
 [node name="Tabuado" type="StaticBody3D" parent="Ponte"]
@@ -829,6 +1034,23 @@ shape = SubResource("Shape_water")
 [node name="Superficie" type="MeshInstance3D" parent="AguaDaFenda"]
 position = Vector3(0, 0.4, 0)
 mesh = SubResource("Mesh_water")
+cast_shadow = 0
+
+[node name="Penhasco" type="MeshInstance3D" parent="."]
+position = Vector3(0, -3.5, -9)
+mesh = SubResource("Penhasco_mesh")
+
+[node name="AguaDeFora" type="Area3D" parent="."]
+position = Vector3(0, -2.4, -9)
+script = ExtResource("kill_zone_script")
+cause = "Afogado fora da muralha"
+
+[node name="Forma" type="CollisionShape3D" parent="AguaDeFora"]
+shape = SubResource("Shape_lago")
+
+[node name="Superficie" type="MeshInstance3D" parent="AguaDeFora"]
+position = Vector3(0, 1, 0)
+mesh = SubResource("Mesh_lago")
 cast_shadow = 0
 
 [node name="Cerca" type="Node3D" parent="."]
@@ -1090,23 +1312,51 @@ metadata/zone = &"E"
 position = Vector3(16, 9.1, -46)
 metadata/zone = &"E"
 
-[node name="Chests" type="Node3D" parent="."]
+[node name="ChestSpots" type="Node3D" parent="."]
 
-[node name="Chest1" parent="Chests" instance=ExtResource("chest")]
-position = Vector3(-10, 3, 14)
-rotation = Vector3(0, 0.0, 0)
+[node name="A1" type="Marker3D" parent="ChestSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 0, 31)
+metadata/zone = &"A"
 
-[node name="Chest2" parent="Chests" instance=ExtResource("chest")]
-position = Vector3(-18, 6, -28)
-rotation = Vector3(0, 1.5708, 0)
+[node name="A2" type="Marker3D" parent="ChestSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0, 30)
+metadata/zone = &"A"
 
-[node name="Chest3" parent="Chests" instance=ExtResource("chest")]
-position = Vector3(20, 9, -42)
-rotation = Vector3(0, -1.5708, 0)
+[node name="B1" type="Marker3D" parent="ChestSpots"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -10, 3, 12.5)
+metadata/zone = &"B"
 
-[node name="Chest4" parent="Chests" instance=ExtResource("chest")]
-position = Vector3(14, 12, -60)
-rotation = Vector3(0, 3.1416, 0)
+[node name="B2" type="Marker3D" parent="ChestSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, 3, 7)
+metadata/zone = &"B"
+
+[node name="B3" type="Marker3D" parent="ChestSpots"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 12, 3, 19)
+metadata/zone = &"B"
+
+[node name="B4" type="Marker3D" parent="ChestSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 3, -6)
+metadata/zone = &"B"
+
+[node name="C1" type="Marker3D" parent="ChestSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -19.5, 6, -29)
+metadata/zone = &"C"
+
+[node name="C2" type="Marker3D" parent="ChestSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 6, -22)
+metadata/zone = &"C"
+
+[node name="D1" type="Marker3D" parent="ChestSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 9, -46)
+metadata/zone = &"D"
+
+[node name="E1" type="Marker3D" parent="ChestSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.7, 9, -43.2)
+metadata/zone = &"E"
+
+[node name="F1" type="Marker3D" parent="ChestSpots"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 12.6, 12, -61.2)
+metadata/zone = &"F"
 
 [node name="BossSpot" type="Marker3D" parent="."]
 position = Vector3(0, 12.1, -63)
@@ -1165,31 +1415,31 @@ transform = Transform3D(-1.00000, 0.00000, -0.00000, 0.00000, 1.00000, 0.00000, 
 
 [node name="B_Fornos" type="Node3D" parent="Historia"]
 
-[node name="bed0" parent="Historia/B_Fornos" instance=ExtResource("deco_bed")]
-transform = Transform3D(0.90631, 0.00000, -0.42262, 0.00000, 1.00000, 0.00000, 0.42262, -0.00000, 0.90631, -4.000, 3.000, 4.000)
+[node name="mesa_longa0" parent="Historia/B_Fornos" instance=ExtResource("deco_mesa_longa")]
+transform = Transform3D(0.54379, 0.00000, -0.25357, 0.00000, 0.60000, 0.00000, 0.25357, -0.00000, 0.54379, -4.000, 3.000, 4.000)
 
-[node name="Colisao" type="StaticBody3D" parent="Historia/B_Fornos/bed0"]
+[node name="Colisao" type="StaticBody3D" parent="Historia/B_Fornos/mesa_longa0"]
 
-[node name="Forma" type="CollisionShape3D" parent="Historia/B_Fornos/bed0/Colisao"]
-position = Vector3(0.000, 0.280, 0.000)
+[node name="Forma" type="CollisionShape3D" parent="Historia/B_Fornos/mesa_longa0/Colisao"]
+position = Vector3(0, 0.5, 0)
 shape = SubResource("Deco_B_Fornos_0")
 
-[node name="bed1" parent="Historia/B_Fornos" instance=ExtResource("deco_bed")]
-transform = Transform3D(0.34202, 0.00000, 0.93969, -0.00000, 1.00000, 0.00000, -0.93969, -0.00000, 0.34202, 3.000, 3.000, 0.000)
+[node name="mesa_media1" parent="Historia/B_Fornos" instance=ExtResource("deco_mesa_media")]
+transform = Transform3D(0.25651, 0.00000, 0.70477, -0.00000, 0.75000, 0.00000, -0.70477, -0.00000, 0.25651, 3.000, 3.000, 0.000)
 
-[node name="Colisao" type="StaticBody3D" parent="Historia/B_Fornos/bed1"]
+[node name="Colisao" type="StaticBody3D" parent="Historia/B_Fornos/mesa_media1"]
 
-[node name="Forma" type="CollisionShape3D" parent="Historia/B_Fornos/bed1/Colisao"]
-position = Vector3(0.000, 0.280, 0.000)
+[node name="Forma" type="CollisionShape3D" parent="Historia/B_Fornos/mesa_media1/Colisao"]
+position = Vector3(0, 0.5, 0)
 shape = SubResource("Deco_B_Fornos_1")
 
-[node name="bed_frame2" parent="Historia/B_Fornos" instance=ExtResource("deco_bed_frame")]
-transform = Transform3D(0.98481, 0.00000, -0.17365, 0.00000, 1.00000, 0.00000, 0.17365, -0.00000, 0.98481, 6.000, 3.000, 9.000)
+[node name="mesa_longa2" parent="Historia/B_Fornos" instance=ExtResource("deco_mesa_longa")]
+transform = Transform3D(0.59089, 0.00000, -0.10419, 0.00000, 0.60000, 0.00000, 0.10419, -0.00000, 0.59089, 6.000, 3.000, 9.000)
 
-[node name="Colisao" type="StaticBody3D" parent="Historia/B_Fornos/bed_frame2"]
+[node name="Colisao" type="StaticBody3D" parent="Historia/B_Fornos/mesa_longa2"]
 
-[node name="Forma" type="CollisionShape3D" parent="Historia/B_Fornos/bed_frame2/Colisao"]
-position = Vector3(0.000, 0.530, 0.000)
+[node name="Forma" type="CollisionShape3D" parent="Historia/B_Fornos/mesa_longa2/Colisao"]
+position = Vector3(0, 0.5, 0)
 shape = SubResource("Deco_B_Fornos_2")
 
 [node name="table_broken3" parent="Historia/B_Fornos" instance=ExtResource("deco_table_broken")]
@@ -1350,9 +1600,6 @@ transform = Transform3D(0.86603, 0.00000, 0.50000, -0.50000, 0.00000, 0.86603, 0
 
 [node name="F_Mirante" type="Node3D" parent="Historia"]
 
-[node name="scaffold0" parent="Historia/F_Mirante" instance=ExtResource("deco_scaffold")]
-transform = Transform3D(0.00000, 0.00000, 1.00000, -0.00000, 1.00000, 0.00000, -1.00000, -0.00000, 0.00000, 12.000, 12.000, -66.000)
-
 [node name="banner_red1" parent="Historia/F_Mirante" instance=ExtResource("deco_banner_red")]
 transform = Transform3D(0.00000, 0.00000, -1.20000, 0.00000, 1.20000, 0.00000, 1.20000, -0.00000, 0.00000, -21.800, 13.500, -58.000)
 
@@ -1395,8 +1642,12 @@ mesh = SubResource("Box_35")
 shape = SubResource("Shape_35")
 
 [node name="FonteAgua" type="MeshInstance3D" parent="Historia/Construidos"]
-transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 0.000, 3.710, 10.000)
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 0.000, 3.800, 10.000)
 mesh = SubResource("Box_36")
+
+[node name="FonteBorda" type="MeshInstance3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.78, 10)
+mesh = SubResource("Fonte_borda")
 
 [node name="FontePilar" type="StaticBody3D" parent="Historia/Construidos"]
 transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 0.000, 4.300, 10.000)
@@ -1453,14 +1704,33 @@ mesh = SubResource("Box_45")
 transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -15.500, 3.750, 4.000)
 
 [node name="Mesh" type="MeshInstance3D" parent="Historia/Construidos/Forno"]
+position = Vector3(0, -0.25, 0)
 mesh = SubResource("Box_46")
+
+[node name="Cupula" type="MeshInstance3D" parent="Historia/Construidos/Forno"]
+position = Vector3(0, 0.25, 0)
+mesh = SubResource("Forno_cupula")
+
+[node name="Chamine" type="MeshInstance3D" parent="Historia/Construidos/Forno"]
+position = Vector3(0, 1.05, -0.3)
+mesh = SubResource("Forno_chamine")
 
 [node name="Shape" type="CollisionShape3D" parent="Historia/Construidos/Forno"]
 shape = SubResource("Shape_46")
 
 [node name="FornoBoca" type="MeshInstance3D" parent="Historia/Construidos"]
-transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -15.500, 3.550, 4.910)
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, -15.5, 3.5, 4.91)
 mesh = SubResource("Box_47")
+
+[node name="FornoBrasa" type="MeshInstance3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, -15.5, 3.45, 4.97)
+mesh = SubResource("Forno_brasa")
+
+[node name="LuzForno" type="OmniLight3D" parent="Historia/Construidos"]
+position = Vector3(-15.5, 3.5, 5.4)
+light_color = Color(1, 0.55, 0.2, 1)
+light_energy = 1.2
+omni_range = 3.5
 
 [node name="Veio0" type="MeshInstance3D" parent="Historia/Construidos"]
 transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -19.000, 7.100, -32.050)
@@ -1491,52 +1761,214 @@ transform = Transform3D(0.30998, 0.93969, -0.14454, -0.85165, 0.34202, 0.39713, 
 mesh = SubResource("Box_54")
 
 [node name="Cova0" type="MeshInstance3D" parent="Historia/Construidos"]
-transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -19.500, 9.010, -38.000)
-mesh = SubResource("Box_55")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -19.5, 9.03, -38.0)
+mesh = SubResource("Cova_terra")
 
 [node name="Lapide0" type="MeshInstance3D" parent="Historia/Construidos"]
 transform = Transform3D(0.57358, -0.81915, -0.00000, 0.81915, 0.57358, 0.00000, 0.00000, -0.00000, 1.00000, -18.750, 9.250, -38.200)
 mesh = SubResource("Box_56")
 
 [node name="Cova1" type="MeshInstance3D" parent="Historia/Construidos"]
-transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -17.000, 9.010, -38.000)
-mesh = SubResource("Box_57")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.0, 9.03, -38.0)
+mesh = SubResource("Cova_terra")
 
 [node name="Lapide1" type="MeshInstance3D" parent="Historia/Construidos"]
 transform = Transform3D(0.57358, -0.81915, -0.00000, 0.81915, 0.57358, 0.00000, 0.00000, -0.00000, 1.00000, -16.250, 9.250, -38.200)
 mesh = SubResource("Box_58")
 
 [node name="Cova2" type="MeshInstance3D" parent="Historia/Construidos"]
-transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -14.500, 9.010, -38.000)
-mesh = SubResource("Box_59")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.5, 9.03, -38.0)
+mesh = SubResource("Cova_terra")
 
 [node name="Lapide2" type="MeshInstance3D" parent="Historia/Construidos"]
 transform = Transform3D(0.57358, -0.81915, -0.00000, 0.81915, 0.57358, 0.00000, 0.00000, -0.00000, 1.00000, -13.750, 9.250, -38.200)
 mesh = SubResource("Box_60")
 
 [node name="Cova3" type="MeshInstance3D" parent="Historia/Construidos"]
-transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -19.500, 9.010, -34.800)
-mesh = SubResource("Box_61")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -19.5, 9.03, -34.8)
+mesh = SubResource("Cova_terra")
 
 [node name="Lapide3" type="MeshInstance3D" parent="Historia/Construidos"]
 transform = Transform3D(0.57358, -0.81915, -0.00000, 0.81915, 0.57358, 0.00000, 0.00000, -0.00000, 1.00000, -18.750, 9.250, -35.000)
 mesh = SubResource("Box_62")
 
 [node name="Cova4" type="MeshInstance3D" parent="Historia/Construidos"]
-transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -17.000, 9.010, -34.800)
-mesh = SubResource("Box_63")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.0, 9.03, -34.8)
+mesh = SubResource("Cova_terra")
 
 [node name="Lapide4" type="MeshInstance3D" parent="Historia/Construidos"]
 transform = Transform3D(0.57358, -0.81915, -0.00000, 0.81915, 0.57358, 0.00000, 0.00000, -0.00000, 1.00000, -16.250, 9.250, -35.000)
 mesh = SubResource("Box_64")
 
 [node name="Cova5" type="MeshInstance3D" parent="Historia/Construidos"]
-transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -14.500, 9.010, -34.800)
-mesh = SubResource("Box_65")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.5, 9.03, -34.8)
+mesh = SubResource("Cova_terra")
 
 [node name="Lapide5" type="MeshInstance3D" parent="Historia/Construidos"]
 transform = Transform3D(0.57358, -0.81915, -0.00000, 0.81915, 0.57358, 0.00000, 0.00000, -0.00000, 1.00000, -13.750, 9.250, -35.000)
 mesh = SubResource("Box_66")
+
+[node name="Cabeceira0" type="Node3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 0.99756, -0.06976, 0, 0.06976, 0.99756, -19.5, 9.0, -39.20)
+
+[node name="Corpo" type="MeshInstance3D" parent="Historia/Construidos/Cabeceira0"]
+position = Vector3(0, 0.425, 0)
+mesh = SubResource("Lapide_corpo")
+
+[node name="Epitafio" type="Label3D" parent="Historia/Construidos/Cabeceira0"]
+position = Vector3(0, 0.62, 0.095)
+pixel_size = 0.0019
+modulate = Color(0.1, 0.09, 0.08, 1)
+outline_modulate = Color(0.1, 0.09, 0.08, 0.55)
+outline_size = 5
+text = "ANDRÉ
+foi até a
+tentativa LXII"
+font = ExtResource("fonte_cinzel")
+font_size = 54
+line_spacing = -12.0
+
+[node name="Topo" type="MeshInstance3D" parent="Historia/Construidos/Cabeceira0"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.85, 0)
+mesh = SubResource("Lapide_topo")
+
+[node name="Monte0" parent="Historia/Construidos" instance=ExtResource("deco_rubble_half")]
+transform = Transform3D(0.15975, 0, -0.05814, 0, 0.11900, 0, 0.05814, 0, 0.15975, -20.50, 9.0, -37.80)
+
+[node name="Cabeceira1" type="Node3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 0.99452, 0.10453, 0, -0.10453, 0.99452, -17.0, 9.0, -39.20)
+
+[node name="Corpo" type="MeshInstance3D" parent="Historia/Construidos/Cabeceira1"]
+position = Vector3(0, 0.425, 0)
+mesh = SubResource("Lapide_corpo")
+
+[node name="Epitafio" type="Label3D" parent="Historia/Construidos/Cabeceira1"]
+position = Vector3(0, 0.62, 0.095)
+pixel_size = 0.0019
+modulate = Color(0.1, 0.09, 0.08, 1)
+outline_modulate = Color(0.1, 0.09, 0.08, 0.55)
+outline_size = 5
+text = "HAVOO
+afogado
+na fenda"
+font = ExtResource("fonte_cinzel")
+font_size = 54
+line_spacing = -12.0
+
+[node name="Topo" type="MeshInstance3D" parent="Historia/Construidos/Cabeceira1"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.85, 0)
+mesh = SubResource("Lapide_topo")
+
+[node name="Monte1" parent="Historia/Construidos" instance=ExtResource("deco_rubble_half")]
+transform = Transform3D(0.04400, 0, -0.16421, 0, 0.11900, 0, 0.16421, 0, 0.04400, -18.00, 9.0, -37.80)
+
+[node name="Cabeceira2" type="Node3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 0.99939, -0.03490, 0, 0.03490, 0.99939, -14.5, 9.0, -39.20)
+
+[node name="Corpo" type="MeshInstance3D" parent="Historia/Construidos/Cabeceira2"]
+position = Vector3(0, 0.425, 0)
+mesh = SubResource("Lapide_corpo")
+
+[node name="Epitafio" type="Label3D" parent="Historia/Construidos/Cabeceira2"]
+position = Vector3(0, 0.62, 0.095)
+pixel_size = 0.0019
+modulate = Color(0.1, 0.09, 0.08, 1)
+outline_modulate = Color(0.1, 0.09, 0.08, 0.55)
+outline_size = 5
+text = "ANDRÉ
+abriu o baú
+errado"
+font = ExtResource("fonte_cinzel")
+font_size = 54
+line_spacing = -12.0
+
+[node name="Topo" type="MeshInstance3D" parent="Historia/Construidos/Cabeceira2"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.85, 0)
+mesh = SubResource("Lapide_topo")
+
+[node name="Monte2" parent="Historia/Construidos" instance=ExtResource("deco_rubble_half")]
+transform = Transform3D(-0.13023, 0, -0.10927, 0, 0.11900, 0, 0.10927, 0, -0.13023, -15.50, 9.0, -37.80)
+
+[node name="Cabeceira3" type="Node3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 0.99863, 0.05234, 0, -0.05234, 0.99863, -19.5, 9.0, -36.00)
+
+[node name="Corpo" type="MeshInstance3D" parent="Historia/Construidos/Cabeceira3"]
+position = Vector3(0, 0.425, 0)
+mesh = SubResource("Lapide_corpo")
+
+[node name="Epitafio" type="Label3D" parent="Historia/Construidos/Cabeceira3"]
+position = Vector3(0, 0.62, 0.095)
+pixel_size = 0.0019
+modulate = Color(0.1, 0.09, 0.08, 1)
+outline_modulate = Color(0.1, 0.09, 0.08, 0.55)
+outline_size = 5
+text = "HAVOO
+fogo amigo
+do Knight"
+font = ExtResource("fonte_cinzel")
+font_size = 54
+line_spacing = -12.0
+
+[node name="Topo" type="MeshInstance3D" parent="Historia/Construidos/Cabeceira3"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.85, 0)
+mesh = SubResource("Lapide_topo")
+
+[node name="Monte3" parent="Historia/Construidos" instance=ExtResource("deco_rubble_half")]
+transform = Transform3D(-0.15975, 0, 0.05814, 0, 0.11900, 0, -0.05814, 0, -0.15975, -20.50, 9.0, -34.60)
+
+[node name="Cabeceira4" type="Node3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 0.99255, -0.12187, 0, 0.12187, 0.99255, -17.0, 9.0, -36.00)
+
+[node name="Corpo" type="MeshInstance3D" parent="Historia/Construidos/Cabeceira4"]
+position = Vector3(0, 0.425, 0)
+mesh = SubResource("Lapide_corpo")
+
+[node name="Epitafio" type="Label3D" parent="Historia/Construidos/Cabeceira4"]
+position = Vector3(0, 0.62, 0.095)
+pixel_size = 0.0019
+modulate = Color(0.1, 0.09, 0.08, 1)
+outline_modulate = Color(0.1, 0.09, 0.08, 0.55)
+outline_size = 5
+text = "ANDRÉ
+confiou
+no Lorde"
+font = ExtResource("fonte_cinzel")
+font_size = 54
+line_spacing = -12.0
+
+[node name="Topo" type="MeshInstance3D" parent="Historia/Construidos/Cabeceira4"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.85, 0)
+mesh = SubResource("Lapide_topo")
+
+[node name="Monte4" parent="Historia/Construidos" instance=ExtResource("deco_rubble_half")]
+transform = Transform3D(-0.02952, 0, 0.16742, 0, 0.11900, 0, -0.16742, 0, -0.02952, -18.00, 9.0, -34.60)
+
+[node name="Cabeceira5" type="Node3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 0.99619, 0.08716, 0, -0.08716, 0.99619, -14.5, 9.0, -36.00)
+
+[node name="Corpo" type="MeshInstance3D" parent="Historia/Construidos/Cabeceira5"]
+position = Vector3(0, 0.425, 0)
+mesh = SubResource("Lapide_corpo")
+
+[node name="Epitafio" type="Label3D" parent="Historia/Construidos/Cabeceira5"]
+position = Vector3(0, 0.62, 0.095)
+pixel_size = 0.0019
+modulate = Color(0.1, 0.09, 0.08, 1)
+outline_modulate = Color(0.1, 0.09, 0.08, 0.55)
+outline_size = 5
+text = "AQUI JAZ
+um contratado
+que desistiu"
+font = ExtResource("fonte_cinzel")
+font_size = 54
+line_spacing = -12.0
+
+[node name="Topo" type="MeshInstance3D" parent="Historia/Construidos/Cabeceira5"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.85, 0)
+mesh = SubResource("Lapide_topo")
+
+[node name="Monte5" parent="Historia/Construidos" instance=ExtResource("deco_rubble_half")]
+transform = Transform3D(0.13023, 0, 0.10927, 0, 0.11900, 0, -0.10927, 0, 0.13023, -15.50, 9.0, -34.60)
 
 [node name="SinoPosteA" type="StaticBody3D" parent="Historia/Construidos"]
 transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -14.000, 14.600, -66.000)
@@ -1732,7 +2164,3 @@ position = Vector3(-17, 7.8, -31)
 light_color = Color(0.6, 0.85, 1, 1)
 light_energy = 0.9
 omni_range = 5.0
-
-[node name="Executioner" parent="Historia/F_Mirante/scaffold0"]
-visible = false
-process_mode = 4

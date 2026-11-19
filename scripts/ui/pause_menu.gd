@@ -5,6 +5,7 @@ signal resumed
 signal abandon_confirmed
 
 const NO_BUFFS := "Nenhuma ainda."
+const BUFF_RULE := "Os mortos-vivos recebem %d%% de cada uma."
 
 @onready var main_panel: Control = %MainPanel
 @onready var guide_panel: Control = %GuidePanel
@@ -40,6 +41,7 @@ func _fill_summary(objective: String) -> void:
 	%CoopNote.visible = Net.is_coop()
 	var lines := RunState.buff_lines()
 	%BuffList.text = "\n".join(lines) if not lines.is_empty() else NO_BUFFS
+	%BuffRule.text = BUFF_RULE % roundi(RunState.enemy_blessing_share() * 100.0)
 
 
 func _fill_guide(adventurer: Adventurer) -> void:

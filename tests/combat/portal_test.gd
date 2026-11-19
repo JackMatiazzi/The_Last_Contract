@@ -99,6 +99,26 @@ func test_skeletons_travel_through_the_portal_too() -> void:
 	assert_float(skeleton.global_position.distance_to(exit.global_position)).is_less(2.0)
 
 
+# elite e Necromante não atravessam: o portal é rota de fuga, não traz o perigo junto
+func test_elites_and_the_boss_stay_on_their_side() -> void:
+	var entry := PORTAL.instantiate() as Portal
+	var exit := PORTAL.instantiate() as Portal
+	arena.root.add_child(entry)
+	arena.root.add_child(exit)
+	entry.global_position = Vector3(-6, 0, 0)
+	exit.global_position = Vector3(12, 0, 0)
+	entry.link = exit
+	exit.link = entry
+	var elite := arena.spawn("res://scenes/characters/enemies/skeleton_elite.tscn", Vector3(-6, 0, 0))
+	var boss := arena.spawn("res://scenes/characters/enemies/necromancer.tscn", Vector3(-6, 0, 0.4))
+	elite.ai_enabled = false
+	boss.ai_enabled = false
+	await arena.wait_physics(4)
+
+	assert_float(elite.global_position.distance_to(exit.global_position)).is_greater(10.0)
+	assert_float(boss.global_position.distance_to(exit.global_position)).is_greater(10.0)
+
+
 func test_coming_out_does_not_send_you_straight_back() -> void:
 	var entry := PORTAL.instantiate() as Portal
 	var exit := PORTAL.instantiate() as Portal
@@ -289,3 +309,17 @@ func test_a_shot_that_does_not_cross_a_portal_still_ignores_allies() -> void:
 	await arena.wait_physics(20)
 
 	assert_float(rogue.health).is_equal(health)
+
+
+# topo de muralha entra no mapa de navegação como ilha: mirar lá em cima não abre portal
+func test_no_portal_on_top_of_a_wall_the_mage_cannot_walk_to() -> void:
+	arena.add_wall(Vector3(0, 1.5, 8), Vector3(12, 3, 4))
+	await arena.bake_navigation()
+	_select_portal_spell()
+	var spell := mage.attack as PortalSpell
+
+	var on_wall: Variant = spell._walkable_from(mage, Vector3(0, 3, 8))
+	var on_ground: Variant = spell._walkable_from(mage, Vector3(0, 0, -6))
+
+	assert_bool(on_wall).is_false()
+	assert_bool(on_ground).is_true()

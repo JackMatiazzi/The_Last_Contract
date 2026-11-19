@@ -4,6 +4,8 @@ extends Character
 signal energy_short(pool: EnergyPool)
 signal ability_changed
 
+## vida de referência do dano dos inimigos: o dano deles é escrito pensando num aventureiro de 10 de vida
+const ENEMY_DAMAGE_REFERENCE_HEALTH := 10.0
 const ATTACK_BUFFER := 0.2
 const PITCH_MIN := deg_to_rad(-60.0)
 const PITCH_MAX := deg_to_rad(30.0)
@@ -103,6 +105,8 @@ var _aim_query := PhysicsRayQueryParameters3D.new()
 var _framing := Vector2.ZERO
 
 @onready var camera_pivot: Node3D = $CameraPivot
+## caído em grupo, a câmera acompanha este aliado em vez do próprio corpo; null volta para si
+var camera_subject: Character
 @onready var spring_arm: SpringArm3D = $CameraPivot/SpringArm3D
 @onready var camera: Camera3D = $CameraPivot/SpringArm3D/Camera3D
 @onready var name_tag: Label3D = $NameTag
@@ -142,12 +146,30 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	if not is_multiplayer_authority():
 		return
-	var target := get_global_transform_interpolated().origin + Vector3.UP * CAMERA_HEIGHT
+	var subject: Node3D = camera_subject if is_instance_valid(camera_subject) else self
+	var target := subject.get_global_transform_interpolated().origin + Vector3.UP * CAMERA_HEIGHT
 	camera_pivot.global_position = camera_pivot.global_position.lerp(target, minf(camera_follow_speed * delta, 1.0))
 	var look := Input.get_vector("look_left", "look_right", "look_up", "look_down")
-	if look != Vector2.ZERO and not is_dead and _has_control():
+	if look != Vector2.ZERO and (_is_spectating() or (not is_dead and _has_control())):
 		_rotate_camera(look * BASE_STICK_SPEED * Settings.stick_sensitivity * delta)
 	_shake_camera(delta)
+
+
+## Fôlego de Escudeiro acelera a volta da estamina e da mana, inclusive a pausa antes de voltar
+func get_energy_regen_factor() -> float:
+	return maxf(1.0 + get_stat_bonus(StatModifier.Stat.ENERGY_REGEN), MIN_STAT_FACTOR)
+
+
+func blessing_share() -> float:
+	return 1.0
+
+
+## o dano de inimigos e armadilhas vale como parte da vida base, sem bênção: um golpe de 1 tira 10% dela,
+## e a vida ganha com Vigor fica de colchão. Fogo amigo continua em pontos
+func _incoming_damage(amount: float, source: Node3D) -> float:
+	if source is Adventurer:
+		return amount
+	return amount * max_health / ENEMY_DAMAGE_REFERENCE_HEALTH
 
 
 func on_hit_landed(heavy: bool) -> void:
@@ -176,10 +198,11 @@ func _physics_process(delta: float) -> void:
 	if _run_toggled and _read_move_input().length() < MOVE_DEADZONE:
 		_run_toggled = false
 	if not is_dead:
+		var regen_delta := delta * get_energy_regen_factor()
 		if not _drain_for_running(delta) and not _drain_for_blocking(delta):
-			stamina.regenerate(delta)
+			stamina.regenerate(regen_delta)
 		if mana:
-			mana.regenerate(delta)
+			mana.regenerate(regen_delta)
 	_track_attack_hold(delta)
 	_keep_sustaining()
 	_track_interact_hold(delta)
@@ -189,6 +212,9 @@ func _physics_process(delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if _is_spectating() and event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED and not Settings.uses_gamepad():
+		_rotate_camera(event.relative * BASE_MOUSE_SENSITIVITY * Settings.mouse_sensitivity)
+		return
 	if not is_multiplayer_authority() or input_locked or not state_machine.current_state.accepts_input():
 		return
 	var has_control := _has_control()
@@ -237,9 +263,9 @@ static func peer_can_reach(tree: SceneTree, peer_id: int, point: Vector3, reach:
 	return adventurer.global_position.distance_to(point) <= reach
 
 
-## só os aventureiros ganham a vida a mais por tentativas; os mortos-vivos ficam com a deles
-func get_max_health() -> float:
-	return super() + RunState.extra_health()
+## só os aventureiros ganham a proteção por tentativas; os mortos-vivos ficam sem ela
+func _extra_protection() -> float:
+	return RunState.extra_protection()
 
 
 func set_display_name(display_name: String) -> void:
@@ -260,6 +286,7 @@ func _allow_friendly_fire() -> void:
 
 
 func _on_revived() -> void:
+	camera_subject = null
 	state_machine.change_state("Idle")
 	stamina.refill()
 	if mana:
@@ -278,7 +305,7 @@ func next_ability() -> void:
 
 
 func can_use(item: QuickItem) -> bool:
-	return item.heal_amount > 0.0 or (item.mana_amount > 0.0 and mana != null)
+	return item.heal_fraction > 0.0 or (item.mana_amount > 0.0 and mana != null)
 
 
 ## com a vida e a mana cheias o item nao e gasto
@@ -286,12 +313,12 @@ func use_item() -> bool:
 	var item := inventory.selected()
 	if item == null or is_dead:
 		return false
-	var restores_health := item.heal_amount > 0.0 and health < get_max_health()
+	var restores_health := item.heal_fraction > 0.0 and health < get_max_health()
 	var restores_mana := item.mana_amount > 0.0 and mana != null and mana.current < mana.maximum
 	if not (restores_health or restores_mana):
 		return false
 	if restores_health:
-		heal(item.heal_amount)
+		heal(get_max_health() * item.heal_fraction)
 	if restores_mana:
 		mana.restore(item.mana_amount)
 	inventory.take(item)
@@ -545,6 +572,10 @@ func wants_to_run() -> bool:
 
 func _update_animation(direction: Vector3) -> void:
 	state_machine.step(direction)
+
+
+func _is_spectating() -> bool:
+	return is_dead and is_multiplayer_authority() and is_instance_valid(camera_subject)
 
 
 func _rotate_camera(amount: Vector2) -> void:

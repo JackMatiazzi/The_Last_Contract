@@ -37,6 +37,7 @@ bone_name = "handslot.r"
 bone_idx = 13
 
 [node name="Skeleton_Blade" parent="Model/Skeleton_Minion/Rig/Skeleton3D/handslot_r" index="0" unique_id=18533206 instance=ExtResource("3_weapon")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0)
 
 [node name="MeleeAttack" type="Node3D" parent="Model" index="1" unique_id=1888412837 node_paths=PackedStringArray("sound")]
 script = ExtResource("5_attack")
