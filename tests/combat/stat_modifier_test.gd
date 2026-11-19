@@ -28,7 +28,7 @@ func test_the_sharp_blade_card_says_what_it_gives() -> void:
 
 
 func test_new_blessing_effects_describe_themselves() -> void:
-	assert_str(_modifier(StatModifier.Stat.NOISE, -0.3).describe()).is_equal("-30% de barulho")
+	assert_str(_modifier(StatModifier.Stat.NOISE, -0.3).describe()).is_equal("-30% de barulho: os mortos-vivos só te ouvem e acordam mais perto")
 	assert_str(_modifier(StatModifier.Stat.ENERGY_REGEN, 0.25).describe()).is_equal("+25% de recuperação de energia")
 	assert_str(_modifier(StatModifier.Stat.LIFESTEAL, 0.02).describe()).is_equal("cura 2% da vida a cada golpe acertado")
 	assert_str(_modifier(StatModifier.Stat.THORNS, 0.25).describe()).is_equal("devolve 25% do dano recebido")

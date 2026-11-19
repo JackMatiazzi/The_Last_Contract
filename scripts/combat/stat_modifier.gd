@@ -23,7 +23,7 @@ func describe() -> String:
 		Stat.MAX_HEALTH_PERCENT:
 			return "%+d%% de vida máxima" % roundi(amount * 100.0)
 		Stat.NOISE:
-			return "%+d%% de barulho" % roundi(amount * 100.0)
+			return "%+d%% de barulho: os mortos-vivos só te ouvem e acordam mais perto" % roundi(amount * 100.0)
 		Stat.ENERGY_REGEN:
 			return "%+d%% de recuperação de energia" % roundi(amount * 100.0)
 		Stat.LIFESTEAL:
