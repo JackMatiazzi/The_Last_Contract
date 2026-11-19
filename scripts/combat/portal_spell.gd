@@ -6,6 +6,8 @@ extends Attack
 const MAX_DISTANCE := 15.0
 const GROUND_PROBE := 4.0
 const WORLD_LAYER := 1
+## o caminho a pé precisa chegar a menos disso do ponto: topo de muralha e telhado são ilhas sem acesso
+const MAX_WALK_GAP := 1.0
 
 @export var portal_scene: PackedScene
 
@@ -60,7 +62,18 @@ func _ground_spot(attacker: Character) -> Variant:
 	_ground_query.from = target + Vector3.UP * GROUND_PROBE
 	_ground_query.to = target + Vector3.DOWN * GROUND_PROBE * 2.0
 	var hit := attacker.get_world_3d().direct_space_state.intersect_ray(_ground_query)
-	return hit.position if hit else null
+	if not hit or not _walkable_from(attacker, hit.position):
+		return null
+	return hit.position
+
+
+# o portal encurta caminho, não abre caminho novo: só vale onde o mago chegaria andando
+func _walkable_from(attacker: Character, spot: Vector3) -> bool:
+	var map := attacker.get_world_3d().navigation_map
+	if not NavigationServer3D.map_get_closest_point_owner(map, spot).is_valid():
+		return true
+	var path := NavigationServer3D.map_get_path(map, attacker.global_position, spot, true)
+	return not path.is_empty() and path[path.size() - 1].distance_to(spot) <= MAX_WALK_GAP
 
 
 @rpc("any_peer", "reliable")

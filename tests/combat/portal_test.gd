@@ -289,3 +289,17 @@ func test_a_shot_that_does_not_cross_a_portal_still_ignores_allies() -> void:
 	await arena.wait_physics(20)
 
 	assert_float(rogue.health).is_equal(health)
+
+
+# topo de muralha entra no mapa de navegação como ilha: mirar lá em cima não abre portal
+func test_no_portal_on_top_of_a_wall_the_mage_cannot_walk_to() -> void:
+	arena.add_wall(Vector3(0, 1.5, 8), Vector3(12, 3, 4))
+	await arena.bake_navigation()
+	_select_portal_spell()
+	var spell := mage.attack as PortalSpell
+
+	var on_wall: Variant = spell._walkable_from(mage, Vector3(0, 3, 8))
+	var on_ground: Variant = spell._walkable_from(mage, Vector3(0, 0, -6))
+
+	assert_bool(on_wall).is_false()
+	assert_bool(on_ground).is_true()

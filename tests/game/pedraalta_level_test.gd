@@ -231,3 +231,17 @@ func test_the_same_seed_draws_the_same_chests_on_every_machine() -> void:
 	var second: Array = draw.call()
 
 	assert_array(first).is_equal(second)
+
+
+# o portal do mago sobe terraço, mas não põe ninguém em cima da muralha nem do paredão norte
+func test_the_portal_reaches_terraces_but_not_the_walls() -> void:
+	await _wait_for_navigation()
+	var mage := (load("res://scenes/characters/adventurers/mage.tscn") as PackedScene).instantiate() as Adventurer
+	level.add_child(mage)
+	mage.global_position = Vector3(0, 0, 30)
+	var spell := PortalSpell.new()
+
+	assert_bool(spell._walkable_from(mage, Vector3(9, 6, -22))).is_true()
+	assert_bool(spell._walkable_from(mage, Vector3(-23.5, 18, -9))).is_false()
+	assert_bool(spell._walkable_from(mage, Vector3(0, 20, -71.5))).is_false()
+	spell.free()

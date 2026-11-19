@@ -272,3 +272,20 @@ func test_the_swordsman_never_waits_behind_a_class_gate() -> void:
 	for spot: Marker3D in _map().get_node("PontosDoEspadachim").find_children("*", "Marker3D", false, false):
 		for room: AABB in gated_rooms:
 			assert_bool(room.has_point(spot.global_position)).override_failure_message(spot.name).is_false()
+
+
+# a grade fecha a biblioteca para o corpo, mas o portal do mago precisa poder abrir lá dentro
+func test_the_portal_can_open_inside_the_closed_library() -> void:
+	var map := _map().get_world_3d().navigation_map
+	var inside := (_mechanism("AlavancaBiblioteca") as Node3D).global_position
+	for frame in 60:
+		if NavigationServer3D.map_get_closest_point(map, inside).distance_to(inside) < 2.0:
+			break
+		await get_tree().physics_frame
+	var spell := PortalSpell.new()
+	var floor_inside := NavigationServer3D.map_get_closest_point(map, inside)
+
+	var walkable := spell._walkable_from(session.player, floor_inside)
+	spell.free()
+
+	assert_bool(walkable).is_true()
