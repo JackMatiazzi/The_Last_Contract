@@ -228,8 +228,15 @@ func _on_health_changed(current: float, maximum: float) -> void:
 		_trail_fall = create_tween()
 		_trail_fall.tween_interval(TRAIL_DELAY)
 		_trail_fall.tween_property(health_trail, "value", current, TRAIL_TIME)
-	health_label.text = "%d / %d" % [roundi(current), roundi(maximum)]
+	health_label.text = health_percent_text(current, maximum)
 
+
+## vivo com menos de 1% mostra as casas decimais: arredondar dava "0%" para quem ainda estava de pé
+static func health_percent_text(current: float, maximum: float) -> String:
+	var percent := current / maxf(maximum, 0.001) * 100.0
+	if current > 0.0 and percent < 1.0:
+		return ("%.2f%%" % percent).replace(".", ",")
+	return "%d%%" % roundi(percent)
 
 ## so o nome e os acumulos; o efeito de cada uma fica na pausa
 func _show_buffs() -> void:

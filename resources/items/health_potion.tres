@@ -7,4 +7,4 @@
 script = ExtResource("1_item")
 icon = ExtResource("icon_potion")
 title = "Poção de vida"
-heal_amount = 3.0
+heal_fraction = 0.2

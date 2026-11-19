@@ -36,7 +36,7 @@ func test_necromancer_is_a_tough_caster() -> void:
 	arena = TestArena.new(self)
 	var boss := arena.spawn(NECROMANCER, Vector3.ZERO)
 
-	assert_float(boss.get_max_health()).is_equal(30.0)
+	assert_float(boss.get_max_health()).is_equal(60.0)
 	assert_object(boss.attack).is_instanceof(RangedAttack)
 	assert_int((boss.attack as RangedAttack).target_layers).is_equal(2)
 
@@ -85,7 +85,7 @@ func test_a_minion_whose_body_is_gone_no_longer_counts() -> void:
 	var boss := arena.spawn(NECROMANCER, Vector3.ZERO) as Enemy
 	var summoner := boss.get_node("Summoner") as Summoner
 	await arena.wait_physics(2)
-	summoner._raise_minions(PackedVector3Array([Vector3(3, 0, 0), Vector3(-3, 0, 0), Vector3(0, 0, 3)]), 0)
+	summoner._raise_minions(PackedVector3Array([Vector3(3, 0, 0), Vector3(-3, 0, 0), Vector3(0, 0, 3)]), 0, PackedInt32Array([-1, -1, -1]))
 	await arena.wait_physics(2)
 
 	summoner.minions[0].free()
@@ -99,7 +99,7 @@ func test_after_a_body_is_gone_he_summons_up_to_the_limit_again() -> void:
 	var boss := arena.spawn(NECROMANCER, Vector3.ZERO) as Enemy
 	var summoner := boss.get_node("Summoner") as Summoner
 	await arena.wait_physics(2)
-	summoner._raise_minions(PackedVector3Array([Vector3(3, 0, 0), Vector3(-3, 0, 0), Vector3(0, 0, 3)]), 0)
+	summoner._raise_minions(PackedVector3Array([Vector3(3, 0, 0), Vector3(-3, 0, 0), Vector3(0, 0, 3)]), 0, PackedInt32Array([-1, -1, -1]))
 	await arena.wait_physics(2)
 	summoner.minions[0].free()
 
@@ -149,15 +149,33 @@ func _until(condition: Callable, seconds: float) -> bool:
 	return condition.call()
 
 
+# sem ninguem descer pelo alcapao, a contagem acaba e o contrato fecha com a vitoria
 func test_defeating_the_necromancer_wins_the_contract() -> void:
 	var level := await _level_with_patrols(1)
 	var session := level.get_node("GameSession") as GameSession
 	var victory := level.get_node("VictoryScreen") as VictoryScreen
+	session.trapdoor_time = 1.0
 	for member in (level.get_node("Encounters").find_children("*", "EnemyGroup", false, false)[0] as EnemyGroup).members():
 		member.take_damage(99.0)
 	await await_idle_frame()
 
 	session.boss.take_damage(99.0)
 	assert_bool(victory.visible).is_false()
-	assert_bool(await _until(func() -> bool: return victory.visible, GameSession.VICTORY_DELAY + 3.0)).is_true()
+	assert_object(level.find_child("Alcapao", true, false)).is_not_null()
+	assert_bool(await _until(func() -> bool: return victory.visible, session.trapdoor_time + 3.0)).is_true()
 	assert_str(victory.summary_label.text).contains("tentativa I")
+
+
+# o Necromante levanta uma tropa de verdade: dois esqueletos de espada, um mago e um arqueiro
+func test_the_necromancer_raises_two_swordsmen_a_mage_and_an_archer() -> void:
+	arena = TestArena.new(self)
+	await arena.bake_navigation()
+	var player := arena.spawn(TestArena.KNIGHT, Vector3(0, 0, 9))
+	var boss := await _hunting_necromancer(player, 0.8)
+	var summoner := boss.get_node("Summoner") as Summoner
+
+	await arena.wait_seconds(2.5)
+
+	var kinds: Array = summoner.minions.map(func(minion: Enemy) -> String: return minion.scene_file_path.get_file())
+	kinds.sort()
+	assert_array(kinds).is_equal(["skeleton_archer.tscn", "skeleton_mage.tscn", "skeleton_minion.tscn", "skeleton_minion.tscn"])

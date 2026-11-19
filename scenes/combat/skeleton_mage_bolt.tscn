@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/combat/necro_bolt.tscn" id="1_bolt"]
+
+[node name="SkeletonMageBolt" instance=ExtResource("1_bolt")]
+max_distance = 6.91

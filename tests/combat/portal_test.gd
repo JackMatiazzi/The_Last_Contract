@@ -83,7 +83,8 @@ func test_walking_into_a_portal_comes_out_of_the_other() -> void:
 	assert_float(mage.global_position.distance_to(exit.global_position)).is_less(2.0)
 
 
-func test_skeletons_do_not_travel() -> void:
+# os mortos-vivos também atravessam: o portal vira armadilha e atalho para os dois lados
+func test_skeletons_travel_through_the_portal_too() -> void:
 	var entry := PORTAL.instantiate() as Portal
 	var exit := PORTAL.instantiate() as Portal
 	arena.root.add_child(entry)
@@ -95,7 +96,27 @@ func test_skeletons_do_not_travel() -> void:
 	var skeleton := arena.spawn(TestArena.SKELETON, Vector3(-6, 0, 0))
 	await arena.wait_physics(4)
 
-	assert_float(skeleton.global_position.distance_to(Vector3(-6, 0, 0))).is_less(1.0)
+	assert_float(skeleton.global_position.distance_to(exit.global_position)).is_less(2.0)
+
+
+# elite e Necromante não atravessam: o portal é rota de fuga, não traz o perigo junto
+func test_elites_and_the_boss_stay_on_their_side() -> void:
+	var entry := PORTAL.instantiate() as Portal
+	var exit := PORTAL.instantiate() as Portal
+	arena.root.add_child(entry)
+	arena.root.add_child(exit)
+	entry.global_position = Vector3(-6, 0, 0)
+	exit.global_position = Vector3(12, 0, 0)
+	entry.link = exit
+	exit.link = entry
+	var elite := arena.spawn("res://scenes/characters/enemies/skeleton_elite.tscn", Vector3(-6, 0, 0))
+	var boss := arena.spawn("res://scenes/characters/enemies/necromancer.tscn", Vector3(-6, 0, 0.4))
+	elite.ai_enabled = false
+	boss.ai_enabled = false
+	await arena.wait_physics(4)
+
+	assert_float(elite.global_position.distance_to(exit.global_position)).is_greater(10.0)
+	assert_float(boss.global_position.distance_to(exit.global_position)).is_greater(10.0)
 
 
 func test_coming_out_does_not_send_you_straight_back() -> void:
@@ -228,9 +249,9 @@ func test_a_portal_without_a_pair_lets_the_shot_go_straight() -> void:
 
 
 func test_the_bar_above_the_portal_empties_as_it_closes() -> void:
-	var portal := PORTAL.instantiate() as Portal
+	var pair := _linked_pair(Vector3(0, 0, -4), Vector3(8, 0, 0))
+	var portal := pair[0]
 	portal.lifetime = 1.0
-	arena.root.add_child(portal)
 	var full := portal.time_fill.region_rect.size.x
 
 	for i in 30:
@@ -238,3 +259,67 @@ func test_the_bar_above_the_portal_empties_as_it_closes() -> void:
 
 	assert_float(portal.time_left_fraction()).is_less(1.0)
 	assert_float(portal.time_fill.region_rect.size.x).is_less(full)
+
+
+
+# o tempo só corre com o par ligado: quem põe o primeiro portal tem tempo para escolher o segundo
+func test_a_lone_portal_does_not_start_closing() -> void:
+	var portal := PORTAL.instantiate() as Portal
+	portal.lifetime = 0.5
+	arena.root.add_child(portal)
+
+	await arena.wait_seconds(0.8)
+
+	assert_bool(is_instance_valid(portal)).is_true()
+	assert_float(portal.time_left_fraction()).is_equal(1.0)
+
+
+func test_the_pair_starts_closing_once_the_second_portal_links() -> void:
+	var pair := _linked_pair(Vector3(0, 0, -4), Vector3(8, 0, 0))
+	pair[0].lifetime = 0.5
+	pair[1].lifetime = 0.5
+
+	await arena.wait_seconds(0.3)
+
+	assert_float(pair[0].time_left_fraction()).is_less(1.0)
+	assert_float(pair[1].time_left_fraction()).is_less(1.0)
+
+
+# o tiro de um aventureiro que atravessa o portal pode acertar outro aventureiro do outro lado
+func test_a_shot_through_the_portal_can_hit_an_ally_on_the_other_side() -> void:
+	var rogue := arena.spawn(TestArena.ROGUE, Vector3(12, 0, -2.5)) as Adventurer
+	_linked_pair(Vector3(0, 0, -4), Vector3(12, 0, 0))
+	await arena.wait_physics(3)
+	var health := rogue.health
+
+	var bolt := _fire(Vector3(0, 1.1, -2), Vector3.FORWARD)
+	bolt.collision_mask = 4
+	await arena.wait_physics(30)
+
+	assert_float(rogue.health).is_less(health)
+
+
+func test_a_shot_that_does_not_cross_a_portal_still_ignores_allies() -> void:
+	var rogue := arena.spawn(TestArena.ROGUE, Vector3(0, 0, -3)) as Adventurer
+	await arena.wait_physics(3)
+	var health := rogue.health
+
+	var bolt := _fire(Vector3(0, 1.1, -1), Vector3.FORWARD)
+	bolt.collision_mask = 4
+	await arena.wait_physics(20)
+
+	assert_float(rogue.health).is_equal(health)
+
+
+# topo de muralha entra no mapa de navegação como ilha: mirar lá em cima não abre portal
+func test_no_portal_on_top_of_a_wall_the_mage_cannot_walk_to() -> void:
+	arena.add_wall(Vector3(0, 1.5, 8), Vector3(12, 3, 4))
+	await arena.bake_navigation()
+	_select_portal_spell()
+	var spell := mage.attack as PortalSpell
+
+	var on_wall: Variant = spell._walkable_from(mage, Vector3(0, 3, 8))
+	var on_ground: Variant = spell._walkable_from(mage, Vector3(0, 0, -6))
+
+	assert_bool(on_wall).is_false()
+	assert_bool(on_ground).is_true()

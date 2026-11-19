@@ -16,6 +16,7 @@ radius = 2.1
 
 [node name="Barbarian" node_paths=PackedStringArray("animation_player", "attack", "secondary_attack", "sustained_attack") instance=ExtResource("1_adventurer")]
 heavy_cost = 50.0
+roars = true
 animation_player = NodePath("Model/Barbarian/AnimationPlayer")
 attack = NodePath("Model/AxeAttack")
 secondary_attack = NodePath("Model/OffhandChop")
@@ -37,6 +38,9 @@ heavy_animation = "2H_Melee_Attack_Spin"
 heavy_animation_speed = 1.15
 heavy_impact_delay = 0.62
 heavy_cooldown_multiplier = 2.7
+breaks_walls = true
+heavy_launch_speed = 11.0
+heavy_launch_lift = 4.5
 
 [node name="Hitbox" type="Area3D" parent="Model/AxeAttack"]
 collision_layer = 0

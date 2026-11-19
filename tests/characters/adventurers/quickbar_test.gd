@@ -35,7 +35,7 @@ func test_holding_interact_drinks_the_selected_potion() -> void:
 	await arena.send_action("interact")
 	await arena.wait_seconds(Adventurer.DRINK_HOLD_TIME + 0.15)
 
-	assert_float(knight.health).is_equal(5.0 + HEALTH_POTION.heal_amount)
+	assert_float(knight.health).is_equal_approx(5.0 + knight.get_max_health() * 0.2, 0.001)
 	assert_object(knight.inventory.selected()).is_null()
 
 
@@ -227,3 +227,22 @@ func test_without_a_right_button_ability_the_left_slot_disappears_but_keeps_its_
 
 	assert_float(hud.secondary_slot.self_modulate.a).is_equal(0.0)
 	assert_bool(hud.secondary_slot.visible).is_true()
+
+
+# a poção cura uma parte da vida máxima: quem tem mais vida recupera mais
+func test_the_potion_heals_a_fifth_of_max_health() -> void:
+	var sturdy := Buff.new()
+	var modifier := StatModifier.new()
+	modifier.stat = StatModifier.Stat.MAX_HEALTH
+	modifier.amount = 2.0
+	sturdy.modifiers.append(modifier)
+	RunState.buffs.append(sturdy)
+	var hearty := arena.spawn(TestArena.KNIGHT, Vector3.ZERO) as Adventurer
+	await arena.wait_physics(2)
+	hearty.take_damage(8.0)
+	hearty.inventory.add(HEALTH_POTION)
+	var before := hearty.health
+
+	hearty.use_item()
+
+	assert_float(hearty.health - before).is_equal_approx(12.0 * 0.2, 0.001)

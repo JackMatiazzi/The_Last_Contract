@@ -118,3 +118,33 @@ func test_every_button_clicks() -> void:
 	button.pressed.emit()
 
 	assert_bool(UiSounds.click.playing).is_true()
+
+
+# o analógico do controle levava o foco ao botão do menu de pausa fechado e tocava o som do menu andando
+func _button_in_layer(layer_visible: bool) -> Button:
+	var layer: CanvasLayer = auto_free(CanvasLayer.new())
+	layer.visible = layer_visible
+	var button := Button.new()
+	layer.add_child(button)
+	add_child(layer)
+	UiSounds.focus.stop()
+	var press := InputEventJoypadButton.new()
+	press.pressed = true
+	UiSounds._input(press)
+	return button
+
+
+func test_focus_on_a_button_of_a_closed_menu_makes_no_sound() -> void:
+	var button := _button_in_layer(false)
+
+	button.focus_entered.emit()
+
+	assert_bool(UiSounds.focus.playing).is_false()
+
+
+func test_focus_on_a_button_of_an_open_menu_still_sounds() -> void:
+	var button := _button_in_layer(true)
+
+	button.focus_entered.emit()
+
+	assert_bool(UiSounds.focus.playing).is_true()

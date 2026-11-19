@@ -55,8 +55,9 @@ layout_mode = 2
 horizontal_alignment = 1
 
 [node name="Hint" type="Label" parent="Center/Panels/DeathPanel"]
+unique_name_in_owner = true
 layout_mode = 2
-text = "O contrato ainda pode ser cumprido. Reviver traz uma bênção, e os mortos-vivos recebem a mesma."
+text = "O contrato ainda pode ser cumprido. Reviver traz uma bênção, e os mortos-vivos recebem 20% dela."
 horizontal_alignment = 1
 autowrap_mode = 3
 
@@ -141,9 +142,10 @@ text = "Escolha uma bênção"
 horizontal_alignment = 1
 
 [node name="Warning" type="Label" parent="Center/Panels/ChoicePanel"]
+unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"DangerLabel"
-text = "Os mortos-vivos receberão a mesma bênção."
+text = "Os mortos-vivos receberão 20% da bênção."
 horizontal_alignment = 1
 
 [node name="Cards" type="HBoxContainer" parent="Center/Panels/ChoicePanel"]
@@ -156,7 +158,7 @@ theme_override_constants/separation = 28
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
 script = ExtResource("hint_script")
-text = "Clique em uma carta ou use as teclas 1 e 2"
-keyboard_text = "Clique em uma carta ou use as teclas 1 e 2"
+text = "Clique em uma carta ou use as teclas numéricas"
+keyboard_text = "Clique em uma carta ou use as teclas numéricas"
 gamepad_text = "Escolha com o direcional e confirme com A"
 horizontal_alignment = 1

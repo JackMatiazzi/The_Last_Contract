@@ -17,8 +17,14 @@ const ANIM_DEATH := "Death_A"
 const ANIM_BLEND := 0.2
 const HIT_RECOVERY := 0.3
 const MIN_STAT_FACTOR := 0.2
+## Espinhos de Ferro não devolvem migalhas: os 5% dos mortos-vivos só respondem a golpes de 2 ou mais
+const MIN_REFLECTED_DAMAGE := 0.1
 ## em rede so quem tem autoridade simula; as outras maquinas seguem o estado enviado
 const NET_SEND_INTERVAL := 0.05
+## parado nao manda nada; de tempos em tempos repete o estado, para ninguem ficar com um antigo
+const NET_IDLE_RESEND := 1.0
+const NET_STILL_DISTANCE := 0.01
+const NET_STILL_ANGLE := 0.01
 const NET_FOLLOW_SPEED := 15.0
 ## salto de posicao maior que isso (portal, reviver longe) aparece de uma vez, sem deslizar pelo mapa
 const NET_SNAP_DISTANCE := 4.0
@@ -32,11 +38,18 @@ const REMOTE_REACH_SLACK := 1.5
 const KNOCKBACK_DECAY := 14.0
 ## o recuo cresce com o dano ate o golpe pesado comum; o rapido empurra pouco para nao quebrar o combo
 const KNOCKBACK_MAX_DAMAGE := 2.0
+## o arremesso do golpe pesado é medido num personagem de empurrão comum: quem empurra pouco (elite,
+## Necromante) voa pouco; os tetos impedem um pedido de outra máquina de jogar alguém longe demais
+const LAUNCH_REFERENCE_KNOCKBACK := 4.0
+const MAX_LAUNCH_SPEED := 14.0
+const MAX_LAUNCH_LIFT := 7.0
 ## pausa da animacao quando o golpe acerta: da peso ao impacto
 const HITSTOP := 0.06
 const HITSTOP_HEAVY := 0.11
 
 @export var max_health := 10.0
+## elite e chefe ficam do lado de cá: o portal do mago serve para fugir deles, não para trazê-los junto
+@export var crosses_portals := true
 @export var walk_speed := 4.0
 @export var run_speed := 7.5
 ## velocidade ganha por segundo ao andar
@@ -84,6 +97,9 @@ var _action_move_factor := 0.0
 var _holding_pose := false
 var _stride := 0.0
 var _net_send_left := 0.0
+var _net_idle_left := 0.0
+## ultimo estado mandado: posicao, giro, velocidade e chao
+var _net_sent := {}
 var _net_position := Vector3.ZERO
 var _net_yaw := 0.0
 var _net_on_floor := true
@@ -149,25 +165,63 @@ func take_damage(amount: float, source: Node3D = null) -> void:
 	if not is_multiplayer_authority():
 		_request_damage.rpc_id(get_multiplayer_authority(), amount, source.get_path() if source else NodePath())
 		return
-	# Verifica se o ataque foi bloqueado pela frente ou por habilidade de defesa
-	if source and _blocks(source):
+	if _can_be_parried(source) and _blocks(source):
 		_play(block_sound)
 		blocked.emit()
 		return
+	var hit := amount
+	amount = _incoming_damage(amount, source) * get_damage_taken_factor()
+	var dealt := minf(amount, health)
+	# o empurrão segue o golpe em pontos: não cresce com a vida máxima de quem apanha
+	_push_away_from(source, hit)
+	_lose_health(amount, source)
+	if not is_dead:
+		_react_to_hit()
+	_reflect_damage(source, dealt)
+
+
+func _lose_health(amount: float, source: Node3D) -> void:
 	_note_attacker(source, minf(amount, health))
-	_push_away_from(source, amount)
 	health = maxf(health - amount, 0.0)
 	health_changed.emit(health, get_max_health())
 	_share_health()
 	if health == 0.0:
 		die()
-		return
+
+
+func _react_to_hit() -> void:
 	_play(hurt_sound)
 	var now := Time.get_ticks_msec() / 1000.0
 	if _can_flinch() and now >= _flinch_ready_at:
 		_flinch_ready_at = now + flinch_guard
 		_on_flinch()
 		play_action(ANIM_HIT, 1.0, 0.0, HIT_RECOVERY)
+
+
+## Espinhos de Ferro: devolve parte do que de fato chegou, sem empurrão, susto nem espinho de volta
+func _reflect_damage(source: Node3D, dealt: float) -> void:
+	var back := dealt * get_stat_bonus(StatModifier.Stat.THORNS)
+	var attacker := source as Character
+	if back < MIN_REFLECTED_DAMAGE or attacker == null or attacker == self or attacker.is_dead:
+		return
+	attacker.take_reflected_damage(back, self)
+
+
+func take_reflected_damage(amount: float, source: Character) -> void:
+	if is_dead:
+		return
+	if not is_multiplayer_authority():
+		_request_reflected_damage.rpc_id(get_multiplayer_authority(), amount, source.get_path())
+		return
+	_lose_health(amount, source)
+	if not is_dead:
+		_play(hurt_sound)
+
+
+## dano que de fato chega, aplicado na máquina dona do personagem; por padrão, o valor do golpe
+func _incoming_damage(amount: float, _source: Node3D) -> float:
+	return amount
+
 
 ## Restaura pontos de vida do personagem até o limite máximo permitido.
 func heal(amount: float) -> void:
@@ -197,8 +251,13 @@ func get_display_name() -> String:
 ## Registra o atacante e a causa da morte no relatório individual de danos (DamageLog).
 func _note_attacker(source: Node3D, amount: float) -> void:
 	var attacker := source as Character
-	if attacker == null or attacker == self:
+	if attacker == self:
 		damage_log.note_hit(DamageLog.UNKNOWN_CAUSE, amount)
+		return
+	if attacker == null:
+		# armadilha e afins tem nome proprio; sem origem nenhuma vira ferimento
+		var cause: String = source.get_display_name() if source and source.has_method("get_display_name") else DamageLog.UNKNOWN_CAUSE
+		damage_log.note_hit(cause, amount)
 		return
 	var attacker_name := attacker.get_display_name()
 	var is_player := attacker is Adventurer
@@ -269,6 +328,11 @@ func _hold_pose_locally(animation: String) -> void:
 	animation_player.speed_scale = 1.0
 	animation_player.play(animation, ANIM_BLEND)
 
+## alcance em que os mortos-vivos ouvem ou acordam com este personagem; Pés de Lã diminui
+func get_noise_factor() -> float:
+	return maxf(1.0 + get_stat_bonus(StatModifier.Stat.NOISE), MIN_STAT_FACTOR)
+
+
 ## Retorna se o personagem está se movendo em alta velocidade ou executando uma ação ruidosa.
 func is_making_noise() -> bool:
 	var speed := Vector2(velocity.x, velocity.z).length()
@@ -287,11 +351,25 @@ func get_stat_bonus(stat: StatModifier.Stat) -> float:
 		for modifier in buff.modifiers:
 			if modifier.stat == stat:
 				total += modifier.amount
-	return total
+	return total * blessing_share()
+
+
+## parte de cada bênção que este personagem sente: os mortos-vivos e o mímico ficam com uma fração
+func blessing_share() -> float:
+	return RunState.enemy_blessing_share()
 
 ## Retorna a vida máxima calculada já com os modificadores dos buffs aplicados.
 func get_max_health() -> float:
-	return maxf(max_health + get_stat_bonus(StatModifier.Stat.MAX_HEALTH), 1.0)
+	var points := max_health + get_stat_bonus(StatModifier.Stat.MAX_HEALTH)
+	return maxf(points * (1.0 + get_stat_bonus(StatModifier.Stat.MAX_HEALTH_PERCENT)), 1.0)
+
+## quanto de cada golpe chega: Couraça e Sangue Frio diminuem, Frenesi e Fúria Cega aumentam
+func get_damage_taken_factor() -> float:
+	return maxf(1.0 + get_stat_bonus(StatModifier.Stat.DAMAGE_TAKEN) - _extra_protection(), MIN_STAT_FACTOR)
+
+
+func _extra_protection() -> float:
+	return 0.0
 
 ## Retorna o ponto no mundo 3D para onde a mira/frente do personagem aponta.
 func get_aim_point() -> Vector3:
@@ -315,9 +393,39 @@ func _push_away_from(source: Node3D, amount: float) -> void:
 		return
 	knockback_velocity = away.normalized() * knockback * clampf(amount / KNOCKBACK_MAX_DAMAGE, 0.5, 1.0)
 
+## Arremessa para longe de quem bateu e para cima (golpe pesado do Knight e do Barbarian).
+## Quem decide é a máquina dona do personagem, como o dano.
+func launch_away_from(source: Node3D, speed: float, lift: float) -> void:
+	if is_dead or source == null:
+		return
+	if not is_multiplayer_authority():
+		_request_launch.rpc_id(get_multiplayer_authority(), speed, lift, source.get_path())
+		return
+	# quem defendeu o golpe com o escudo não voa
+	if _blocks(source):
+		return
+	var away := global_position - source.global_position
+	away.y = 0.0
+	if away.length_squared() < 0.0001:
+		return
+	var weight := clampf(knockback / LAUNCH_REFERENCE_KNOCKBACK, 0.0, 1.0)
+	knockback_velocity = away.normalized() * minf(speed, MAX_LAUNCH_SPEED) * weight
+	velocity.y = minf(lift, MAX_LAUNCH_LIFT) * weight
+
+
+@rpc("any_peer", "reliable")
+func _request_launch(speed: float, lift: float, source_path: NodePath) -> void:
+	var source := get_node_or_null(source_path) as Node3D
+	if accepts_hit_from(multiplayer.get_remote_sender_id(), source):
+		launch_away_from(source, speed, lift)
+
+
 ## Chamado em quem bateu quando o golpe encontra um alvo.
 func on_hit_landed(heavy: bool) -> void:
 	freeze_animation(HITSTOP_HEAVY if heavy else HITSTOP)
+	var drain := get_stat_bonus(StatModifier.Stat.LIFESTEAL)
+	if drain > 0.0:
+		heal(get_max_health() * drain)
 
 ## Para a animacao por um instante; so visual, roda em cada maquina.
 func freeze_animation(seconds: float) -> void:
@@ -348,6 +456,11 @@ func _can_flinch() -> bool:
 ## Método virtual a ser sobrescrito para verificar mecânicas de defesa/escudo.
 func _blocks(_source: Node3D) -> bool:
 	return false
+
+
+# golpe de personagem ou dardo de armadilha vem de frente e da para aparar; espinho sobe do chao
+func _can_be_parried(source: Node3D) -> bool:
+	return source is Character or source is DartTrap
 
 
 func _begin_action(move_factor: float, cancel_after: float, holding: bool) -> void:
@@ -443,10 +556,28 @@ func _send_network_state(delta: float) -> void:
 	if not Net.is_online() or Net.waiting_for_peers:
 		return
 	_net_send_left -= delta
+	_net_idle_left -= delta
 	if _net_send_left > 0.0:
 		return
 	_net_send_left = NET_SEND_INTERVAL
+	if not has_new_net_state() and _net_idle_left > 0.0:
+		return
+	_net_idle_left = NET_IDLE_RESEND
+	_remember_net_state()
 	_net_state.rpc(global_position, model.rotation.y, velocity, is_on_floor())
+
+
+func has_new_net_state() -> bool:
+	if _net_sent.is_empty():
+		return true
+	return global_position.distance_to(_net_sent.position) > NET_STILL_DISTANCE \
+		or absf(angle_difference(model.rotation.y, _net_sent.yaw)) > NET_STILL_ANGLE \
+		or not velocity.is_equal_approx(_net_sent.velocity) \
+		or is_on_floor() != _net_sent.on_floor
+
+
+func _remember_net_state() -> void:
+	_net_sent = {"position": global_position, "yaw": model.rotation.y, "velocity": velocity, "on_floor": is_on_floor()}
 
 
 # o corpo morto fica onde caiu; o sumico do cadaver roda em cada maquina
@@ -498,6 +629,12 @@ func _request_damage(amount: float, source_path: NodePath) -> void:
 	var source := get_node_or_null(source_path) as Node3D if not source_path.is_empty() else null
 	if is_valid_remote_amount(amount) and accepts_hit_from(multiplayer.get_remote_sender_id(), source):
 		take_damage(amount, source)
+
+@rpc("any_peer", "reliable")
+func _request_reflected_damage(amount: float, source_path: NodePath) -> void:
+	var source := get_node_or_null(source_path) as Character
+	if source and is_valid_remote_amount(amount) and accepts_hit_from(multiplayer.get_remote_sender_id(), source):
+		take_reflected_damage(amount, source)
 
 ## RPC recebido para processar solicitação de reviver enviada por um aliado.
 @rpc("any_peer", "reliable")

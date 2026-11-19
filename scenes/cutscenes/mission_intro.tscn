@@ -119,7 +119,7 @@ _data = {
 
 [node name="MissionIntro" type="Node3D" node_paths=PackedStringArray("timeline", "actor_spots", "party_spots", "party_status", "skip_hint")]
 script = ExtResource("1_cutscene")
-next_scene = "res://scenes/levels/village_level.tscn"
+next_scene = "res://scenes/levels/pedraalta_level.tscn"
 timeline = NodePath("Timeline")
 actor_spots = [NodePath("TravelerSpot")]
 actor_animations = PackedStringArray("Walking_A")

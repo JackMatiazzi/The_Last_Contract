@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="Buff" format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/stat_modifier.gd" id="1_mod"]
+[ext_resource type="Script" path="res://scripts/combat/buff.gd" id="2_buff"]
+
+[sub_resource type="Resource" id="Resource_vigor"]
+script = ExtResource("1_mod")
+stat = 5
+amount = 0.2
+
+[resource]
+script = ExtResource("2_buff")
+title = "Vigor"
+flavor = "Pão preto e cerveja da última taverna aberta."
+modifiers = Array[ExtResource("1_mod")]([SubResource("Resource_vigor")])

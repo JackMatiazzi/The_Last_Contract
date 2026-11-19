@@ -1,0 +1,23 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/projectile.gd" id="1_projectile"]
+[ext_resource type="PackedScene" path="res://scenes/combat/stuck_arrow.tscn" id="2_impact"]
+[ext_resource type="PackedScene" path="res://assets/kaykit_skeletons/accessories/Skeleton_Arrow.gltf" id="3_arrow"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_arrow"]
+radius = 0.15
+
+[node name="SkeletonArrow" type="Area3D"]
+editor_description = "Flecha do arqueiro esqueleto: mais rápida que a magia, voa até 6 m, o alcance do Rogue."
+collision_layer = 0
+monitorable = false
+script = ExtResource("1_projectile")
+impact_scene = ExtResource("2_impact")
+speed = 22.0
+max_distance = 6.0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("SphereShape3D_arrow")
+
+[node name="Arrow" parent="." instance=ExtResource("3_arrow")]
+rotation = Vector3(1.5708, 0, 0)

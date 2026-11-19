@@ -9,6 +9,11 @@ const BREAK_RADIUS := 1.4
 
 ## vazio usa a mesma hitbox; o Barbarian troca o golpe a frente pelo giro em volta
 @export var heavy_hitbox: Area3D
+## golpe pesado arremessa o alvo: velocidade para trás e para cima (0 = só o empurrão comum)
+@export var heavy_launch_speed := 0.0
+@export var heavy_launch_lift := 0.0
+## so o giro pesado do Barbarian derruba parede rachada
+@export var breaks_walls := false
 
 var _wall_query := PhysicsRayQueryParameters3D.new()
 
@@ -25,15 +30,19 @@ func _perform(attacker: Character, total_damage: float, heavy: bool) -> void:
 	for body in strike.get_overlapping_bodies():
 		if body is Character and body != attacker and _has_clear_line(attacker, body):
 			body.take_damage(total_damage, attacker)
+			if heavy and heavy_launch_speed > 0.0:
+				body.launch_away_from(attacker, heavy_launch_speed, heavy_launch_lift)
 			body.freeze_animation(Character.HITSTOP_HEAVY if heavy else Character.HITSTOP)
 			landed = true
 	if landed:
 		attacker.on_hit_landed(heavy)
 	for area in strike.get_overlapping_areas():
-		if area is HealthPotion:
+		if area is Potion:
 			area.shatter()
 	if heavy:
 		get_tree().call_group(BreakableProps.GROUP, "break_near", _strike_center(strike), BREAK_RADIUS)
+		if breaks_walls:
+			get_tree().call_group(CrackedWall.GROUP, "break_near", _strike_center(strike), BREAK_RADIUS)
 
 
 func _has_clear_line(attacker: Character, target: Character) -> bool:

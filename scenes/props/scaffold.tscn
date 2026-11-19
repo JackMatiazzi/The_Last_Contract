@@ -1,79 +1,68 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene format=3 uid="uid://tpc5psk8anit"]
 
-[ext_resource type="PackedScene" path="res://assets/kaykit_dungeon/models/floor_foundation_allsides.gltf" id="1_r"]
-[ext_resource type="PackedScene" path="res://assets/kaykit_dungeon/models/floor_wood_large_dark.gltf" id="2_r"]
-[ext_resource type="PackedScene" path="res://assets/kaykit_dungeon/models/pillar.gltf" id="3_r"]
-[ext_resource type="PackedScene" path="res://assets/kaykit_dungeon/models/banner_patternA_red.gltf" id="4_r"]
-[ext_resource type="PackedScene" path="res://assets/kaykit_dungeon/models/torch_mounted.gltf" id="5_r"]
-[ext_resource type="PackedScene" path="res://scenes/cutscenes/executioner.tscn" id="7_r"]
+[ext_resource type="PackedScene" uid="uid://bi0tkwiv4g1vo" path="res://assets/kaykit_dungeon/models/floor_foundation_allsides.gltf" id="1_r"]
+[ext_resource type="PackedScene" uid="uid://pbxl8dxc2qi2" path="res://assets/kaykit_dungeon/models/floor_wood_large_dark.gltf" id="2_r"]
+[ext_resource type="PackedScene" uid="uid://jhfoprsdusnv" path="res://assets/kaykit_dungeon/models/pillar.gltf" id="3_r"]
+[ext_resource type="PackedScene" uid="uid://dddcs8sst75j0" path="res://assets/kaykit_dungeon/models/banner_patternA_red.gltf" id="4_r"]
+[ext_resource type="PackedScene" uid="uid://ct4dpn5bxe0vg" path="res://assets/kaykit_dungeon/models/torch_mounted.gltf" id="5_r"]
+[ext_resource type="PackedScene" uid="uid://hinn3ngyew5j" path="res://scenes/cutscenes/executioner.tscn" id="7_r"]
 
-[node name="Scaffold" type="Node3D"]
+[node name="Scaffold" type="Node3D" unique_id=1141177275]
 
-[node name="Base" parent="." instance=ExtResource("1_r")]
-position = Vector3(-1.1, 0, -1.1)
-scale = Vector3(1, 0.5, 1)
+[node name="Base" parent="." unique_id=1762384848 instance=ExtResource("1_r")]
+transform = Transform3D(1, 0, 0, 0, 0.5, 0, 0, 0, 1, -1.1, 0, -1.1)
 
-[node name="Base2" parent="." instance=ExtResource("1_r")]
-position = Vector3(-1.1, 0, 1.1)
-scale = Vector3(1, 0.5, 1)
+[node name="Base2" parent="." unique_id=93629965 instance=ExtResource("1_r")]
+transform = Transform3D(1, 0, 0, 0, 0.5, 0, 0, 0, 1, -1.1, 0, 1.1)
 
-[node name="Base3" parent="." instance=ExtResource("1_r")]
-position = Vector3(1.1, 0, -1.1)
-scale = Vector3(1, 0.5, 1)
+[node name="Base3" parent="." unique_id=561699414 instance=ExtResource("1_r")]
+transform = Transform3D(1, 0, 0, 0, 0.5, 0, 0, 0, 1, 1.1, 0, -1.1)
 
-[node name="Base4" parent="." instance=ExtResource("1_r")]
-position = Vector3(1.1, 0, 1.1)
-scale = Vector3(1, 0.5, 1)
+[node name="Base4" parent="." unique_id=901048711 instance=ExtResource("1_r")]
+transform = Transform3D(1, 0, 0, 0, 0.5, 0, 0, 0, 1, 1.1, 0, 1.1)
 
-[node name="Planks" parent="." instance=ExtResource("2_r")]
-position = Vector3(0, 1.05, 0)
-scale = Vector3(1.1, 1, 1.1)
+[node name="Planks" parent="." unique_id=468562556 instance=ExtResource("2_r")]
+transform = Transform3D(1.1, 0, 0, 0, 1, 0, 0, 0, 1.1, 0, 1.05, 0)
 
-[node name="PillarL" parent="." instance=ExtResource("3_r")]
-position = Vector3(-2.7, 0, -2)
-scale = Vector3(0.6, 1.2, 0.6)
+[node name="PillarL" parent="." unique_id=251720985 instance=ExtResource("3_r")]
+transform = Transform3D(0.6, 0, 0, 0, 1.2, 0, 0, 0, 0.6, -2.7, 0, -2)
 
-[node name="BannerL" parent="." instance=ExtResource("4_r")]
-position = Vector3(-2.7, 1, -1.98)
+[node name="BannerL" parent="." unique_id=1036195949 instance=ExtResource("4_r")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.7, 1, -1.98)
 
-[node name="TorchL" parent="." instance=ExtResource("5_r")]
-position = Vector3(-2.7, 3, -1.4)
+[node name="TorchL" parent="." unique_id=553638797 instance=ExtResource("5_r")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.7, 3, -1.4)
 
-[node name="TorchLightL" type="OmniLight3D" parent="."]
-position = Vector3(-2.7, 3.3, -1.0)
+[node name="TorchLightL" type="OmniLight3D" parent="." unique_id=2136812894]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.7, 3.3, -1)
 light_color = Color(1, 0.55, 0.25, 1)
 light_energy = 2.5
 shadow_enabled = true
 omni_range = 7.0
 
-[node name="PillarR" parent="." instance=ExtResource("3_r")]
-position = Vector3(2.7, 0, -2)
-scale = Vector3(0.6, 1.2, 0.6)
+[node name="PillarR" parent="." unique_id=663841346 instance=ExtResource("3_r")]
+transform = Transform3D(0.6, 0, 0, 0, 1.2, 0, 0, 0, 0.6, 2.7, 0, -2)
 
-[node name="BannerR" parent="." instance=ExtResource("4_r")]
-position = Vector3(2.7, 1, -1.98)
+[node name="BannerR" parent="." unique_id=1155734250 instance=ExtResource("4_r")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.7, 1, -1.98)
 
-[node name="TorchR" parent="." instance=ExtResource("5_r")]
-position = Vector3(2.7, 3, -1.4)
+[node name="TorchR" parent="." unique_id=968473478 instance=ExtResource("5_r")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.7, 3, -1.4)
 
-[node name="TorchLightR" type="OmniLight3D" parent="."]
-position = Vector3(2.7, 3.3, -1.0)
+[node name="TorchLightR" type="OmniLight3D" parent="." unique_id=482823672]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.7, 3.3, -1)
 light_color = Color(1, 0.55, 0.25, 1)
 light_energy = 2.5
 shadow_enabled = true
 omni_range = 7.0
 
-[node name="CondemnedSpot" type="Marker3D" parent="."]
-position = Vector3(0, 1.05, 0.4)
-scale = Vector3(0.8, 0.8, 0.8)
+[node name="CondemnedSpot" type="Marker3D" parent="." unique_id=332774638]
+transform = Transform3D(0.8, 0, 0, 0, 0.8, 0, 0, 0, 0.8, 0, 1.05, 0.4)
 
-[node name="Executioner" parent="." instance=ExtResource("7_r")]
-position = Vector3(1.1, 1.05, 0.4)
-rotation = Vector3(0, -1.5708, 0)
-scale = Vector3(0.8, 0.8, 0.8)
+[node name="Executioner" parent="." unique_id=1514742753 instance=ExtResource("7_r")]
+transform = Transform3D(-2.895992e-06, 0, -0.8, 0, 0.8, 0, 0.8, 0, -2.895992e-06, 1.1, 1.05, 0.4)
 
-[node name="FrontLight" type="OmniLight3D" parent="."]
-position = Vector3(0, 2.6, 2.4)
+[node name="FrontLight" type="OmniLight3D" parent="." unique_id=1000233208]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.6, 2.4)
 light_color = Color(1, 0.6, 0.35, 1)
 light_energy = 1.6
-omni_range = 5.0

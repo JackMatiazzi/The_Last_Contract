@@ -4,11 +4,26 @@ extends Node
 ## Gerencia a criação dos jogadores, fluxo de objetivos, invocação do chefe,
 ## captura/liberação do cursor do mouse, votação de bênçãos em caso de derrota e re-inicialização de tentativas.
 
+const SPECTATE_LINE := "Assistindo %s. Ataque para ver outro aliado."
 const EXECUTION := "res://scenes/cutscenes/execution.tscn"
+## tempo para ler o aviso do prazo antes da execução
+const CONTRACT_EXPIRED_DELAY := 3.0
 const MAIN_MENU := "res://scenes/ui/main_menu.tscn"
-## espera a animacao de morte do boss
-const VICTORY_DELAY := 2.5
+## depois da vitória o grupo volta à vila, e o Lorde cobra o contrato do jeito dele
+const EPILOGUE := "res://scenes/cutscenes/victory_epilogue.tscn"
+## Fase bônus: o alçapão que o Necromante deixa ao morrer leva até ela.
+const BONUS_LEVEL := "res://scenes/levels/calabouco_escondido_level.tscn"
+const TRAPDOOR := preload("res://scenes/world/trapdoor.tscn")
+## Segundos que o alçapão fica aberto. Se ninguém descer, o contrato fecha com a tela de vitória.
+const TRAPDOOR_TIME := 30.0
 const PLAYER_SPACING := 1.5
+## golpes guardados no evento de morte: mostram no painel como a morte aconteceu
+const HITS_ON_DEATH := 4
+const STAGE_NAMES := {
+	"res://scenes/levels/pedraalta_level.tscn": "Pedra Alta",
+	"res://scenes/levels/calabouco_escondido_level.tscn": "Calabouço",
+	"res://scenes/levels/village_level.tscn": "Vila",
+}
 
 ## so nas cenas de teste; com encounters o ponto e sorteado
 @export var player_spawn: Marker3D
@@ -28,7 +43,13 @@ var _groups_total := 0
 # peer_id -> indice da bencao votada; so o host conta
 var _votes := {}
 var _vote_paths := PackedStringArray()
+## o grupo caiu na última tentativa e o contrato venceu
+var contract_expired := false
 var _vote_open := false
+var _contract_ended := false
+var trapdoor_time := TRAPDOOR_TIME
+var _trapdoor: Trapdoor
+var _trapdoor_left := 0.0
 
 
 func _ready() -> void:
@@ -42,15 +63,44 @@ func _ready() -> void:
 	death_screen.gave_up.connect(_give_up)
 	death_screen.revive_chosen.connect(_cast_vote)
 	if victory_screen:
-		victory_screen.back_to_menu.connect(_back_to_menu)
+		victory_screen.back_to_menu.connect(_return_to_village)
 	Net.player_left.connect(_on_player_left)
+	player.died.connect(_log_death)
 	capture_cursor()
 	Net.report_level_loaded()
 	if RunState.attempt == 1:
 		hud.show_start_hint()
+	_log_attempt()
+
+
+## Nome da fase para o playtest e o painel: o nome legível quando a fase é conhecida, senão o nó raiz.
+func stage_name() -> String:
+	return STAGE_NAMES.get(get_parent().scene_file_path, get_parent().name)
+
+
+func _log_attempt() -> void:
+	if RunState.attempt == 1 and not Playtest.is_running():
+		Playtest.start_run(_adventurer_of(multiplayer.get_unique_id()).title, players.size(), get_parent().name)
+	Playtest.record("attempt_started", {"buffs": Array(RunState.buff_lines())})
+	if get_parent().scene_file_path == BONUS_LEVEL:
+		Playtest.record("dungeon_entered", {"stage": stage_name()})
+
+
+func _log_death() -> void:
+	var details := {"position": Playtest.position_of(player), "recap": player.damage_recap(), "enemy": player.damage_log.death_cause(), "stage": stage_name(), "hits": player.damage_log.last_hits(HITS_ON_DEATH)}
+	Playtest.record("player_died", details.merged(player.damage_log.totals()))
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	var watching := player.is_dead and is_instance_valid(player.camera_subject) and not pause_menu.visible
+	if watching and event.is_action_pressed("attack") and (Input.mouse_mode == Input.MOUSE_MODE_CAPTURED or Settings.uses_gamepad()):
+		hud.announce(_spectate_next())
+		get_viewport().set_input_as_handled()
+		return
+	if watching and event is InputEventMouseButton and event.pressed and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
+		capture_cursor()
+		get_viewport().set_input_as_handled()
+		return
 	# Impede interações de jogo se o jogador estiver morto ou menus estiverem abertos
 	if player.is_dead or pause_menu.visible or (victory_screen and victory_screen.visible):
 		return
@@ -81,12 +131,13 @@ func _spawn_players() -> void:
 		add_child(adventurer)
 		adventurer.set_display_name(Net.display_name(peer_id))
 		players.append(adventurer)
-		adventurer.died.connect(_on_player_died)
+		watch_player(adventurer)
 		if peer_id == multiplayer.get_unique_id():
 			player = adventurer
 	player.camera.make_current()
 	if encounters:
 		_track_groups(encounters.spawn_groups(spawn.global_position))
+		encounters.spawn_chests(peers.size())
 	hud.bind(player)
 
 ## Retorna a lista de IDs de rede dos jogadores na partida.
@@ -116,6 +167,7 @@ func _track_groups(groups: Array[EnemyGroup]) -> void:
 func _on_group_cleared() -> void:
 	_groups_left -= 1
 	_show_objective()
+	Playtest.record("group_cleared", {"groups_left": _groups_left})
 	if _groups_left == 0 and multiplayer.is_server():
 		_summon_boss.rpc()
 
@@ -137,30 +189,128 @@ func _summon_boss() -> void:
 	hud.show_boss(boss)
 	hud.set_objective("Derrote o Necromante")
 	hud.announce_boss("O Necromante despertou na praça")
+	Playtest.record("boss_summoned")
 
-## Chamado quando o chefe é derrotado para acionar a tela de vitória.
+## com o grupo inteiro morto junto com ele não abre alçapão: vale a votação de bênção
 func _on_boss_died() -> void:
 	hud.set_objective("")
-	await get_tree().create_timer(VICTORY_DELAY).timeout
-	if _all_players_dead():
+	Playtest.record("boss_killed")
+	if multiplayer.is_server() and not _all_players_dead():
+		open_trapdoor_at(boss.global_position)
+
+
+func open_trapdoor_at(spot: Vector3) -> void:
+	if multiplayer.is_server() and _trapdoor == null and not _contract_ended:
+		_net_open_trapdoor.rpc(spot)
+
+
+@rpc("authority", "call_local", "reliable")
+func _net_open_trapdoor(spot: Vector3) -> void:
+	if _trapdoor:
 		return
+	_trapdoor = TRAPDOOR.instantiate() as Trapdoor
+	_trapdoor.session = self
+	get_parent().add_child(_trapdoor)
+	_trapdoor.global_position = spot
+	_trapdoor_left = trapdoor_time
+	hud.announce("O Necromante caiu e abriu um alçapão no chão")
+	Playtest.record("trapdoor_opened")
+
+
+func _process(delta: float) -> void:
+	if _trapdoor == null or not _trapdoor.is_open:
+		return
+	_trapdoor_left = maxf(_trapdoor_left - delta, 0.0)
+	hud.set_objective("Desça pelo alçapão: %d s" % ceili(_trapdoor_left))
+	if _trapdoor_left == 0.0 and multiplayer.is_server():
+		_net_close_trapdoor.rpc()
+
+
+## tempo esgotado ou grupo morto depois do chefe: o contrato já foi cumprido
+@rpc("authority", "call_local", "reliable")
+func _net_close_trapdoor() -> void:
+	if _trapdoor == null or not _trapdoor.is_open:
+		return
+	_trapdoor.close()
+	_contract_ended = true
+	hud.set_objective("")
 	release_cursor()
-	victory_screen.open(RunState.attempt)
+	Playtest.record("trapdoor_expired")
+	if victory_screen:
+		victory_screen.open(RunState.attempt)
+	Playtest.finish("victory")
 
 
-# solo e um grupo de um: cai todo mundo, vota todo mundo
-func _on_player_died() -> void:
+## se todos caírem lá dentro, o grupo recomeça da entrada do calabouço, não da Pedra Alta
+func descend_to_bonus() -> void:
+	if multiplayer.is_server() and _trapdoor and _trapdoor.is_open:
+		_net_descend.rpc()
+
+
+@rpc("authority", "call_local", "reliable")
+func _net_descend() -> void:
+	Net.log_network("descendo pelo alçapão")
+	_trapdoor.close()
+	_contract_ended = true
+	Playtest.record("trapdoor_entered")
+	Net.waiting_for_peers = true
+	# depois da tecla e da fisica deste quadro: trocar no meio deixa nos fora da arvore ainda processando
+	get_tree().change_scene_to_file.call_deferred(BONUS_LEVEL)
+
+
+func watch_player(adventurer: Adventurer) -> void:
+	adventurer.died.connect(_on_player_died.bind(adventurer))
+
+
+# solo e um grupo de um: cai todo mundo, vota todo mundo. Em grupo, quem está de pé vê quem caiu
+func _on_player_died(fallen: Adventurer) -> void:
 	if not _all_players_dead():
-		if player.is_dead:
-			hud.announce("Você caiu. Seus aliados ainda lutam.")
+		if fallen == player:
+			hud.announce("Você caiu. Seus aliados ainda lutam. " + _spectate_next())
+		else:
+			hud.announce("%s caiu. Leve uma poção para reviver." % fallen.get_display_name())
+			if player.is_dead and player.camera_subject == fallen:
+				_spectate_next()
 		return
+	player.camera_subject = null
 	_on_party_down()
+
+
+## caído em grupo, assiste um aliado de pé; o ataque passa para o próximo. Devolve a linha para o aviso
+func _spectate_next() -> String:
+	var standing := players.filter(func(adventurer: Adventurer) -> bool: return adventurer != player and not adventurer.is_dead)
+	if standing.is_empty():
+		player.camera_subject = null
+		return ""
+	var next: Adventurer = standing[(standing.find(player.camera_subject) + 1) % standing.size()]
+	player.camera_subject = next
+	return SPECTATE_LINE % next.get_display_name()
 
 ## Executado quando todos os jogadores do grupo são derrotados.
 func _on_party_down() -> void:
 	release_cursor()
+	if _trapdoor and _trapdoor.is_open:
+		if multiplayer.is_server():
+			_net_close_trapdoor.rpc()
+		return
 	if multiplayer.is_server() and not _vote_open:
-		_start_vote()
+		if RunState.is_last_attempt():
+			if not contract_expired:
+				_net_contract_expired.rpc()
+		else:
+			_start_vote()
+
+
+## sem mais tentativas o contrato vence: dá tempo de ler o aviso e todos vão para a execução
+@rpc("authority", "call_local", "reliable")
+func _net_contract_expired() -> void:
+	if contract_expired:
+		return
+	contract_expired = true
+	hud.announce("O prazo do contrato acabou. O Lorde não dá outra chance.")
+	Playtest.record("attempts_exhausted")
+	await get_tree().create_timer(CONTRACT_EXPIRED_DELAY).timeout
+	_execute()
 
 
 # cada jogador vota numa das bencaos sorteadas pelo host; empate e sorteado
@@ -251,6 +401,8 @@ func _on_player_left(peer_id: int) -> void:
 		_try_close_vote()
 	elif _all_players_dead():
 		_on_party_down()
+	elif player.is_dead and player.camera_subject == adventurer:
+		hud.announce(_spectate_next())
 
 ## Callback de retomada de jogo através do menu de pausa.
 func _on_resumed() -> void:
@@ -263,8 +415,14 @@ func _on_player_revived() -> void:
 	if not pause_menu.visible:
 		capture_cursor()
 
+func _return_to_village() -> void:
+	Playtest.record("epilogue_started")
+	get_tree().change_scene_to_file.call_deferred(EPILOGUE)
+
+
 ## Reinicia as variáveis de progresso e retorna ao menu principal.
 func _back_to_menu() -> void:
+	Playtest.finish("back_to_menu")
 	RunState.reset()
 	get_tree().change_scene_to_file(MAIN_MENU)
 
@@ -279,7 +437,9 @@ func release_cursor() -> void:
 ## RPC enviado pelo Host ordenando a recarga da cena para a próxima tentativa.
 @rpc("authority", "call_local", "reliable")
 func _net_restart(buff_path: String, seed_value: int) -> void:
-	RunState.start_next_attempt(buff_at(buff_path))
+	var buff := buff_at(buff_path)
+	Playtest.record("blessing_chosen", {"buff": buff.title if buff else ""})
+	RunState.start_next_attempt(buff)
 	Net.match_seed = seed_value
 	Net.waiting_for_peers = true
 	get_tree().reload_current_scene()
@@ -288,6 +448,7 @@ func _net_restart(buff_path: String, seed_value: int) -> void:
 # em grupo, abandonar tira so quem saiu; se for o host, a partida acaba para todos
 func _abandon() -> void:
 	if Net.is_coop():
+		Playtest.finish("left_party")
 		Net.leave()
 		_back_to_menu()
 		return
@@ -302,7 +463,27 @@ func _give_up() -> void:
 func _net_execute() -> void:
 	_execute()
 
+
+## fim de fase sem boss (o calabouco): cumprido abre a vitoria; com morto-vivo de pe, o contrato falha
+func end_contract(fulfilled: bool) -> void:
+	if multiplayer.is_server() and not _contract_ended:
+		_net_end_contract.rpc(fulfilled)
+
+
+@rpc("authority", "call_local", "reliable")
+func _net_end_contract(fulfilled: bool) -> void:
+	_contract_ended = true
+	Playtest.record("dungeon_exit", {"stage": stage_name()})
+	if fulfilled:
+		release_cursor()
+		victory_screen.open(RunState.attempt)
+		Playtest.finish("victory")
+	else:
+		Playtest.finish("contract_failed")
+		_execute()
+
 ## Limpa o estado da corrida e transiciona para a cena de execução.
 func _execute() -> void:
+	Playtest.finish("executed")
 	RunState.reset()
-	get_tree().change_scene_to_file(EXECUTION)
+	get_tree().change_scene_to_file.call_deferred(EXECUTION)

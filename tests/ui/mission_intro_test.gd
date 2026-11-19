@@ -1,7 +1,7 @@
 extends GdUnitTestSuite
 
 const INTRO := preload("res://scenes/cutscenes/mission_intro.tscn")
-const GAMEPLAY := "res://scenes/levels/village_level.tscn"
+const GAMEPLAY := "res://scenes/levels/pedraalta_level.tscn"
 
 var cutscene: AdventurerCutscene
 

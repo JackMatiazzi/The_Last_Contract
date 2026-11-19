@@ -51,6 +51,12 @@ func test_a_hit_without_source_does_not_inherit_the_last_attacker() -> void:
 	assert_str(RunState.stats_of(1).last_death).is_equal("Ferimentos")
 
 
+func test_hurting_yourself_counts_as_wounds_not_your_own_name() -> void:
+	victim.take_damage(99.0, victim)
+
+	assert_str(victim.damage_log.death_cause()).is_equal("Ferimentos")
+
+
 func test_friendly_fire_death_counts_on_the_scoreboard() -> void:
 	victim.take_damage(99.0, ally)
 
@@ -93,3 +99,23 @@ func test_a_fall_report_from_someone_standing_is_ignored() -> void:
 
 	assert_int(RunState.stats_of(1).deaths).is_equal(0)
 	Net.roster = roster_before
+
+
+func test_the_last_hits_add_up_repeated_sources_and_keep_the_order() -> void:
+	var log := DamageLog.new()
+	log.note_hit("Esqueleto", 1.0)
+	log.note_heal(2.0)
+	log.note_hit("Mago esqueleto", 1.0)
+	log.note_hit("Arqueiro esqueleto", 2.0)
+	log.note_hit("Arqueiro esqueleto", 1.5)
+
+	assert_array(log.last_hits(2)).is_equal([["Mago esqueleto", 1.0], ["Arqueiro esqueleto", 3.5]])
+
+
+func test_the_totals_of_a_life_count_damage_and_healing() -> void:
+	var log := DamageLog.new()
+	log.note_hit("Esqueleto", 4.0)
+	log.note_heal(1.5)
+	log.note_hit("Esqueleto", 2.0)
+
+	assert_dict(log.totals()).is_equal({"taken": 6.0, "healed": 1.5})

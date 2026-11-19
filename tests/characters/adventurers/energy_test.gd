@@ -21,6 +21,7 @@ func after_test() -> void:
 	for action in ["attack", "move_forward", "run"]:
 		Input.action_release(action)
 	Settings.set_value(&"input_device", _device_before)
+	RunState.reset()
 
 
 func _tap_attack() -> void:
@@ -271,3 +272,89 @@ func test_an_exhausted_knight_cannot_raise_the_shield() -> void:
 	await arena.wait_physics(2)
 
 	assert_bool(knight.is_blocking).is_false()
+
+
+func _speed(adventurer: Adventurer) -> float:
+	return Vector2(adventurer.velocity.x, adventurer.velocity.z).length()
+
+
+# tocar o espaço uma vez já dispara a corrida, que gasta sem parar: tocar várias vezes não sai mais barato
+func test_one_tap_starts_running_and_keeps_spending_while_moving() -> void:
+	var runner := arena.spawn(TestArena.KNIGHT, Vector3(-6, 0, 0), 180.0) as Adventurer
+	await arena.wait_physics(2)
+	await arena.send_action("move_forward")
+	await arena.send_action("run")
+	await arena.send_action("run", false)
+	await arena.wait_seconds(0.2)
+	var before := runner.stamina.current
+
+	await arena.wait_seconds(0.5)
+
+	assert_float(_speed(runner)).is_greater(runner.walk_speed + 0.5)
+	assert_float(before - runner.stamina.current).is_equal_approx(runner.run_cost * 0.5, runner.run_cost * 0.15)
+
+
+func test_stopping_ends_the_run_started_by_a_tap() -> void:
+	var runner := arena.spawn(TestArena.KNIGHT, Vector3(-6, 0, 0), 180.0) as Adventurer
+	await arena.wait_physics(2)
+	await arena.send_action("move_forward")
+	await arena.send_action("run")
+	await arena.send_action("run", false)
+	await arena.wait_seconds(0.3)
+
+	await arena.send_action("move_forward", false)
+	await arena.wait_physics(3)
+	await arena.send_action("move_forward")
+	await arena.wait_seconds(0.5)
+
+	assert_float(_speed(runner)).is_equal_approx(runner.walk_speed, 0.3)
+
+
+func test_running_out_of_stamina_ends_the_run_until_the_next_tap() -> void:
+	var runner := arena.spawn(TestArena.KNIGHT, Vector3(-6, 0, 0), 180.0) as Adventurer
+	await arena.wait_physics(2)
+	await arena.send_action("move_forward")
+	await arena.send_action("run")
+	await arena.send_action("run", false)
+	await arena.wait_seconds(0.1)
+	runner.stamina.current = 0.5
+	await arena.wait_seconds(0.3)
+
+	runner.stamina.refill()
+	await arena.wait_seconds(0.4)
+
+	assert_bool(runner.wants_to_run()).is_false()
+
+
+# o escudo ficou barato: 2 de estamina por segundo segurando e 2 por golpe defendido
+func test_holding_the_shield_for_a_second_costs_about_two_stamina() -> void:
+	knight.use_secondary()
+	await arena.wait_physics(2)
+	var before := knight.stamina.current
+
+	await arena.wait_seconds(1.0)
+
+	assert_float(before - knight.stamina.current).is_between(1.4, 2.6)
+
+
+func test_a_blocked_hit_costs_two_stamina() -> void:
+	knight.use_secondary()
+	await arena.wait_physics(2)
+	var before := knight.stamina.current
+
+	knight.take_damage(1.0, skeleton)
+
+	assert_float(before - knight.stamina.current).is_equal_approx(2.0, 0.3)
+
+
+func test_squire_breath_brings_energy_back_faster() -> void:
+	RunState.buffs.append(load("res://resources/buffs/folego_de_escudeiro.tres"))
+	var blessed := arena.spawn(TestArena.KNIGHT, Vector3(6, 0, 0)) as Adventurer
+	await arena.wait_physics(2)
+	knight.stamina.spend(60.0)
+	blessed.stamina.spend(60.0)
+
+	await arena.wait_seconds(blessed.stamina.regen_delay + 0.5)
+
+	assert_float(blessed.get_energy_regen_factor()).is_equal_approx(1.25, 0.001)
+	assert_float(blessed.stamina.current).is_greater(knight.stamina.current)

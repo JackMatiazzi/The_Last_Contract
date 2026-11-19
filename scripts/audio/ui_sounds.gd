@@ -32,10 +32,23 @@ func _on_node_added(node: Node) -> void:
 	# Conecta os sons apenas se o nó for um botão da UI e ainda não estiver conectado
 	if node is BaseButton and not node.pressed.is_connected(click.play):
 		node.pressed.connect(click.play)
-		node.focus_entered.connect(_on_focus)
+		node.focus_entered.connect(_on_focus.bind(node))
 		node.mouse_entered.connect(focus.play)
 
-## Toca o som de foco apenas se o foco foi resultado de uma ação recente do jogador.
-func _on_focus() -> void:
-	if Time.get_ticks_msec() / 1000.0 - _last_input <= FOCUS_AFTER_INPUT:
+## Toca o som de foco apenas se o foco foi resultado de uma ação recente do jogador
+## e o botão está numa tela aberta: na partida, o analógico pega o botão do menu de pausa fechado.
+func _on_focus(button: BaseButton) -> void:
+	if Time.get_ticks_msec() / 1000.0 - _last_input <= FOCUS_AFTER_INPUT and _is_on_screen(button):
 		focus.play()
+
+
+# o CanvasLayer escondido não entra no is_visible_in_tree dos botões dele
+static func _is_on_screen(button: BaseButton) -> bool:
+	if not button.is_visible_in_tree():
+		return false
+	var node := button.get_parent()
+	while node:
+		if node is CanvasLayer and not (node as CanvasLayer).visible:
+			return false
+		node = node.get_parent()
+	return true

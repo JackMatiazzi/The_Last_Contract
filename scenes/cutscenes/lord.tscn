@@ -1,0 +1,72 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="PackedScene" path="res://assets/kaykit_adventurers/characters/Knight.glb" id="1_model"]
+[ext_resource type="PackedScene" path="res://assets/kaykit_skeletons/characters/Skeleton_Minion.glb" id="2_bones"]
+[ext_resource type="Script" path="res://scripts/cutscenes/lord.gd" id="3_script"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_manto"]
+albedo_color = Color(0.36, 0.12, 0.42, 1)
+roughness = 0.8
+
+[node name="Lord" instance=ExtResource("1_model")]
+editor_description = "O Lorde: meio humano, meio esqueleto. Do lado esquerdo o nobre de manto roxo; do direito, braço e perna de ossos e os olhos de morto-vivo."
+transform = Transform3D(1.15, 0, 0, 0, 1.15, 0, 0, 0, 1.15, 0, 0, 0)
+script = ExtResource("3_script")
+
+[node name="1H_Sword_Offhand" parent="Rig/Skeleton3D/handslot_l"]
+visible = false
+
+[node name="Badge_Shield" parent="Rig/Skeleton3D/handslot_l"]
+visible = false
+
+[node name="Rectangle_Shield" parent="Rig/Skeleton3D/handslot_l"]
+visible = false
+
+[node name="Round_Shield" parent="Rig/Skeleton3D/handslot_l"]
+visible = false
+
+[node name="Spike_Shield" parent="Rig/Skeleton3D/handslot_l"]
+visible = false
+
+[node name="1H_Sword" parent="Rig/Skeleton3D/handslot_r"]
+visible = false
+
+[node name="2H_Sword" parent="Rig/Skeleton3D/handslot_r"]
+visible = false
+
+[node name="Knight_Helmet" parent="Rig/Skeleton3D/head"]
+visible = false
+
+[node name="Knight_Cape" parent="Rig/Skeleton3D/chest"]
+material_override = SubResource("StandardMaterial3D_manto")
+
+[node name="Knight_ArmRight" parent="Rig/Skeleton3D"]
+visible = false
+
+[node name="Knight_LegRight" parent="Rig/Skeleton3D"]
+visible = false
+
+[node name="AnimationPlayer" parent="."]
+autoplay = &"Idle"
+
+[node name="Bones" parent="." instance=ExtResource("2_bones")]
+
+[node name="Skeleton_Minion_ArmLeft" parent="Bones/Rig/Skeleton3D"]
+visible = false
+
+[node name="Skeleton_Minion_Body" parent="Bones/Rig/Skeleton3D"]
+visible = false
+
+[node name="Skeleton_Minion_Cloak" parent="Bones/Rig/Skeleton3D"]
+visible = false
+
+[node name="Skeleton_Minion_Head" parent="Bones/Rig/Skeleton3D"]
+visible = false
+
+[node name="Skeleton_Minion_Jaw" parent="Bones/Rig/Skeleton3D"]
+visible = false
+
+[node name="Skeleton_Minion_LegLeft" parent="Bones/Rig/Skeleton3D"]
+visible = false
+
+[editable path="Bones"]

@@ -1,0 +1,133 @@
+[gd_scene load_steps=16 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/trapdoor.gd" id="1_trapdoor"]
+[ext_resource type="Texture2D" path="res://assets/quaternius_village/models/T_RockTrim_BaseColor.png" id="2_rock"]
+[ext_resource type="Texture2D" path="res://assets/quaternius_village/models/T_RockTrim_ORM.png" id="3_rock_orm"]
+[ext_resource type="Texture2D" path="res://assets/quaternius_village/models/T_RockTrim_Normal.png" id="4_rock_normal"]
+[ext_resource type="Texture2D" path="res://assets/quaternius_village/models/T_WoodTrim_BaseColor.png" id="5_wood"]
+[ext_resource type="Texture2D" path="res://assets/quaternius_village/models/T_WoodTrim_Normal.png" id="6_wood_normal"]
+[ext_resource type="Texture2D" path="res://assets/quaternius_village/models/T_MetalOrnaments_BaseColor.png" id="7_metal"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_trapdoor"]
+size = Vector3(3, 2.5, 3)
+
+[sub_resource type="ORMMaterial3D" id="Mat_pedra"]
+albedo_color = Color(0.78, 0.76, 0.74, 1)
+albedo_texture = ExtResource("2_rock")
+orm_texture = ExtResource("3_rock_orm")
+normal_enabled = true
+normal_texture = ExtResource("4_rock_normal")
+uv1_triplanar = true
+uv1_scale = Vector3(1.2, 1.2, 1.2)
+
+[sub_resource type="StandardMaterial3D" id="Mat_madeira"]
+albedo_color = Color(0.7, 0.55, 0.42, 1)
+albedo_texture = ExtResource("5_wood")
+normal_enabled = true
+normal_texture = ExtResource("6_wood_normal")
+uv1_triplanar = true
+uv1_scale = Vector3(1.4, 1.4, 1.4)
+
+[sub_resource type="StandardMaterial3D" id="Mat_ferro"]
+albedo_color = Color(0.3, 0.3, 0.32, 1)
+albedo_texture = ExtResource("7_metal")
+metallic = 0.75
+roughness = 0.45
+uv1_triplanar = true
+uv1_scale = Vector3(2, 2, 2)
+
+[sub_resource type="StandardMaterial3D" id="Mat_escuro"]
+shading_mode = 0
+albedo_color = Color(0.01, 0.01, 0.015, 1)
+
+[sub_resource type="BoxMesh" id="Moldura_lado"]
+material = SubResource("Mat_pedra")
+size = Vector3(2.5, 0.18, 0.35)
+
+[sub_resource type="BoxMesh" id="Fundo_mesh"]
+material = SubResource("Mat_escuro")
+size = Vector3(1.8, 0.02, 1.8)
+
+[sub_resource type="BoxMesh" id="Degrau"]
+material = SubResource("Mat_madeira")
+size = Vector3(1.1, 0.06, 0.28)
+
+[sub_resource type="BoxMesh" id="Tampa_tabuas"]
+material = SubResource("Mat_madeira")
+size = Vector3(1.8, 0.08, 1.8)
+
+[sub_resource type="BoxMesh" id="Tampa_faixa"]
+material = SubResource("Mat_ferro")
+size = Vector3(1.86, 0.1, 0.14)
+
+[node name="Alcapao" type="Area3D" node_paths=PackedStringArray("prompt", "lid")]
+collision_layer = 0
+collision_mask = 2
+monitorable = false
+script = ExtResource("1_trapdoor")
+prompt = NodePath("Prompt")
+lid = NodePath("Dobradica")
+action = "Descer pelo alçapão"
+reach = 3.5
+
+[node name="Shape" type="CollisionShape3D" parent="."]
+position = Vector3(0, 1.25, 0)
+shape = SubResource("BoxShape3D_trapdoor")
+
+[node name="Fundo" type="MeshInstance3D" parent="."]
+position = Vector3(0, -0.02, 0)
+mesh = SubResource("Fundo_mesh")
+
+[node name="Degrau1" type="MeshInstance3D" parent="."]
+position = Vector3(0, -0.01, -0.62)
+mesh = SubResource("Degrau")
+
+[node name="Degrau2" type="MeshInstance3D" parent="."]
+position = Vector3(0, -0.005, -0.25)
+mesh = SubResource("Degrau")
+
+[node name="MolduraNorte" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.07, -1.075)
+mesh = SubResource("Moldura_lado")
+
+[node name="MolduraSul" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.07, 1.075)
+mesh = SubResource("Moldura_lado")
+
+[node name="MolduraLeste" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 1.075, 0.07, 0)
+mesh = SubResource("Moldura_lado")
+
+[node name="MolduraOeste" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -1.075, 0.07, 0)
+mesh = SubResource("Moldura_lado")
+
+[node name="Dobradica" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -0.17365, 0.98481, 0, -0.98481, -0.17365, 0, 0.16, -0.9)
+
+[node name="Tabuas" type="MeshInstance3D" parent="Dobradica"]
+position = Vector3(0, 0, 0.9)
+mesh = SubResource("Tampa_tabuas")
+
+[node name="FaixaA" type="MeshInstance3D" parent="Dobradica"]
+position = Vector3(0, 0.02, 0.4)
+mesh = SubResource("Tampa_faixa")
+
+[node name="FaixaB" type="MeshInstance3D" parent="Dobradica"]
+position = Vector3(0, 0.02, 1.4)
+mesh = SubResource("Tampa_faixa")
+
+[node name="LuzDeBaixo" type="OmniLight3D" parent="."]
+position = Vector3(0, 0.15, 0)
+light_color = Color(0.55, 0.35, 0.85, 1)
+light_energy = 0.9
+omni_range = 3.0
+
+[node name="Prompt" type="Label3D" parent="."]
+position = Vector3(0, 1.6, 0)
+pixel_size = 0.004
+billboard = 1
+outline_modulate = Color(0, 0, 0, 1)
+text = "E  Descer pelo alçapão"
+font_size = 44
+outline_size = 10

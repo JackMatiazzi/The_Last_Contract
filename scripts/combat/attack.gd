@@ -17,6 +17,8 @@ const HEAVY_FALLBACK_SLOWDOWN := 0.7
 @export var animation_speed := 1.0
 ## do inicio do golpe ate o acerto
 @export var impact_delay := 0.4
+## um acerto por golpe da sequência, na mesma ordem de animations; vazio usa impact_delay em todos
+@export var impact_delays := PackedFloat32Array()
 ## depois do acerto, tempo ate andar cancelar a animacao
 @export var recovery := 0.12
 ## fracao da velocidade enquanto golpeia
@@ -56,7 +58,7 @@ func try_attack(attacker: Character, heavy := false) -> bool:
 	_ready_at = _now() + effective_cooldown(attacker) * (heavy_cooldown_multiplier if heavy else 1.0)
 	var animation := animations[_combo_index]
 	var speed := animation_speed
-	var delay := impact_delay
+	var delay := impact_delays[_combo_index] if _combo_index < impact_delays.size() else impact_delay
 	if heavy:
 		animation = heavy_animation if not heavy_animation.is_empty() else animation
 		speed = heavy_animation_speed if heavy_animation_speed > 0.0 else animation_speed * HEAVY_FALLBACK_SLOWDOWN

@@ -1,6 +1,7 @@
 class_name Portal
 extends Area3D
-## metade de um par: aventureiro e projetil que entram aqui saem na frente do outro portal; inimigos nao.
+## metade de um par: aventureiro, morto-vivo comum e projetil que entram aqui saem na frente do outro portal;
+## elite e chefe nao passam (crosses_portals).
 ## Cada maquina so move o proprio aventureiro, e a rede leva a posicao nova aos outros
 
 const GROUP := "portals"
@@ -29,16 +30,30 @@ const TIME_BAR_WIDTH := 100.0
 ## a barra acima do anel esvazia ate o portal fechar
 @export var time_fill: Sprite3D
 
-var link: Portal
+## ao ligar o par, o tempo dos dois começa a correr; o primeiro portal sozinho espera o segundo
+var link: Portal:
+	set(other):
+		link = other
+		if is_linked():
+			_start_closing()
 
 var _showing := false
 var _age := 0.0
+var _closing := false
 
 
 func _ready() -> void:
 	assert(visual and travel_sound and veil and view and view_camera and time_fill, "Portal: aponte os nos exportados")
 	add_to_group(GROUP)
 	body_entered.connect(_on_body_entered)
+	if is_linked():
+		_start_closing()
+
+
+func _start_closing() -> void:
+	if _closing or not is_inside_tree():
+		return
+	_closing = true
 	var timeline := create_tween()
 	timeline.tween_interval(lifetime)
 	timeline.tween_property(visual, "scale", Vector3.ZERO, CLOSE_TIME)
@@ -90,7 +105,8 @@ func time_left_fraction() -> float:
 
 
 func _process(delta: float) -> void:
-	_age += delta
+	if _closing:
+		_age += delta
 	time_fill.region_rect.size.x = TIME_BAR_WIDTH * time_left_fraction()
 	var eye := get_viewport().get_camera_3d()
 	var showing := is_linked() and eye != null
@@ -112,10 +128,10 @@ func _follow(eye: Camera3D) -> void:
 	view_camera.near = maxf(eye.near, absf(to_local(eye.global_position).z) - NEAR_MARGIN)
 
 
-# recarga e som em todas as maquinas; so o dono do aventureiro move o boneco
+# recarga e som em todas as maquinas; so o dono do personagem move o boneco (os mortos-vivos sao do host)
 func _on_body_entered(body: Node3D) -> void:
-	var traveler := body as Adventurer
-	if traveler == null or traveler.is_dead or not is_linked():
+	var traveler := body as Character
+	if traveler == null or traveler.is_dead or not traveler.crosses_portals or not is_linked():
 		return
 	var now := Time.get_ticks_msec() / 1000.0
 	if traveler.get_meta(&"portal_ready_at", 0.0) > now:
@@ -127,7 +143,7 @@ func _on_body_entered(body: Node3D) -> void:
 		_send_through.call_deferred(traveler, link.exit_point())
 
 
-func _send_through(traveler: Adventurer, point: Vector3) -> void:
+func _send_through(traveler: Character, point: Vector3) -> void:
 	if is_instance_valid(traveler):
 		traveler.global_position = point
 		traveler.reset_physics_interpolation()

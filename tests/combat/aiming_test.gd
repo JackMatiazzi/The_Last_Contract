@@ -30,13 +30,19 @@ func test_looking_up_shoots_upward() -> void:
 	await arena.wait_physics(2)
 
 	rogue.attack_toward_camera()
-	await arena.wait_seconds(rogue.attack.impact_delay + 0.05)
-	var bolt := _first_projectile()
-	var start_height := bolt.global_position.y
-	await arena.wait_seconds(0.1)
+	# o virote vive 0,2 s: mede a direção do voo entre dois quadros, não a distância num tempo fixo
+	var bolt: Projectile = null
+	for frame in 60:
+		await arena.wait_physics(1)
+		bolt = _first_projectile()
+		if bolt:
+			break
+	assert_object(bolt).is_not_null()
+	var start := bolt.global_position
+	await arena.wait_physics(2)
 
 	assert_bool(is_instance_valid(bolt)).is_true()
-	assert_float(bolt.global_position.y).is_greater(start_height + 0.8)
+	assert_float((bolt.global_position - start).normalized().y).is_greater(sin(deg_to_rad(15.0)))
 
 
 func test_bolt_hits_enemy_under_the_crosshair() -> void:

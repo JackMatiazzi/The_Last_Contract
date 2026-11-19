@@ -94,4 +94,4 @@ func test_cooldown_buff_shortens_recharge() -> void:
 	var frenzied := arena.spawn(TestArena.KNIGHT, Vector3(5, 0, 0))
 	await arena.wait_physics(2)
 
-	assert_float(frenzied.attack.effective_cooldown(frenzied)).is_equal_approx(plain_cooldown * 0.75, 0.001)
+	assert_float(frenzied.attack.effective_cooldown(frenzied)).is_equal_approx(plain_cooldown * 0.85, 0.001)

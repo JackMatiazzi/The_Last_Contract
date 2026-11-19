@@ -1,20 +1,46 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/props/scaffold.tscn" id="3_r"]
-
-[ext_resource type="PackedScene" path="res://scenes/maps/public_square/ground.tscn" id="grid_ground"]
-
-[ext_resource type="PackedScene" path="res://scenes/maps/public_square/structure.tscn" id="grid_structure"]
-
-[ext_resource type="PackedScene" path="res://scenes/maps/public_square/objects.tscn" id="grid_objects"]
+[ext_resource type="MeshLibrary" path="res://resources/mesh_libraries/ground.res" id="chao_1_r"]
+[ext_resource type="MeshLibrary" path="res://resources/mesh_libraries/village_structure.res" id="estrutura_2_r"]
+[ext_resource type="MeshLibrary" path="res://resources/mesh_libraries/props.res" id="objetos_props_lib"]
+[ext_resource type="Script" path="res://scripts/world/breakable_props.gd" id="objetos_breakable_script"]
+[ext_resource type="PackedScene" path="res://scenes/world/prop_debris.tscn" id="objetos_debris_scene"]
 
 [node name="PublicSquare" type="Node3D"]
 
-[node name="Chao" parent="." instance=ExtResource("grid_ground")]
+[node name="Chao" type="GridMap" parent="."]
+position = Vector3(-16, 0, -16)
+mesh_library = ExtResource("chao_1_r")
+cell_size = Vector3(2, 1, 2)
+cell_center_y = false
+data = {
+"cells": PackedInt32Array(0, 0, 0, 0, 1, 2, 0, 2, 2, 0, 3, 2, 0, 4, 2, 0, 5, 2, 0, 6, 2, 0, 7, 0, 0, 8, 2, 0, 9, 2, 0, 10, 2, 0, 11, 2, 0, 12, 2, 0, 13, 2, 0, 14, 0, 0, 15, 2, 1, 0, 2, 1, 1, 2, 1, 2, 2, 1, 3, 2, 1, 4, 2, 1, 5, 0, 1, 6, 2, 1, 7, 2, 1, 8, 2, 1, 9, 2, 1, 10, 2, 1, 11, 2, 1, 12, 0, 1, 13, 2, 1, 14, 2, 1, 15, 2, 2, 0, 2, 2, 1, 2, 2, 2, 2, 2, 3, 0, 2, 4, 2, 2, 5, 2, 2, 6, 2, 2, 7, 2, 2, 8, 2, 2, 9, 2, 2, 10, 0, 2, 11, 2, 2, 12, 2, 2, 13, 2, 2, 14, 2, 2, 15, 2, 3, 0, 2, 3, 1, 0, 3, 2, 2, 3, 3, 2, 3, 4, 2, 3, 5, 2, 3, 6, 2, 3, 7, 2, 3, 8, 0, 3, 9, 2, 3, 10, 2, 3, 11, 2, 3, 12, 2, 3, 13, 2, 3, 14, 2, 3, 15, 0, 4, 0, 2, 4, 1, 2, 4, 2, 2, 4, 3, 2, 4, 4, 2, 4, 5, 2, 4, 6, 0, 4, 7, 2, 4, 8, 2, 4, 9, 2, 4, 10, 2, 4, 11, 2, 4, 12, 2, 4, 13, 0, 4, 14, 2, 4, 15, 2, 5, 0, 2, 5, 1, 2, 5, 2, 2, 5, 3, 2, 5, 4, 0, 5, 5, 1, 5, 6, 1, 5, 7, 1, 5, 8, 1, 5, 9, 1, 5, 10, 1, 5, 11, 0, 5, 12, 2, 5, 13, 2, 5, 14, 2, 5, 15, 2, 6, 0, 2, 6, 1, 2, 6, 2, 0, 6, 3, 2, 6, 4, 2, 6, 5, 1, 6, 6, 1, 6, 7, 1, 6, 8, 1, 6, 9, 1, 6, 10, 1, 6, 11, 2, 6, 12, 2, 6, 13, 2, 6, 14, 2, 6, 15, 2, 7, 0, 0, 7, 1, 2, 7, 2, 2, 7, 3, 2, 7, 4, 2, 7, 5, 1, 7, 6, 1, 7, 7, 1, 7, 8, 1, 7, 9, 1, 7, 10, 1, 7, 11, 2, 7, 12, 2, 7, 13, 2, 7, 14, 0, 7, 15, 2, 8, 0, 2, 8, 1, 2, 8, 2, 2, 8, 3, 2, 8, 4, 2, 8, 5, 1, 8, 6, 1, 8, 7, 1, 8, 8, 1, 8, 9, 1, 8, 10, 1, 8, 11, 2, 8, 12, 0, 8, 13, 2, 8, 14, 2, 8, 15, 2, 9, 0, 2, 9, 1, 2, 9, 2, 2, 9, 3, 0, 9, 4, 2, 9, 5, 1, 9, 6, 1, 9, 7, 1, 9, 8, 1, 9, 9, 1, 9, 10, 1, 9, 11, 2, 9, 12, 2, 9, 13, 2, 9, 14, 2, 9, 15, 2, 10, 0, 2, 10, 1, 0, 10, 2, 2, 10, 3, 2, 10, 4, 2, 10, 5, 1, 10, 6, 1, 10, 7, 1, 10, 8, 1, 10, 9, 1, 10, 10, 1, 10, 11, 2, 10, 12, 2, 10, 13, 2, 10, 14, 2, 10, 15, 0, 11, 0, 2, 11, 1, 2, 11, 2, 2, 11, 3, 2, 11, 4, 2, 11, 5, 2, 11, 6, 0, 11, 7, 2, 11, 8, 2, 11, 9, 2, 11, 10, 2, 11, 11, 2, 11, 12, 2, 11, 13, 0, 11, 14, 2, 11, 15, 2, 12, 0, 2, 12, 1, 2, 12, 2, 2, 12, 3, 2, 12, 4, 0, 12, 5, 2, 12, 6, 2, 12, 7, 2, 12, 8, 2, 12, 9, 2, 12, 10, 2, 12, 11, 0, 12, 12, 2, 12, 13, 2, 12, 14, 2, 12, 15, 2, 13, 0, 2, 13, 1, 2, 13, 2, 0, 13, 3, 2, 13, 4, 2, 13, 5, 2, 13, 6, 2, 13, 7, 2, 13, 8, 2, 13, 9, 0, 13, 10, 2, 13, 11, 2, 13, 12, 2, 13, 13, 2, 13, 14, 2, 13, 15, 2, 14, 0, 0, 14, 1, 2, 14, 2, 2, 14, 3, 2, 14, 4, 2, 14, 5, 2, 14, 6, 2, 14, 7, 0, 14, 8, 2, 14, 9, 2, 14, 10, 2, 14, 11, 2, 14, 12, 2, 14, 13, 2, 14, 14, 0, 14, 15, 2, 15, 0, 2, 15, 1, 2, 15, 2, 2, 15, 3, 2, 15, 4, 2, 15, 5, 0, 15, 6, 2, 15, 7, 2, 15, 8, 2, 15, 9, 2, 15, 10, 2, 15, 11, 2, 15, 12, 0, 15, 13, 2, 15, 14, 2, 15, 15, 2)
+}
 
-[node name="Estrutura" parent="." instance=ExtResource("grid_structure")]
+[node name="Estrutura" type="GridMap" parent="."]
+position = Vector3(-16, 0, -16)
+mesh_library = ExtResource("estrutura_2_r")
+cell_size = Vector3(1, 1, 1)
+cell_center_y = false
+cell_center_x = false
+cell_center_z = false
+data = {
+"cells": PackedInt32Array(3, 6, 83, 196611, 6, 76, 4, 7, 1048655, 4, 9, 1048656, 4, 11, 1048659, 4, 13, 1048657, 4, 15, 1048655, 4, 17, 1048656, 4, 19, 1048659, 4, 21, 1048657, 4, 23, 1048655, 196612, 7, 1048652, 196612, 9, 1048653, 196612, 11, 1048649, 196612, 13, 1048653, 196612, 15, 1048652, 196612, 17, 1048653, 196612, 19, 1048649, 196612, 21, 1048653, 196612, 23, 1048652, 5, 6, 79, 196613, 6, 77, 7, 6, 80, 196615, 6, 73, 9, 6, 83, 196617, 6, 77, 11, 6, 81, 196619, 6, 76, 13, 6, 83, 196621, 6, 77, 15, 6, 79, 196623, 6, 73, 17, 6, 80, 196625, 6, 77, 19, 6, 83, 196627, 6, 76, 21, 6, 81, 196629, 6, 77, 23, 6, 83, 196631, 6, 73, 25, 6, 79, 196633, 6, 77, 27, 6, 80, 196635, 6, 76, 28, 7, 1441872, 28, 9, 1441875, 28, 11, 1441873, 28, 13, 1441872, 28, 15, 1441875, 28, 17, 1441873, 28, 19, 1441872, 28, 21, 1441875, 28, 23, 1441873, 196636, 7, 1441869, 196636, 9, 1441865, 196636, 11, 1441869, 196636, 13, 1441869, 196636, 15, 1441865, 196636, 17, 1441869, 196636, 19, 1441869, 196636, 21, 1441865, 196636, 23, 1441869, 29, 6, 83, 196637, 6, 77)
+}
 
-[node name="Objetos" parent="." instance=ExtResource("grid_objects")]
+[node name="Objetos" type="GridMap" parent="."]
+script = ExtResource("objetos_breakable_script")
+position = Vector3(-16, 0, -16)
+mesh_library = ExtResource("objetos_props_lib")
+debris_scene = ExtResource("objetos_debris_scene")
+cell_size = Vector3(1, 0.5, 1)
+cell_center_x = false
+cell_center_y = false
+cell_center_z = false
+data = {
+"cells": PackedInt32Array(6, 18, 1, 7, 8, 11, 25, 8, 11, 26, 17, 8)
+}
 
 [node name="Scaffold" parent="." instance=ExtResource("3_r")]
 position = Vector3(0, 0, -2)

@@ -39,7 +39,7 @@ func test_shows_attempt_and_accumulated_buffs() -> void:
 
 	await _kill_and_wait_for_screen()
 
-	assert_str(screen.attempt_label.text).is_equal("Tentativa 2")
+	assert_str(screen.attempt_label.text).is_equal("Tentativa II")
 	assert_str(screen.active_buffs_label.text).contains("Couraça")
 
 
@@ -111,3 +111,20 @@ func test_shows_the_damage_recap() -> void:
 
 	assert_bool(screen.get_node("%RecapLabel").visible).is_true()
 	assert_str(screen.get_node("%RecapLabel").text).is_equal("Dano recebido: 14")
+
+
+# com a Cláusula de Acréscimo: três cartas, a tecla 3 escolhe a terceira e o aviso fala em 40%
+func test_the_clause_offers_three_cards_and_warns_about_forty_percent() -> void:
+	RunState.start_next_attempt(load("res://resources/buffs/clausula_de_acrescimo.tres"))
+	await _kill_and_wait_for_screen()
+	assert_str(screen.get_node("%Hint").text).contains("40%")
+
+	screen.get_node("%ReviveButton").pressed.emit()
+	await arena.wait_physics(1)
+	var third: Buff = screen.cards.get_child(2).buff
+	var signals := monitor_signals(screen, false)
+	await arena.send_key(KEY_3)
+
+	assert_int(screen.cards.get_child_count()).is_equal(3)
+	assert_str(screen.get_node("%Warning").text).is_equal("Os mortos-vivos receberão 40% da bênção.")
+	await assert_signal(signals).is_emitted("revive_chosen", [third])

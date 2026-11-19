@@ -15,6 +15,7 @@ func before_test() -> void:
 
 func after_test() -> void:
 	Input.action_release("move_forward")
+	RunState.reset()
 
 
 func _sense_with_player_at(position: Vector3) -> Adventurer:
@@ -107,3 +108,65 @@ func test_dead_player_is_not_a_target() -> void:
 	skeleton.perception.sense(0.1)
 
 	assert_bool(skeleton.perception.can_see).is_false()
+
+
+# em grupo: ir no mais perto, mas sem ficar trocando por diferença pequena, e responder a quem bate
+
+func _two_players(first_z: float, second_z: float) -> Array[Adventurer]:
+	var first := arena.spawn(TestArena.KNIGHT, Vector3(0, 0, first_z)) as Adventurer
+	await arena.wait_physics(3)
+	skeleton.perception.sense(0.1)
+	var second := arena.spawn(TestArena.KNIGHT, Vector3(1.5, 0, second_z)) as Adventurer
+	await arena.wait_physics(3)
+	skeleton.perception.sense(0.1)
+	return [first, second]
+
+
+func test_switches_to_a_player_that_gets_much_closer() -> void:
+	var players := await _two_players(12.0, 2.0)
+
+	assert_object(skeleton.perception.target).is_same(players[1])
+
+
+func test_keeps_the_target_when_the_other_is_only_a_little_closer() -> void:
+	var players := await _two_players(6.0, 5.0)
+
+	assert_object(skeleton.perception.target).is_same(players[0])
+
+
+func test_whoever_hits_it_becomes_the_target_even_from_farther() -> void:
+	var players := await _two_players(2.0, 10.0)
+
+	skeleton.take_damage(1.0, players[1])
+	skeleton.perception.sense(0.1)
+
+	assert_object(skeleton.perception.target).is_same(players[1])
+
+
+func test_after_a_while_without_being_hit_it_goes_back_to_the_closest() -> void:
+	var players := await _two_players(2.0, 10.0)
+	skeleton.take_damage(1.0, players[1])
+
+	skeleton.perception.sense(Perception.PROVOKED_TIME + 0.1)
+
+	assert_object(skeleton.perception.target).is_same(players[0])
+
+
+# Pés de Lã: o mesmo passo de corrida, a 85% do alcance do ouvido, só é ouvido sem a bênção
+func test_quiet_feet_shrink_the_hearing_range() -> void:
+	var distance := skeleton.profile.hearing_range * 0.85
+	var loud := await _sense_with_player_at(Vector3(0, 0, -distance))
+	loud.velocity = Vector3(0, 0, loud.run_speed)
+	skeleton.perception.sense(0.1)
+	assert_bool(skeleton.perception.is_aware()).is_true()
+
+	loud.queue_free()
+	skeleton.perception.target = null
+	skeleton.perception.time_since_aware = INF
+	RunState.buffs.append(load("res://resources/buffs/pes_de_la.tres"))
+	var quiet := await _sense_with_player_at(Vector3(0, 0, -distance))
+	quiet.velocity = Vector3(0, 0, quiet.run_speed)
+	skeleton.perception.sense(0.1)
+
+	assert_float(quiet.get_noise_factor()).is_equal_approx(0.7, 0.001)
+	assert_bool(skeleton.perception.is_aware()).is_false()

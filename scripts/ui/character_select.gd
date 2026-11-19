@@ -9,6 +9,10 @@ const HIGHLIGHT_TIME := 0.25
 const NAME_HEIGHT := 2.9
 const DIMMED := Color(0.75, 0.7, 0.65, 0.55)
 const HIGHLIGHT := Color(1.0, 0.84, 0.5, 1.0)
+## altura do meio do corpo, de onde se mede o clique no boneco
+const BODY_HEIGHT := 1.0
+## distância máxima, em pixels na tela, entre o clique e o meio do boneco
+const PICK_RADIUS := 110.0
 
 @export var stage: Node3D
 @export var ring: Node3D
@@ -64,6 +68,29 @@ func _highlight(_info: AdventurerInfo) -> void:
 	var player := _animation_player(models[chosen])
 	player.play("Cheer")
 	player.queue(Character.ANIM_IDLE)
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if not picker.visible or not (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT):
+		return
+	var index := model_at((event as InputEventMouseButton).position)
+	if index >= 0:
+		picker.select(index)
+		get_viewport().set_input_as_handled()
+
+
+## o boneco mais perto do ponto clicado na tela; -1 quando o clique foi longe de todos
+func model_at(screen_point: Vector2) -> int:
+	var camera := get_viewport().get_camera_3d()
+	var nearest := -1
+	var nearest_distance := PICK_RADIUS
+	for i in models.size():
+		var center := camera.unproject_position(models[i].global_position + Vector3.UP * BODY_HEIGHT)
+		var distance := center.distance_to(screen_point)
+		if distance < nearest_distance:
+			nearest = i
+			nearest_distance = distance
+	return nearest
 
 
 # o seletor escondido para de ler as setas e o Esc, que agora sao do contrato

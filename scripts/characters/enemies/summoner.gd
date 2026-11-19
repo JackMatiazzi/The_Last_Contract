@@ -2,6 +2,9 @@ class_name Summoner
 extends Node3D
 
 @export var minion_scene: PackedScene
+## tropa fixa levantada a cada invocação (ex.: dois de espada, um mago, um arqueiro); vazia usa
+## minion_scene per_cast vezes
+@export var wave: Array[PackedScene] = []
 ## tempo entre as invocacoes
 @export var interval := 9.0
 ## lacaios por invocacao
@@ -43,25 +46,40 @@ func summon() -> void:
 	await get_tree().create_timer(raise_delay).timeout
 	if owner_enemy.is_dead:
 		return
-	var count := mini(per_cast, max_alive - _alive_count())
+	var kinds := _kinds_to_raise(max_alive - _alive_count())
+	var count := kinds.size()
 	var spots := PackedVector3Array()
 	for i in count:
 		var angle := TAU * i / count + randf() * 0.6
 		spots.append(owner_enemy.global_position + Vector3(cos(angle), 0, sin(angle)) * radius)
 	if owner_enemy.is_broadcasting():
-		_net_raise_minions.rpc(spots, _raised)
-	_raise_minions(spots, _raised)
+		_net_raise_minions.rpc(spots, _raised, kinds)
+	_raise_minions(spots, _raised, kinds)
+
+
+## quais lacaios levantar agora, como índices da tropa (-1 = minion_scene), sem passar do limite de vivos
+func _kinds_to_raise(room: int) -> PackedInt32Array:
+	var kinds := PackedInt32Array()
+	if wave.is_empty():
+		for i in mini(per_cast, room):
+			kinds.append(-1)
+	else:
+		for i in mini(wave.size(), room):
+			kinds.append(i)
+	return kinds
 
 
 @rpc("authority", "reliable")
-func _net_raise_minions(spots: PackedVector3Array, first_index: int) -> void:
-	_raise_minions(spots, first_index)
+func _net_raise_minions(spots: PackedVector3Array, first_index: int, kinds: PackedInt32Array) -> void:
+	if kinds.size() == spots.size() and Array(kinds).all(func(kind: int) -> bool: return kind >= -1 and kind < wave.size()):
+		_raise_minions(spots, first_index, kinds)
 
 
 # nome fixo para o lacaio ter o mesmo caminho em todas as maquinas
-func _raise_minions(spots: PackedVector3Array, first_index: int) -> void:
+func _raise_minions(spots: PackedVector3Array, first_index: int, kinds: PackedInt32Array) -> void:
 	for i in spots.size():
-		var minion := minion_scene.instantiate() as Enemy
+		var scene := minion_scene if kinds[i] < 0 else wave[kinds[i]]
+		var minion := scene.instantiate() as Enemy
 		minion.name = "%sMinion%d" % [owner_enemy.name, first_index + i]
 		minion.position = owner_enemy.get_parent().to_local(spots[i])
 		minion.start_rising = true

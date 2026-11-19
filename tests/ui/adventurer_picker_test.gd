@@ -118,3 +118,20 @@ func test_b_asks_to_leave() -> void:
 	await _joy_button(JOY_BUTTON_B)
 
 	await assert_signal(signals).is_emitted("back_requested")
+
+
+# voltar troca de cena na hora e tira o seletor da árvore: a tecla já precisa estar marcada antes
+func test_going_back_works_even_when_the_screen_leaves_right_away() -> void:
+	var went_back := []
+	picker.back_requested.connect(func() -> void:
+		went_back.append(true)
+		remove_child(picker))
+	var escape := InputEventAction.new()
+	escape.action = &"ui_cancel"
+	escape.pressed = true
+
+	picker._input(escape)
+
+	assert_bool(went_back.is_empty()).is_false()
+	assert_bool(picker.is_inside_tree()).is_false()
+	add_child(picker)

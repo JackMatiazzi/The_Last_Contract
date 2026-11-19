@@ -8,7 +8,9 @@
 \usepackage{microtype}
 \usepackage{xcolor}
 \usepackage{graphicx}
+\usepackage{array}
 \usepackage{tabularx}
+\usepackage{xltabular}
 \usepackage{booktabs}
 \usepackage{enumitem}
 \usepackage{tikz}
@@ -28,8 +30,8 @@
 \newcommand{\jogo}{The Last Contract}
 \newcommand{\subtitulo}{Mini Game Design Document}
 \newcommand{\equipe}{André Bartzen Araujo \and Jackson Matiazzi \and José Maciel Camargo}
-\newcommand{\disciplina}{Disciplina --- Avaliação Grau 2}
-\newcommand{\gddversao}{0.25}
+\newcommand{\disciplina}{Disciplina - Avaliação Grau 2}
+\newcommand{\gddversao}{0.40}
 
 \definecolor{Destaque}{HTML}{7A2E2E}
 \definecolor{Pendente}{HTML}{9A9A9A}
@@ -41,7 +43,7 @@
 \pagestyle{fancy}
 \fancyhf{}
 \fancyhead[L]{\textcolor{Destaque}{\jogo}}
-\fancyhead[R]{\subtitulo{} --- v\gddversao}
+\fancyhead[R]{\subtitulo{} - v\gddversao}
 \fancyfoot[C]{\thepage}
 \renewcommand{\headrulewidth}{0.4pt}
 
@@ -52,7 +54,7 @@
     pdftitle={\jogo{} - \subtitulo}
 }
 
-\title{\textbf{\jogo} \\ \large \subtitulo{} --- versão \gddversao}
+\title{\textbf{\jogo} \\ \large \subtitulo{} - versão \gddversao}
 \author{\equipe}
 \date{\disciplina \\ \today}
 
@@ -66,32 +68,155 @@
 % ===============================================================
 \section{Ficha técnica}
 
-\begin{tabularx}{\textwidth}{@{}lX@{}}
+\begin{xltabular}{\textwidth}{@{}lX@{}}
 \toprule
 \textbf{Título}          & \jogo \\
 \textbf{Gênero}          & Ação 3D \\
 \textbf{Perspectiva}     & Terceira pessoa \\
 \textbf{Ambientação}     & Vila medieval tomada por mortos-vivos \\
-\textbf{Estrutura}       & Mapa único, de 1 a 4 jogadores (co-op online), uma vida por tentativa \\
+\textbf{Estrutura}       & Uma fase principal (Pedra Alta) com boss, uma fase bônus secreta (o calabouço) e dois finais em cutscene; uma vida por tentativa \\
+\textbf{Jogadores}       & 1 a 4, co-op online por sala com código de 6 letras, na API própria do jogo na Cloudflare \\
+\textbf{Duração}         & Cerca de 30 minutos por contrato cumprido (medido no playtest interno: 32,7\,min com o Barbarian); o calabouço soma uns 10 minutos \\
 \textbf{Plataforma}      & PC (Windows e Linux) \\
-\textbf{Engine}          & Godot 4.7 (GDScript) \\
+\textbf{Engine}          & Godot 4.7.2 (GDScript); API da sala online e da telemetria em Cloudflare Workers \\
 \textbf{Público-alvo}    & Jogadores experientes, 16+, acostumados a ação e a escolhas com custo e benefício \\
+\textbf{Situação}        & Jogável do menu aos dois finais; playtest com a turma em 20/11/2026 \\
 \bottomrule
-\end{tabularx}
+\end{xltabular}
 
 % ===============================================================
 \section{Conceito}
 
-Jogo de ação 3D em terceira pessoa ambientado em uma vila medieval tomada por mortos-vivos. O jogador escolhe entre quatro aventureiros e recebe de um Lorde a missão de eliminar os inimigos e derrotar o boss responsável pela infestação.
+Jogo de ação 3D em terceira pessoa ambientado em uma vila mineira medieval tomada por mortos-vivos. O jogador escolhe entre quatro aventureiros, assina um contrato com o Lorde da região e precisa limpar a vila e derrotar o Necromante responsável pela infestação, com uma vida por tentativa.
 
-A proposta é permitir que o jogador explore livremente a vila, enfrente grupos de inimigos e tente concluir a missão utilizando apenas uma vida por tentativa.
+A frase que resume o jogo é a última que ele mostra: \emph{``O contrato foi cumprido. Não fique sem ler. E, mesmo se ler, tenha certeza da índole do seu contratante.''} Tudo gira em torno de um contrato que tem peso e sempre se cumpre, para os dois lados e até nas letras miúdas.
+
+\subsection{Pilares de design}
+
+\begin{description}[leftmargin=0pt]
+    \item[O contrato é a regra do jogo.] Cada cláusula assinada no menu vira uma mecânica (tabela abaixo). O jogador lê as regras como parte da história, não num tutorial.
+    \item[Toda vantagem tem preço.] A bênção escolhida a cada morte vale também para os mortos-vivos, que recebem 20\% do efeito. Escolher é pesar quem ganha mais com ela.
+    \item[Uma vida, sem seta.] Não há marcador de objetivo nem minimapa: os marcos do cenário (fumaça, velas, braseiros) guiam, e cair custa a tentativa inteira.
+    \item[A história está no chão.] Bilhetes, restos e cenário contam o que aconteceu com a Companhia da Lanterna. Quem não lê consegue jogar; quem lê entende o final antes dele chegar.
+    \item[Junto ou sozinho, o mesmo jogo.] Jogar sozinho é um grupo de um. O co-op não é um modo à parte, e cada classe tem um momento só dela.
+\end{description}
+
+\begin{xltabular}{\textwidth}{@{}lX@{}}
+\toprule
+\textbf{Cláusula} & \textbf{Mecânica que ela vira} \\
+\midrule
+I. Do objeto & Grupos de mortos-vivos espalhados por zona e o Necromante no topo da vila \\
+II. Da vida & Vida única, até trinta tentativas, e posições sorteadas de novo a cada tentativa \\
+III. Da bênção & Buffs acumulativos que valem para os dois lados (20\% do efeito para os mortos-vivos) \\
+IV. Da companhia & Co-op de até 4, reviver com poção e votação da bênção \\
+V. Do abandono & Desistir leva à execução em praça pública \\
+Letras miúdas & O calabouço e o epílogo da vitória \\
+\bottomrule
+\end{xltabular}
 
 % ===============================================================
 \section{História}
 
-Uma vila medieval foi completamente dominada por mortos-vivos. Diante da ameaça, um Lorde convoca aventureiros para eliminar a infestação e derrotar a criatura responsável pelo ataque.
+Pedra Alta é uma vila de mineiros de prata, presa na encosta de uma montanha. O Lorde que manda na região quer a mina de volta; a vila é só o caminho até ela. Os mortos-vivos que a ocupam são obra de um Necromante, e o Lorde contrata aventureiros para limpá-la com um contrato que paga adiantado.
 
-Caso o aventureiro morra, ele pode aceitar uma nova tentativa da missão. Se decidir desistir definitivamente, o Lorde considera o abandono uma falha grave e ordena sua execução.
+O que os aventureiros não sabem é que o Lorde e o Necromante trabalham juntos. O Necromante levanta os mortos, o Lorde manda gente para morrer lá dentro, e quem morre nas terras dele levanta também e passa a obedecer. Aventureiro contratado é mão de obra que nunca para de trabalhar.
+
+Caindo, o aventureiro pode aceitar uma nova tentativa. Desistindo, o Lorde trata o abandono como quebra de contrato e ordena a execução em praça pública. E, se o grupo vencer, descobre que cumprir o contrato também termina no cadafalso.
+
+\subsection{Linha do tempo}
+
+\begin{xltabular}{\textwidth}{@{}lX@{}}
+\toprule
+\textbf{Quando} & \textbf{O que aconteceu} \\
+\midrule
+Antes de tudo & O Lorde e o Necromante fazem o acordo. Os mortos de Pedra Alta começam a levantar; o Lorde passa a recrutar aventureiros descartáveis. O ossuário do calabouço se enche de crânios com a marca de contrato na testa: ``Não são aldeões. São os que vieram antes.'' \\
+Um ano antes & A Companhia da Lanterna (cinco aventureiros) aceita o mesmo contrato para limpar o calabouço sob a vila. A expedição dura cinco dias e ninguém sai. \\
+O jogo & O grupo atual assina o contrato, limpa Pedra Alta e derruba o Necromante. Quem desce pelo alçapão encontra o que a Lanterna deixou. \\
+Depois & O Lorde cumpre a parte dele do contrato, inclusive as letras miúdas. \\
+\bottomrule
+\end{xltabular}
+
+\subsection{O Lorde e o Necromante}
+
+O Lorde é o vilão do jogo, e o jogo avisa isso o tempo todo sem dizer em voz alta. Ele aparece em pessoa só no epílogo: metade cavaleiro de capa roxa, metade esqueleto, porque o pacto com o Necromante já o levou pela metade. Na cena, o lado humano e o lado de ossos repetem o mesmo gesto, como se fossem um só corpo.
+
+A traição é semeada antes, só com texto e cenário:
+\begin{itemize}
+    \item as letras miúdas do contrato: ``O Lorde não responde pelo que se levantar depois de morto dentro de suas terras, contratados inclusive'';
+    \item a ordem do Lorde na entrada do calabouço: ``Pagamento na saída. Cláusula única: nenhum morto-vivo fica de pé. Quem sair devendo um morto-vivo, deve a cabeça'';
+    \item o diário de Sir Aldren: ``O Lorde pagou adiantado. Lorde nenhum paga adiantado'';
+    \item o bilhete de Maelis: ``O Lorde sabia. Ele não quer o calabouço limpo, quer a gente nele'';
+    \item os crânios marcados do ossuário, a lápide ``Aqui jaz o último aventureiro que confiou no Lorde'' e os esqueletos que jogam dados na sala da guarda (``O Lorde vai querer a parte dele. Até da gente'');
+    \item o Michio, que estranha a ordem (``Aquele Lorde mandou limpar tudo, não foi? Tudo, tudo mesmo?'').
+\end{itemize}
+Quem nunca desce ao calabouço não vê nenhuma dessas pistas além das letras miúdas, e é para esse jogador que o epílogo tem que funcionar sozinho: a surpresa é a recompensa dele, e a confirmação é a de quem leu.
+
+\subsection{O contrato}
+
+O texto que o aventureiro assina resume as regras do jogo em cláusulas. O pagamento vem adiantado, contra a assinatura. O pergaminho é ``Selado pelo Lorde, senhor destas terras'' e se chama ``Contrato de Limpeza''.
+
+\begin{description}[leftmargin=0pt]
+    \item[I. Do objeto.] Limpar a vila de todo morto-vivo e derrubar a criatura que os levanta. A vila só é dada por limpa quando o último grupo cai e o Necromante não se levanta mais.
+    \item[II. Da vida.] O Contratado entra com uma vida. Caindo, pode aceitar nova tentativa: a vila volta a ser ocupada e cada morto retorna ao seu posto, em outro lugar. O contrato tem prazo: caindo na trigésima tentativa, não há outra chance, e o Lorde manda executar.
+    \item[III. Da bênção.] A cada nova tentativa o Lorde concede uma bênção, à escolha entre duas. A bênção é do contrato, não da pessoa: vale para todos dentro da vila, vivos ou não.
+    \item[IV. Da companhia.] Até quatro podem assinar juntos, cada um com seu ofício. Quem cair pode ser erguido por um companheiro que lhe dê a própria poção. Caindo todos, escolhem juntos a bênção; no empate, decide a sorte.
+    \item[V. Do abandono.] Desistir é quebra de contrato. A pena é a execução, em praça pública, diante da vila.
+\end{description}
+
+As letras miúdas preparam a revelação do calabouço: ``o Lorde não responde pelo que se levantar depois de morto dentro de suas terras, contratados inclusive''.
+
+\subsection{A Companhia da Lanterna}
+
+Cerca de um ano antes do grupo atual, cinco aventureiros aceitaram um contrato do mesmo Lorde para limpar o calabouço sob a vila. A companhia foi fundada por Sir Aldren depois de deixar a ordem de cavalaria, quando ela passou a servir a quem pagava mais. O nome vem da lanterna de ferro que ele levava no cinto: nas tavernas, servia para achar o caminho de volta; na verdade, para achar o espadachim, que se perdia em qualquer corredor com mais de uma porta. O pagamento adiantado deixou Aldren desconfiado desde o primeiro dia (``Lorde nenhum paga adiantado'').
+
+A expedição durou cinco dias e ninguém saiu. Cada um morreu na trava da própria classe, e o que deixaram é a história que o grupo atual encontra no calabouço escondido:
+
+\begin{description}[leftmargin=0pt]
+    \item[Sir Aldren, cavaleiro e fundador.] Metódico, escrevia tudo no diário. Lutava com duas espadas; largou uma só para atravessar o corredor de flechas de escudo erguido e desarmou a armadilha para os outros; morreu no arsenal. Nunca teve coragem de derrubar o espadachim depois que ele voltou morto, e a última página pede isso a quem vier.
+    \item[Brakka, bárbaro.] Barulhento e generoso, urrava antes de cada luta e as crianças da vila o seguiam pedindo o urro. Derrubou a parede rachada, achou a adega do Lorde e morreu ali. O esqueletinho da sala da guarda era uma dessas crianças.
+    \item[Maelis, maga.] Expulsa da academia por estudar necromancia de perto demais. Entrou na biblioteca pelo portal, a grade desceu atrás dela, e nos livros do Lorde descobriu que quem morre ali levanta e que esse era o plano.
+    \item[Wren, ladina.] Batedora de poucas palavras, deduziu os dois selos e a galeria de volta à capela. Errou o último virote na corda da ponte e morreu no abismo.
+    \item[O espadachim (Mayoi Michio).] Aldren o achou perdido numa encruzilhada, discutindo com uma placa. Voltou sem pulso, rindo como sempre, e ainda vaga pelos três andares sem lembrar o nome da companhia. Foi ele quem levou a última página de Aldren até a sala secreta, sem saber o que carregava; por isso a página está no andar 3 e os restos de Aldren no arsenal. Em vida tinha uma espada só. Depois que os companheiros caíram, pegou as duas espadas de Aldren, e é daí que vem o estilo de três espadas: uma em cada mão e uma na boca.
+\end{description}
+
+\subsection{O grupo atual}
+
+Cada aventureiro jogável tem um elo pessoal com o antecessor da mesma classe, então a trava de cada classe no calabouço é também um reencontro. No jogo, a seleção e o placar continuam mostrando a classe; o nome aparece na história, nos bilhetes e nas falas.
+
+\begin{xltabular}{\textwidth}{@{}lX@{}}
+\toprule
+\textbf{Aventureiro} & \textbf{Origem, motivo e elo com a Lanterna} \\
+\midrule
+Ser Edric (Knight) & Escudeiro de Sir Aldren, armado cavaleiro por ele; ficou na ordem quando o mestre saiu e se arrepende. Aceitou o contrato para ir atrás dele. O diário no arsenal é a letra de Aldren, e a última página pede o que Edric jurou nunca fazer: derrubar um companheiro. Arco: do cavaleiro que cumpre qualquer juramento ao que escolhe quais merecem ser cumpridos. \\
+Torvald (Barbarian) & Primo mais novo de Brakka, do mesmo clã. Diz que veio pelo pagamento e pela briga; veio também saber por que o primo parou de mandar notícias. O urro dele é igual ao de Brakka, e o esqueletinho reconhece na hora. Arco: do brigão que veio pelo ouro ao que termina o contrato urrando por dois. \\
+Ilsa (Mage) & Aluna de Maelis, expulsa da academia um ano depois da mestra pelo mesmo motivo. Seguiu as anotações dela até o Lorde. Atravessa a mesma grade e lê o mesmo aviso. Arco: da estudante fascinada pela necromancia à que entende para que o Lorde a usa. \\
+Nessa (Rogue) & Caçadora de recompensas, rival e depois parceira de Wren, que saiu devendo uma aposta. Diz que veio cobrar; veio porque Wren nunca deixava de responder uma carta. Corta a corda que Wren errou (``O seu não vai errar.''). Arco: da mercenária que só confia no que está escrito à que lê as letras miúdas para o grupo. \\
+\bottomrule
+\end{xltabular}
+
+Para cumprir a cláusula, o grupo inteiro tem que derrubar o espadachim, o companheiro que a Lanterna não teve coragem de derrubar.
+
+\subsection{Os dois finais}
+
+\textbf{Depois do Necromante: duas escolhas, um destino.} Quando o Necromante cai, abre o alçapão, e o grupo tem 30 segundos para escolher:
+\begin{itemize}
+    \item \textbf{Encerrar e voltar.} Ninguém desce, o alçapão fecha e o contrato se dá por cumprido: tela ``Contrato cumprido'' e o epílogo, em que o Lorde manda executar o grupo do mesmo jeito.
+    \item \textbf{Descer pelo alçapão.} O grupo entra no calabouço, a fase bônus. A cláusula vale lá embaixo: nenhum morto-vivo pode ficar de pé, contando o Michio e, se ele virou morto-vivo, o esqueletinho. Derrubados todos, a porta de saída é liberada, o grupo volta à superfície e sai para a mesma execução.
+\end{itemize}
+A ordem dos fatores não altera o produto: por qualquer caminho, quem cumpre o contrato do Lorde termina no cadafalso. O que o calabouço muda é o que o grupo sabe ao chegar lá: a história da Lanterna, a prova de que o Lorde sabia e o portão selado. Desistir no meio, a qualquer momento, também leva à execução, só que sem o epílogo.
+
+\textbf{Desistir: a execução.} O aventureiro vai embora pela estrada ao entardecer (``Ele deu as costas ao contrato''); corta para a praça, onde ele está ajoelhado no cadafalso diante da multidão, ouve o veredito e recebe o golpe do carrasco encapuzado. Termina em ``Contrato encerrado''.
+
+\textbf{Vencer: o epílogo.} Cerca de 27 segundos, no mesmo palco da execução, em seis tomadas:
+\begin{enumerate}
+    \item ``Contrato cumprido.'' O herói vem pela estrada.
+    \item Na praça, ele entra pelo corredor aberto na multidão, que comemora em onda (cada aldeão começa uma fração de segundo depois do vizinho): ``A vila celebra quem a libertou.''
+    \item A câmera vai para o Lorde, ao lado do cadafalso. Ele lê os nomes de quem assinou: ``Fulano... Vocês cumpriram algo que eu não achava possível.''
+    \item ``Guardas, levem-nos.'' Dois guardas atravessam a multidão e puxam o herói para o cadafalso.
+    \item No close, o herói é posto de joelhos, o carrasco sobe com o machado e dá o golpe; a tela pisca em vermelho.
+    \item Os guardas arrastam o corpo para fora do palco. Legenda final: \emph{``O contrato foi cumprido. Não fique sem ler. E, mesmo se ler, tenha certeza da índole do seu contratante.''}
+\end{enumerate}
+A fala do Lorde usa o nome assinado no contrato (sozinho) ou todos os nomes do grupo. A tela ``Contrato cumprido'' antes do epílogo já não promete perdão: ``O Lorde espera vocês na vila para acertar o contrato.''
 
 % ===============================================================
 \section{Gameplay}
@@ -100,7 +225,7 @@ O jogador explora livremente a vila e enfrenta grupos de mortos-vivos espalhados
 
 Cada tentativa começa com o jogador e os grupos de inimigos posicionados aleatoriamente pelo mapa. O jogador possui apenas uma vida.
 
-Ao morrer, pode escolher entre \textbf{Reviver} ou \textbf{Desistir}. Ao reviver, todos os inimigos retornam, novas posições são sorteadas e o jogador recebe uma escolha entre dois buffs aleatórios.
+Ao morrer, pode escolher entre \textbf{Reviver} ou \textbf{Desistir}. Ao reviver, todos os inimigos retornam, novas posições são sorteadas e o jogador escolhe uma entre duas bênçãos sorteadas.
 
 Não existe sistema de níveis para jogadores ou inimigos.
 
@@ -121,10 +246,10 @@ Não existe sistema de níveis para jogadores ou inimigos.
     \node[etapa, below=of contrato] (sorteio) {Sortear posições do\\jogador e dos inimigos};
     \node[etapa, below=of sorteio] (combate) {Explorar a vila e\\enfrentar os grupos};
     \node[etapa, below=of combate] (boss) {Derrotar o boss};
-    \node[fim, below=of boss] (vitoria) {Vitória};
+    \node[fim, below=of boss] (vitoria) {Alçapão ou vitória\\(as duas acabam no cadafalso)};
 
     \node[etapa, right=2.2cm of combate] (morte) {Todo o grupo cai};
-    \node[etapa, above=of morte] (buff) {Votar em 1 entre\\2 buffs aleatórios};
+    \node[etapa, above=of morte] (buff) {Votar em 1 entre\\2 bênçãos sorteadas};
     \node[fim, below=of morte] (execucao) {Desistir:\\execução};
 
     \draw[seta] (contrato) -- (sorteio);
@@ -141,43 +266,46 @@ Não existe sistema de níveis para jogadores ou inimigos.
 
 \subsection{Mecânicas}
 
-\begin{tabularx}{\textwidth}{@{}lX@{}}
+\begin{xltabular}{\textwidth}{@{}lX@{}}
 \toprule
 \textbf{Mecânica} & \textbf{Descrição} \\
 \midrule
-Movimentação & Terceira pessoa, com exploração livre da vila. Resposta rápida: atinge a velocidade de andar (4\,m/s) em cerca de 0,1\,s e para em cerca de 0,1\,s; correr chega a 7,5\,m/s e gasta estamina. Não há pulo: segurar Espaço corre, e soltar volta a andar. \\
+Movimentação & Terceira pessoa, com exploração livre da vila. Resposta rápida: atinge a velocidade de andar (4\,m/s) em cerca de 0,1\,s e para em cerca de 0,1\,s; correr chega a 7,5\,m/s e gasta estamina. Não há pulo: um toque no Espaço começa a correr, e ele continua correndo até parar de andar, tocar de novo ou a estamina acabar. \\
 Combate & Corpo a corpo e à distância, conforme o aventureiro escolhido. Clique é o ataque rápido; segurar o botão é o ataque pesado (mais lento e mais forte). Cada golpe rápido tira 1 ponto de vida; o alvo reage ao dano e, ao chegar a zero, morre. \\
 Energia & Estamina para todos (correr, escudo, golpes físicos) e mana para o Mage (feitiços). Gastar pausa a recarga por um instante; depois ela volta sozinha. O golpe só sai com o custo inteiro disponível. Detalhes em \ref{sec:energia}. \\
-Vida & Pontos inteiros: aventureiros têm 10 e mortos-vivos têm 5. Uma barra de vida flutua sobre cada personagem (verde para aventureiros, vermelha para mortos-vivos). Ao levar dano, um rastro claro mostra o pedaço perdido antes de encolher e um número de dano sobe acima da cabeça. \\
-Vida única & O jogador possui apenas uma vida por tentativa. Em grupo, um aliado com uma poção no inventário pode reviver quem caiu: perto do caído aparece ``E Reviver'' sobre ele, e ele volta com metade da vida. A poção só é gasta quando o reviver vale: se outro aliado reviveu antes, ela continua no inventário. Se todos caem, abre a tela de morte. \\
-Grupos de inimigos & Mortos-vivos organizados em grupos espalhados pelo mapa. \\
+Vida & Aventureiros têm 10; o esqueleto comum tem 5, os atiradores 4 e os mais fortes de 14 a 24 (bestiário em \ref{sec:bestiario}). Uma barra de vida flutua sobre cada personagem (verde para aventureiros, vermelha para mortos-vivos). Ao levar dano, um rastro claro mostra o pedaço perdido antes de encolher e um número de dano sobe acima da cabeça. \\
+Vida única & O jogador possui apenas uma vida por tentativa. Em grupo, um aliado com uma poção no inventário pode reviver quem caiu: perto do caído aparece ``E Reviver'' sobre ele, e ele volta com metade da vida. Enquanto espera, quem caiu assiste um aliado de pé (a câmera segue o aliado e continua girando com o mouse ou o analógico); o botão de ataque troca para o próximo, e reviver devolve a câmera para o próprio aventureiro. A poção só é gasta quando o reviver vale: se outro aliado reviveu antes, ela continua no inventário. Se todos caem, abre a tela de morte; na trigésima tentativa o contrato vence e vem a execução. \\
+Dano dos inimigos & O dano de mortos-vivos e armadilhas vale como porcentagem da vida base do aventureiro, sem bênçãos (um golpe de 1 tira 10\% dela). A vida ganha com Vigor fica de colchão, e a redução de dano das bênçãos e das tentativas diminui cada golpe. A HUD mostra a vida em porcentagem (abaixo de 1\%, com duas casas, para nunca marcar 0\% com o aventureiro de pé). Fogo amigo continua em pontos. \\
+Fora do mapa & Quem cai abaixo do chão da fase, ou fica 3\,s em cima de muralha ou telhado sem caminho de volta, reaparece no último chão seguro, com o aviso ``Você voltou para o caminho.''. A água da fenda continua matando, e a Pedra Alta fica no meio de um lago: quem passa da muralha ou da cerca cai nele, se afoga (``Afogado fora da muralha'') e o corpo fica lá. \\
+Grupos de inimigos & Sete grupos por tentativa, de dois a quatro mortos-vivos cada, espalhados pelas zonas da vila: primeiro um por zona, depois um segundo grupo nas outras zonas (no máximo dois por zona). \\
 Posições aleatórias & A cada tentativa, o jogador renasce em um ponto sorteado e os grupos de inimigos são reposicionados. \\
 Reviver ou Desistir & Escolha apresentada quando o grupo inteiro cai. Desistir (só o host) encerra a missão com a execução do aventureiro. \\
-Buffs acumulativos & Ao reviver, o grupo vota num entre dois buffs aleatórios; os buffs se acumulam entre tentativas. \\
-Buffs dos inimigos & Os mortos-vivos recebem os mesmos buffs escolhidos pelo jogador nas tentativas anteriores. \\
-Boss & O Necromante, um mago esqueleto que surge na praça quando todos os grupos caem: mantém distância, dispara rajadas mágicas e levanta mortos-vivos ao seu redor. \\
-Objetos interativos & Baús espalhados pela vila: perto de um, aparece o aviso para abrir; aberto, solta uma poção. Tocar na poção a guarda no inventário (até 4); com o inventário cheio ela fica no chão e é pega assim que sobrar espaço, se o aventureiro ainda estiver em cima dela. Em grupo, dois jogadores na mesma poção não levam uma cada: o host decide quem pegou. Um golpe ou projétil de aventureiro quebra a poção que está no chão, e ela se perde. \\
-Inventário rápido & Itens guardados para usar quando quiser: a poção de vida cura 3 ao ser usada (não é gasta com a vida cheia) e serve para reviver um aliado. A roda do mouse para baixo troca o item selecionado; segurar E por 0,6\,s bebe (o gole deixa o aventureiro exposto). \\
+Bênçãos acumulativas & Ao reviver, o grupo vota numa entre duas bênçãos sorteadas; elas se acumulam entre tentativas. \\
+Bênçãos dos inimigos & Os mortos-vivos recebem as mesmas bênçãos escolhidas nas tentativas anteriores, com 20\% do efeito. \\
+Boss & O Necromante, um mago esqueleto que surge no Mirante quando todos os grupos caem: mantém distância, dispara rajadas mágicas e levanta uma leva de quatro mortos-vivos (dois esqueletos, um mago e um arqueiro). \\
+Objetos interativos & Baús espalhados pela vila: a cada tentativa saem 5 baús e mais um mímico por jogador, sorteados entre os 11 pontos de baú da Pedra Alta (espalhados por zona, com a mesma semente para todo o grupo). Os pontos ficam longe das casas e com chão livre na frente, onde a poção cai. Perto de um baú, aparece o aviso para abrir; aberto, solta uma poção. Tocar na poção a guarda no inventário (até 4); com o inventário cheio ela fica no chão e é pega assim que sobrar espaço, se o aventureiro ainda estiver em cima dela. Em grupo, dois jogadores na mesma poção não levam uma cada: o host decide quem pegou. Um golpe ou projétil de aventureiro quebra a poção que está no chão, e ela se perde. \\
+Inventário rápido & Itens guardados para usar quando quiser: a poção de vida cura 20\% da vida máxima ao ser usada (não é gasta com a vida cheia) e serve para reviver um aliado. A roda do mouse para baixo troca o item selecionado; segurar E por 0,6\,s bebe (o gole deixa o aventureiro exposto). \\
 Objetos quebráveis & Barris, caixotes e barris de bebida quebram com o ataque pesado (golpe ou projétil), soltando lascas; carroças, cercas e tochas aguentam. Evita ficar encurralado contra o cenário. \\
 Troca de habilidade & A roda do mouse para cima troca a habilidade do ataque principal. O Mage alterna entre o Projétil mágico e o Portal; os outros aventureiros têm uma habilidade por enquanto. \\
-Portal & Magia do Mage, 20\% de mana por portal. O primeiro uso abre a entrada no chão onde a mira aponta (até 15\,m), o segundo abre a saída; o par dura 12\,s e um par novo fecha o anterior. Aventureiro que entra numa ponta sai na frente da outra (0,5\,s de recarga por pessoa); mortos-vivos não atravessam. Projéteis de todos (setas, projéteis mágicos e os do Necromante) atravessam e saem pela frente do outro portal, na direção que a janela mostra. Uma barra acima do anel esvazia até o portal fechar. O véu do portal mostra o outro lado, como uma janela para a saída, acompanhando o ângulo da câmera de quem olha. Com parede logo à frente da saída, o aventureiro sai no próprio portal. Em grupo, o portal aparece para todos e serve para os aliados. \\
+Portal & Magia do Mage, 20\% de mana por portal. O primeiro uso abre a entrada no chão onde a mira aponta (até 15\,m), só em chão a que o mago chegaria andando: parede, topo de muralha e telhado não contam, o segundo abre a saída; os 12\,s do par só começam a contar quando as duas pontas estão ligadas (a entrada sozinha espera a saída) e um par novo fecha o anterior. Aventureiro que entra numa ponta sai na frente da outra (0,5\,s de recarga por pessoa); inimigos comuns (mortos-vivos e mímico) também atravessam (quem leva cada um é a máquina dona dele), mas elites e o Necromante não. Projéteis de todos (setas, projéteis mágicos e os do Necromante) atravessam e saem pela frente do outro portal, na direção que a janela mostra; o tiro de um aventureiro que atravessa o portal passa a acertar aventureiros também, então atirar pelo portal com um aliado na frente da saída fere o aliado. Uma barra acima do anel esvazia até o portal fechar. O véu do portal mostra o outro lado, como uma janela para a saída, acompanhando o ângulo da câmera de quem olha. Com parede logo à frente da saída, o aventureiro sai no próprio portal. Em grupo, o portal aparece para todos e serve para os aliados. \\
 Fogo amigo & Opção do host no lobby, ligada por padrão: golpes e projéteis também acertam aliados. \\
 Placar & Abates, assistências, mortes e a última queda de cada jogador, segurando Tab. Um aviso no canto mostra quem abateu quem e como cada um caiu; a tela de morte mostra o histórico de dano daquela vida. \\
 Som 3D & Passos, golpes, dor, ossos caindo e feitiços saem da posição de quem os faz; a música muda conforme a cena. \\
-Vitória & Limpar todos os grupos (a HUD mostra quantos faltam), derrotar o Necromante e ver a tela ``Contrato cumprido''. \\
+Vitória & Limpar todos os grupos (a HUD mostra quantos faltam) e derrotar o Necromante. Ele deixa um alçapão aberto por 30 segundos, com contagem na HUD; o host desce com o grupo inteiro para o calabouço (fase bônus). Se ninguém descer, abre a tela ``Contrato cumprido''; ``Voltar à vila'' leva ao epílogo, em que o Lorde executa o grupo mesmo assim (ver Os dois finais). \\
+Fase bônus & No calabouço, cair todo o grupo também abre a votação de bênção, mas a nova tentativa recomeça da entrada do calabouço, não da vila. Com todos os mortos-vivos derrubados, a saída leva à vitória e ao mesmo epílogo; sair devendo leva direto à execução. \\
 \bottomrule
-\end{tabularx}
+\end{xltabular}
 
 \subsection{Controles}
 
-O jogador escolhe em Configurações $\rightarrow$ Controles se joga com \textbf{teclado e mouse}, com \textbf{controle} (layout Xbox; testado com um 8BitDo Ultimate 2) ou no modo \textbf{automático}, o padrão, em que vale o último dispositivo usado. Com um dispositivo fixo, as ações de jogo respondem só a ele; os menus aceitam os dois sempre.
+O jogador escolhe em Configurações $\rightarrow$ Controles se joga com \textbf{teclado e mouse}, com \textbf{controle} (layout Xbox; testado com um 8BitDo Ultimate 2) ou no modo \textbf{automático}, em que vale o último dispositivo usado. O padrão é teclado e mouse, que é como a turma vai jogar no playtest. Com um dispositivo fixo, as ações de jogo respondem só a ele; os menus aceitam os dois sempre.
 
-\begin{tabularx}{\textwidth}{@{}lXX@{}}
+\begin{xltabular}{\textwidth}{@{}lXX@{}}
 \toprule
 \textbf{Ação} & \textbf{Teclado e mouse} & \textbf{Controle} \\
 \midrule
 Mover      & W, A, S, D (relativo à câmera) & Analógico esquerdo \\
-Correr     & Segurar Espaço & Clicar no analógico esquerdo; corre até soltar o analógico \\
+Correr     & Tocar Espaço; corre até parar, tocar de novo ou zerar a estamina & Clicar no analógico esquerdo; corre até soltar o analógico \\
 Câmera     & Movimento do mouse (sobre o ombro direito) & Analógico direito \\
 Atacar     & Botão esquerdo: clique é o ataque rápido; segurar 0,35\,s dispara o pesado. Um clique pouco antes da recarga terminar fica guardado & RT (mesmas regras) \\
 Habilidade & Botão direito: o Knight ergue o escudo enquanto segura; o Barbarian golpeia com o segundo machado & LT \\
@@ -186,9 +314,9 @@ Trocar item & Roda do mouse para baixo & Direcional para baixo \\
 Interagir  & E: toque abre baú ou revive aliado caído (com poção no inventário); perto de um baú, segurar não bebe; longe, segurar 0,6\,s bebe o item selecionado. Perto de um aliado caído sem poção, o aviso diz ``Sem poção para reviver'' & X (mesmas regras) \\
 Placar     & Tab (segurar) & Back (segurar) \\
 Pausar     & Esc & Menu (Start) \\
-Menus      & Mouse, setas, Enter, Esc; teclas 1--4 na seleção e 1--2 nas bênçãos & Direcional, A confirma, B volta, LB/RB trocam aventureiro ou aba \\
+Menus      & Mouse, setas, Enter, Esc; na seleção, clicar no próprio personagem 3D o escolhe, além das teclas 1-4; 1-2 nas bênçãos & Direcional, A confirma, B volta, LB/RB trocam aventureiro ou aba \\
 \bottomrule
-\end{tabularx}
+\end{xltabular}
 
 As ligações dos dois dispositivos ficam no Input Map do projeto e podem ser trocadas no editor. Sensibilidade do mouse e do analógico e a inversão do eixo vertical também ficam nas configurações. A cena \texttt{scenes/tools/gamepad\_tester.tscn} mostra ao vivo os botões, analógicos, gatilhos e ações recebidos, para conferir um controle novo.
 
@@ -196,84 +324,95 @@ As ligações dos dois dispositivos ficam no Input Map do projeto e podem ser tr
 
 \subsection{Buffs}
 
-Ao reviver, o grupo vota numa entre duas bênçãos sorteadas (sozinho, o voto é só seu). Pelo contrato do Lorde, a bênção escolhida vale para o aventureiro \emph{e também para todos os mortos-vivos} nas tentativas seguintes. Como o aventureiro tem 10 de vida e enfrenta vários mortos-vivos de 5 de vida, o mesmo buff pesa diferente para cada lado: a escolha é decidir qual efeito favorece mais o jogador do que os inimigos. Metade dos buffs tem custo e benefício, pensados para o público experiente.
+Ao reviver, o grupo vota numa entre duas bênçãos sorteadas (sozinho, o voto é só seu). Pelo contrato do Lorde, a bênção escolhida vale para o aventureiro \emph{e também para todos os mortos-vivos} nas tentativas seguintes, mas eles recebem só 20\% do efeito (Couraça corta 20\% do dano que o aventureiro recebe e 4\% do que cada morto-vivo recebe). Como o aventureiro tem 10 de vida e enfrenta vários mortos-vivos de 5 de vida, o mesmo buff pesa diferente para cada lado: a escolha é decidir qual efeito favorece mais o jogador do que os inimigos. Quatro dos doze buffs têm custo e benefício, pensados para o público experiente, e alguns jogam com a própria regra dos 20\%: Sede do Ceifador e Espinhos de Ferro também curam e ferem pelos mortos-vivos, e a Cláusula de Acréscimo troca uma carta a mais por dobrar a parte deles.
 
-\begin{tabularx}{\textwidth}{@{}lX@{}}
+\begin{xltabular}{\textwidth}{@{}lX@{}}
 \toprule
-\textbf{Buff} & \textbf{Efeito (em todos os personagens)} \\
+\textbf{Buff} & \textbf{Efeito no aventureiro (os mortos-vivos recebem 20\%, ou 40\% com a Cláusula)} \\
 \midrule
 Lâmina Afiada & +1 de dano \\
-Couraça & +3 de vida máxima \\
-Passos Leves & +20\% de velocidade \\
-Frenesi & $-$25\% de tempo entre ataques, $-$2 de vida máxima \\
-Fúria Cega & +1 de dano, $-$3 de vida máxima \\
-Sangue Frio & +2 de vida máxima, $-$10\% de velocidade \\
+Couraça & $-$20\% de dano recebido \\
+Passos Leves & +15\% de velocidade \\
+Frenesi & $-$15\% de tempo entre ataques, +10\% de dano recebido \\
+Fúria Cega & +1 de dano, +30\% de dano recebido \\
+Sangue Frio & $-$20\% de dano recebido, $-$5\% de velocidade \\
+Vigor & +20\% de vida máxima \\
+Pés de Lã & $-$30\% de barulho: os mortos-vivos ouvem e acordam com o aventureiro mais perto \\
+Fôlego de Escudeiro & +25\% de recuperação de estamina e mana \\
+Sede do Ceifador & cura 2\% da vida máxima a cada golpe que encontra alvo, mesmo no escudo ou num aliado (o morto-vivo que acerta também se cura) \\
+Espinhos de Ferro & devolve 25\% do dano que de fato chegou a quem bateu, sem empurrão nem susto e sem espinho de volta; o que volta abaixo de 0,1 se perde, então os 5\% dos mortos-vivos só respondem a golpes de 2 ou mais \\
+Cláusula de Acréscimo & uma carta a mais para escolher a cada morte, mas os mortos-vivos passam a receber 40\% de cada bênção; vem uma vez só \\
 \bottomrule
-\end{tabularx}
+\end{xltabular}
 
-Regras: cada buff acumula até 3 vezes; os dois sorteados são sempre diferentes; vida máxima nunca fica abaixo de 1; velocidade e tempo entre ataques nunca caem abaixo de 20\% do valor base. Desistir na tela de morte, ou abandonar o contrato pela pausa, leva à cena de execução do aventureiro e depois ao menu principal; o próximo contrato começa do zero (tentativas e buffs zerados).
+Os valores foram reduzidos em 15/11/2026 para o formato roguelike: com os números antigos, três ou quatro bênçãos deixavam o aventureiro forte demais para as tentativas seguintes. Fúria Cega ficou como está porque já cobra caro. Em 17/11, os buffs de vida em pontos viraram redução (ou aumento) de dano recebido, na mesma proporção (2 de vida em 10 viraram 20\%), e entrou o Vigor, que dá vida em porcentagem. Como o golpe dos inimigos é medido sobre a vida base, a vida ganha com o Vigor fica de colchão.
+
+A cada 2 tentativas jogadas o aventureiro volta recebendo 10\% menos dano (tentativas 3 e 4: $-$10\%; 5 e 6: $-$20\%), um alívio só para os jogadores, que não vale para os mortos-vivos. Regras: cada buff acumula até 3 vezes (a Cláusula, uma); os sorteados são sempre diferentes; vida máxima nunca fica abaixo de 1; velocidade, tempo entre ataques e dano recebido nunca caem abaixo de 20\% do valor base. Desistir na tela de morte, ou abandonar o contrato pela pausa, leva à cena de execução do aventureiro e depois ao menu principal; o próximo contrato começa do zero (tentativas e buffs zerados).
 
 \subsection{Energia: estamina e mana}
 \label{sec:energia}
 
-Todo aventureiro tem uma barra de estamina de 100; o Mage tem também uma de mana. Gastar pausa a recarga (0,6\,s na estamina, 1\,s na mana); depois a barra volta sozinha. A recarga parte de uma velocidade base comum a todos (30 por segundo) e cada classe tem um multiplicador próprio. Correr ou segurar o escudo gasta estamina continuamente e impede a recarga enquanto dura. Barbarian, Mage e Rogue, quando zeram a estamina ou a mana, já começam a recarregar na hora, sem a pausa; o Knight mantém a pausa. Quem zera a estamina correndo volta a andar e só corre de novo com a barra em 30\%.
+Todo aventureiro tem uma barra de estamina de 100; o Mage tem também uma de mana. Gastar pausa a recarga (0,9\,s na estamina, 1\,s na mana); depois a barra volta sozinha. Se a estamina zerar, o aventureiro fica exausto: não ataca, não usa o escudo e não corre até a barra encher de novo por completo, e a barra fica apagada na HUD enquanto isso. A mana do Mage não trava ao zerar. A recarga parte de uma velocidade base comum a todos (24 por segundo, baixada de 30 depois de medir que a barra cheia voltava rápido demais para o ataque contínuo) e cada classe tem um multiplicador próprio. Correr ou segurar o escudo gasta estamina continuamente e impede a recarga enquanto dura. Barbarian, Mage e Rogue, quando zeram a estamina ou a mana, já começam a recarregar na hora, sem a pausa; o Knight mantém a pausa. Quem zera a estamina correndo volta a andar e só corre de novo com a barra em 30\%.
 
-\begin{tabularx}{\textwidth}{@{}lccccX@{}}
+\begin{xltabular}{\textwidth}{@{}lccccX@{}}
 \toprule
 \textbf{Aventureiro} & \textbf{Paga com} & \textbf{Rápido} & \textbf{Pesado} & \textbf{Recarga} & \textbf{Outros gastos} \\
 \midrule
-Knight    & estamina & 15 & 35 & 1$\times$ & escudo: 6 por segundo e 12 por golpe defendido \\
-Barbarian & estamina & 20 & 50 & 1$\times$ & --- \\
-Rogue     & estamina & 12 & 30 & 1$\times$ & --- \\
-Mage      & mana     & 20 & 45 & mana 1,5$\times$, estamina 0,5$\times$ & --- \\
+Knight    & estamina & 15 & 35 & 1$\times$ & escudo: 2 por segundo e 2 por golpe defendido \\
+Barbarian & estamina & 15 & 50 & 1$\times$ & - \\
+Rogue     & estamina & 12 & 30 & 1$\times$ & - \\
+Mage      & mana     & 20 & 45 & mana 1,5$\times$, estamina 0,5$\times$ & - \\
 \bottomrule
-\end{tabularx}
+\end{xltabular}
 
 Todos gastam 12 de estamina por segundo correndo. Com menos energia que o custo, o golpe não sai e a barra pisca em vermelho. Os números ficam no inspetor de cada aventureiro (grupos ``Energia'' e ``Pesado'').
 
 % ===============================================================
 \section{Personagens}
 
-O jogador poderá escolher entre quatro aventureiros, com diferentes estilos de combate, incluindo personagens corpo a corpo e de longo alcance.
+O jogador escolhe entre quatro aventureiros, dois de corpo a corpo e dois de longo alcance.
 
-\begin{tabularx}{\textwidth}{@{}lX@{}}
+\begin{xltabular}{\textwidth}{@{}lX@{}}
 \toprule
 \textbf{Personagem} & \textbf{Papel} \\
 \midrule
 Aventureiros & Personagens controlados pelos jogadores. \\
-Lorde & Responsável por entregar a missão. \\
+Lorde & Dá o contrato e, no fim, manda executar quem o cumpriu. \\
 Mortos-vivos & Inimigos espalhados pela vila. \\
-Boss & Principal inimigo e responsável pela infestação. \\
+Necromante (boss) & Sócio do Lorde, levanta os mortos da vila. \\
 \bottomrule
-\end{tabularx}
+\end{xltabular}
 
 \subsection{Aventureiros jogáveis}
 
-Cada aventureiro tem um ataque único. Todos atacam na direção em que a câmera olha. Mage e Rogue têm uma mira no centro da tela: o projétil sai da arma em direção ao ponto que a mira cobre (parede, chão ou morto-vivo, até 40\,m), inclusive para cima ou para baixo, então acertar de longe exige apontar a câmera; o ataque rápido causa 1 de dano por acerto (mais os buffs) e só acerta outro aventureiro com o fogo amigo ligado. Projéteis param ao bater em paredes e deixam rastro: o projétil do Mage queima uma marca violeta na superfície (some após 6\,s) e o virote do Rogue fica cravado onde bateu, na parede ou no corpo do morto-vivo, acompanhando-o enquanto ele se move (some após 4\,s). Golpes corpo a corpo não atravessam paredes: só acertam quem está com o caminho livre até o atacante. O virote da besta fica cravado no osso mais próximo de onde acertou e acompanha o morto-vivo andando, girando e caindo ao morrer.
+Cada aventureiro tem um ataque único. Todos atacam na direção em que a câmera olha. Mage e Rogue têm uma mira no centro da tela: o projétil sai da arma em direção ao ponto que a mira cobre (parede, chão ou morto-vivo, até 40\,m), inclusive para cima ou para baixo, então acertar de longe exige apontar a câmera; o ataque rápido causa 1 de dano por acerto (mais os buffs) e só acerta outro aventureiro com o fogo amigo ligado. Projéteis param ao bater em paredes e deixam rastro: o projétil do Mage queima uma marca violeta na superfície (some após 6\,s) e o virote do Rogue fica cravado onde bateu, na parede ou no osso mais próximo do morto-vivo, e o acompanha andando, girando e caindo (some após 4\,s). Golpes corpo a corpo não atravessam paredes: só acertam quem está com o caminho livre até o atacante.
 
 Regras comuns de ataque, pensadas para o controle não ficar pesado:
 \begin{itemize}
     \item durante o ataque o aventureiro ainda se move a 30\% da velocidade, sem girar, para manter a mira;
     \item logo depois do impacto, mover ou atacar de novo corta o resto da animação; parado, a animação termina normalmente;
     \item ser atingido durante a preparação (antes do impacto) cancela o golpe; depois do impacto, o golpe já contou;
-    \item ao ser atingido, o aventureiro recupera o controle em 0,3\,s.
+    \item ao ser atingido, o aventureiro recupera o controle em 0,3\,s;
+    \item o morto-vivo que cambaleia fica 1,4\,s sem cambalear de novo: ele continua levando dano e sendo empurrado, mas termina o próprio ataque, então bater sem parar não o deixa preso (medido: antes, um esqueleto apanhando sem parar nunca acertava o aventureiro corpo a corpo).
 \end{itemize}
 
+Peso do golpe: quando um golpe acerta, a animação de quem bateu e de quem apanhou para por um instante (0,06\,s no rápido, 0,11\,s no pesado), a câmera de quem bateu treme de leve (mais no pesado) e toca um som de confirmação só para ele, mais grave no pesado. Quem apanha é empurrado para longe de quem bateu: o golpe rápido empurra pouco, para não tirar o alvo do alcance do combo, e o pesado empurra o dobro; o minion recua bastante, o elite e os aventureiros menos, e o Necromante quase nada. Golpe bloqueado pelo escudo não empurra, mas quem bateu ainda sente o tranco (pausa, tremor e som). A pausa e o tremor são só visuais; em rede, a pausa em quem apanhou numa máquina remota é quase imperceptível, porque a animação de dor chega pela rede logo depois; o empurrão é calculado por quem controla o personagem e chega aos outros pela rede.
 
-\begin{tabularx}{\textwidth}{@{}llX@{}}
+
+\begin{xltabular}{\textwidth}{@{}llX@{}}
 \toprule
 \textbf{Aventureiro} & \textbf{Alcance} & \textbf{Estilo de combate} \\
 \midrule
-Knight & Corpo a corpo & Espada e escudo de torre. \textbf{Combo de três golpes} (vertical, diagonal, horizontal) que segue enquanto o jogador continua atacando e reinicia após uma pausa; acerta só à frente; recarga de 0,6\,s. \textbf{Pesado}: golpe de cima com as duas mãos, dano dobrado. \textbf{Escudo} (botão direito): enquanto segura, bloqueia golpes e projéteis que chegam pela frente (arco de 140°), fica parado (gira com a câmera) e não ataca; gasta estamina e, sem estamina, a guarda quebra; o bloqueio aparece como ``Bloqueado'' sobre a barra de vida \\
-Barbarian & Corpo a corpo & Dois machados. \textbf{Giro}: acerta todos os mortos-vivos em volta; recarga de 1,6\,s. \textbf{Pesado}: giro mais lento, dano dobrado, custa metade da estamina. \textbf{Segundo machado} (botão direito): golpe rápido só à frente, recarga de 0,5\,s, para finalizar um alvo sem esperar o giro \\
-Mage & Longo alcance & Cajado, usa mana. \textbf{Projétil mágico}: mais lento (14\,m/s), alcance de 6,91\,m e \emph{atravessa} os inimigos em linha; recarga de 1,0\,s. \textbf{Pesado}: feitiço longo, 2,5$\times$ o dano. \textbf{Portal} (troca na roda do mouse): abre um par de portais para o grupo atravessar \\
+Knight & Corpo a corpo & Espada e escudo de torre. \textbf{Combo de três golpes} (vertical, diagonal, horizontal) que segue enquanto o jogador continua atacando e reinicia após uma pausa; acerta só à frente; recarga de 0,6\,s. \textbf{Pesado}: golpe de cima com as duas mãos, dano dobrado, que arremessa o inimigo para trás e para cima (inimigos pesados voam menos; quem defende com o escudo não voa). A espada tem o dobro do tamanho do modelo, e o golpe alcança cerca de 3\,m. \textbf{Escudo} (botão direito): enquanto segura, bloqueia golpes e projéteis que chegam pela frente (arco de 140°), fica parado (gira com a câmera) e não ataca; gasta estamina e, sem estamina, a guarda quebra; o bloqueio aparece como ``Bloqueado'' sobre a barra de vida \\
+Barbarian & Corpo a corpo & Dois machados. \textbf{Machado}: uma machadada só à frente; recarga de 0,6\,s. \textbf{Pesado (giro)}: segurando o ataque, gira com os dois machados e acerta todos os mortos-vivos em volta, com dano dobrado, arremessando-os para longe; custa metade da estamina e tem recarga de 1,6\,s. Continuando a segurar, ele emenda giros curtos (20\% da estamina por volta) e anda a 70\% da velocidade enquanto gira; soltar o botão, ficar sem estamina ou apanhar encerra o giro (depois de apanhar, é preciso soltar e segurar de novo). \textbf{Segundo machado} (botão direito): golpe rápido só à frente, recarga de 0,5\,s, para alternar com o machado principal \\
+Mage & Longo alcance & Cajado, usa mana. \textbf{Projétil mágico}: mais lento (14\,m/s), alcance de 6,91\,m e \emph{atravessa} os inimigos em linha; recarga de 1,0\,s. \textbf{Pesado}: feitiço longo, 2,5$\times$ o dano. \textbf{Portal} (troca na roda do mouse): abre um par de portais para o grupo atravessar, só onde o mago chegaria andando: topo de muralha e telhado ficam de fora \\
 Rogue & Longo alcance & Besta. \textbf{Virote}: rápido (30\,m/s), alcance de 6\,m (um pouco menos que o Mage), para no primeiro inimigo; recarga de 0,7\,s. É o mais rápido: anda a 4,8\,m/s e corre a 9\,m/s, 20\% acima dos outros. \textbf{Pesado}: disparo mais lento, dano dobrado \\
 \bottomrule
-\end{tabularx}
+\end{xltabular}
 
 \subsection{Mortos-vivos e IA}
 
-Os mortos-vivos não se limitam a andar e bater: eles percebem, reagem com atraso humano e, nas próximas fases, se coordenam em grupo e respondem às ações do jogador. Todos usam a mesma base de física e animação do jogador e são mais lentos que ele (andar 2,8\,m/s, correr 5\,m/s), para que fugir seja uma opção real.
+Os mortos-vivos não se limitam a andar e bater: eles percebem, reagem com atraso humano, procuram quem sumiu e se juntam num elite quando o grupo cai. Todos usam a mesma base de física e animação do jogador e são mais lentos que ele (andar 2,8\,m/s, correr 5\,m/s), para que fugir seja uma opção real.
 
 \textbf{Percepção.} Em grupo, cada morto-vivo mira o aventureiro vivo mais próximo. Visão em cone de 120\textdegree{} até 14\,m, bloqueada por paredes; audição de corrida e de ataques num raio de 6\,m, mesmo sem ver; percepção de proximidade: nota o jogador a até 2,5\,m mesmo de costas, se não houver parede; ser atingido, inclusive por um disparo de longe, revela a posição do jogador; memória da última posição do jogador por 3\,s.
 
@@ -285,62 +424,208 @@ Os mortos-vivos não se limitam a andar e bater: eles percebem, reagem com atras
     \item \textbf{Ataque}: só golpeia quase de frente para o jogador, com aviso de 0,6\,s entre o início do golpe e o impacto (tempo para esquivar ou cortar o golpe); recarga de 1,35\,s.
     \item \textbf{Busca}: ao perder o jogador, vai até a última posição conhecida, procura por 2,5\,s e volta à guarda.
     \item \textbf{Corpo}: o morto-vivo derrubado fica caído por 6\,s, afunda no chão e sai da cena, deixando só uma mancha escura onde caiu. Mantém a vila limpa e reduz o que precisa ser desenhado.
-    \item \textbf{Elite}: mortos-vivos podem formar um grupo. Quando o último do grupo cai, os corpos ficam parados por 2\,s, deslizam até o ponto do grupo, afundam juntos e dali se levanta um esqueleto elite: maior, com elmo de chifres e aura roxa, 15 de vida, golpe de 2 de dano, visão e audição maiores. Ele já levanta sabendo onde o jogador está e vai atrás dele. Limpar uma área tem um último confronto, e o elite serve de base para o boss. Para montar um grupo na fase, basta colocar os mortos-vivos como filhos de um nó \texttt{EnemyGroup}: cada um só pode ter um pai, então grupos não se misturam. O elite nasce no ponto onde o nó do grupo foi colocado; só os corpos a até 8\,m desse ponto são puxados (quem caiu longe some como um corpo comum), e o editor mostra um aviso se algum membro for posicionado longe demais.
+    \item \textbf{Elite}: mortos-vivos podem formar um grupo. Quando o último do grupo cai, os corpos ficam parados por 2\,s, deslizam até o ponto do grupo, afundam juntos e dali se levanta um esqueleto elite: maior, com elmo de chifres e aura roxa, 24 de vida, golpe de 2 de dano, visão e audição maiores. Ele já levanta sabendo onde o jogador está e vai atrás dele. Limpar uma área tem um último confronto, e o elite serve de base para o boss. Para montar um grupo na fase, basta colocar os mortos-vivos como filhos de um nó \texttt{EnemyGroup}: cada um só pode ter um pai, então grupos não se misturam. O elite nasce no ponto onde o nó do grupo foi colocado; só os corpos a até 8\,m desse ponto são puxados (quem caiu longe some como um corpo comum), e o editor mostra um aviso se algum membro for posicionado longe demais.
 \end{itemize}
 
-\textbf{Boss: o Necromante.} Um esqueleto mago maior, com cajado e aura verde, 30 de vida. Surge na praça, levantando do chão, quando o último grupo da vila cai. Usa o mesmo cérebro dos outros mortos-vivos, mas com alcance de 14\,m, mais que o dos aventureiros a distância: fica longe e dispara rajadas mágicas (2 de dano, recarga de 2\,s). A cada 9\,s de caça levanta dois esqueletos ao seu redor, com no máximo quatro vivos; quando ele morre, os invocados desabam junto. A HUD mostra uma barra de vida grande com o nome dele.
+\textbf{Destravar.} Um morto-vivo que tenta andar e quase não sai do lugar por 0,7\,s (preso numa carroça ou num canto) dá um passo de lado por 0,7\,s e volta a perseguir. A malha de navegação da Pedra Alta é assada com raio de 0,6\,m, a largura do elite, para que nenhum caminho passe por onde o maior deles não cabe.
 
-\textbf{Próximas fases.}
-\begin{enumerate}
-    \item \textbf{Grupo}: no máximo alguns mortos-vivos atacam ao mesmo tempo, os demais cercam o jogador por lados diferentes; quem vê o jogador alerta os vizinhos.
-    \item \textbf{Reações}: ler o golpe do jogador; bloqueio frontal (Warrior com escudo); esquiva; atacar quando o jogador erra um golpe. As chances de reação crescem 5\% por tentativa, até 60\%.
-    \item \textbf{Variantes}: Warrior (escudo), Rogue (besta que mira prevendo o movimento e mantém distância) e Mage (projétil), cada um com seu perfil de números.
-\end{enumerate}
+\textbf{Atiradores.} Quem ataca de longe mira no peito do aventureiro que está vendo (1\,m acima dos pés), e não para a frente do próprio corpo, que ainda pode estar virando.
+
+\textbf{Boss: o Necromante.} Um esqueleto mago maior, com cajado e aura verde, 60 de vida. Surge no Mirante, levantando do chão, quando o último grupo da vila cai. Usa o mesmo cérebro dos outros mortos-vivos, com visão de 28\,m e alcance de 14\,m, mais que o dos aventureiros a distância: fica longe e dispara rajadas mágicas (2 de dano, recarga de 1,6\,s). A cada 8\,s de caça levanta uma leva de quatro ao seu redor (dois esqueletos, um mago e um arqueiro), com no máximo seis vivos; quando ele morre, os invocados desabam junto. A HUD mostra uma barra de vida grande com o nome dele.
+
+\subsection{Bestiário}
+\label{sec:bestiario}
+
+\begin{xltabular}{\textwidth}{@{}lccX@{}}
+\toprule
+\textbf{Inimigo} & \textbf{Vida} & \textbf{Dano / recarga} & \textbf{Papel} \\
+\midrule
+Esqueleto & 5 & 1 / 1,35\,s & Corpo a corpo, a base de todo grupo \\
+Arqueiro esqueleto & 4 & 1 / 3,2\,s & Flechas de até 6\,m, o mesmo alcance do Rogue; frágil, pede prioridade \\
+Mago esqueleto & 4 & 1 / 2,6\,s & Projétil mágico de até 6,9\,m, o mesmo alcance do Mage \\
+Mago invocador (elite) & 14 & 1,5 / 3\,s & A cada 12\,s levanta esqueletos (até 3 vivos); de longe, até 10\,m \\
+Mago de batalha (elite) & 16 & 2 / 1,6\,s & Atirador pesado, até 12\,m, visão de 22\,m \\
+Esqueleto de elite & 24 & 2 / 1,7\,s & Levanta dos corpos do grupo quando o último cai; de 3,5 a 10\,m para e arremessa o machado (1,5 de dano, recarga de 4\,s) \\
+O Necromante (boss) & 60 & 2 / 1,6\,s & Rajadas de 14\,m e levas de quatro invocados \\
+Mímico & 14 & 2 / 1,6\,s & Um por jogador entre os baús da Pedra Alta a cada tentativa e um no calabouço; não é morto-vivo \\
+Mayoi Michio & 12 & por estilo & Semi-boss do calabouço; cada golpe nele vale 25\% \\
+\bottomrule
+\end{xltabular}
+
+\textbf{Grupos.} Cada grupo é uma cena pronta, sorteada nos pontos de cada zona:
+\begin{itemize}
+    \item \textbf{patrulha}: 2 esqueletos, sem elite;
+    \item \textbf{guarda}: 3 esqueletos e o elite que se forma deles;
+    \item \textbf{dormentes}: 3 esqueletos deitados e o elite; sempre na zona da entrada, para o primeiro encontro ensinar;
+    \item \textbf{atiradores}: 1 esqueleto na frente, 1 mago e 2 arqueiros;
+    \item \textbf{círculo do invocador}: o mago invocador e 3 esqueletos de guarda;
+    \item \textbf{esquadrão do mago de batalha}: 2 esqueletos na frente, 1 mago e o mago de batalha.
+\end{itemize}
+
+\textbf{Ideias para depois.} Mortos-vivos que se revezam no ataque e cercam o jogador; reações (bloqueio, esquiva, contra-ataque) cuja chance cresce a cada tentativa.
 
 % ===============================================================
 \section{Mundo}
 
-O jogo acontece em uma vila medieval explorável, composta por ruas, casas, praça, construções e áreas abertas.
+O jogo acontece em Pedra Alta, uma vila mineira medieval na encosta de uma montanha, com ruas, casas, terraços e áreas abertas.
 
-Não existem fases separadas. Toda a missão acontece em um único mapa.
+A missão principal acontece num único mapa, a vila. Debaixo dela fica o calabouço escondido, a fase bônus, aberta pelo alçapão que o Necromante deixa ao morrer.
+
+\subsection{Fases e fluxo de uma partida}
+\label{sec:fases}
+
+\begin{xltabular}{\textwidth}{@{}lX@{}}
+\toprule
+\textbf{Etapa} & \textbf{O que acontece} \\
+\midrule
+Menu e contrato & O jogador escolhe a classe, lê e assina o contrato (sozinho) ou monta o grupo no lobby. \\
+Entrada & Cutscene curta: o aventureiro chega pela estrada à noite (``Contrato aceito.''). \\
+Pedra Alta & Sete grupos de mortos-vivos pelas zonas A a E, sem seta de objetivo. Cada grupo caído apaga um losango na HUD. \\
+Mirante (F) & Com o último grupo, o Necromante levanta no círculo de pedra vermelha do topo. \\
+Alçapão & Morto o Necromante, abre no chão um alçapão com 30\,s de contagem. Quem desce leva o grupo junto. \\
+Calabouço (bônus) & Três andares, travas de classe, a história da Lanterna, o Michio e o mímico. Saída com a cláusula cumprida. \\
+Finais & Vitória: tela ``Contrato cumprido'' e o epílogo da traição. Desistência ou cláusula quebrada: a execução. \\
+\bottomrule
+\end{xltabular}
 
 A cada nova tentativa, tanto o jogador quanto os grupos de inimigos recebem novas posições aleatórias dentro da vila, fazendo com que os encontros e o caminho percorrido possam mudar entre as partidas.
 
-\textbf{A vila (primeira versão).} Um vilarejo medieval de 48\,m $\times$ 48\,m, à noite, iluminado por tochas nas paredes. Todo o chão é de pedra (tijolo, tijolo vermelho e calçamento irregular). No centro, uma praça calçada com carroças, caixotes e barris que servem de cobertura; em volta, oito casas de pedra e enxaimel, de um ou dois andares, formando ruas e becos; ao sul, um campo aberto cercado. As portas em arco são vãos de verdade: dá para entrar nas casas, que viram esconderijos e atalhos.
+\textbf{Pedra Alta, a vila da montanha (fase atual).} Uma vila mineira de prata na encosta: o Lorde quer a mina de volta, não a vila, e por isso contrata aventureiros descartáveis. O mapa tem 44\,m $\times$ 122\,m e sobe de sul para norte em terraços (cotas 0, +3, +6, +9 e +12\,m), ligados por rampas de 4\,m de largura e até 25 graus que alternam de lado para obrigar a cruzar cada terraço. As bordas são visíveis: paredão de rocha a oeste e ao norte, portão desmoronado ao sul e cerca sobre o precipício a leste. São cinco zonas de combate; os sete grupos de cada tentativa são sorteados entre os pontos das zonas, um por zona e depois um segundo nas outras, no máximo dois por zona; a zona da entrada sempre recebe o grupo dos dormentes, o mais fácil, para o primeiro encontro ensinar: \textbf{A, Porteira do Cais de Carga} (portão arrombado por dentro, carroças viradas, bandeiras do Lorde); \textbf{B, Terraços dos Fornos} (casas, forno frio, varal com roupa e camas na rua: dormiram e não acordaram; fonte como respiro); \textbf{C, Pedreira do Corte Fundo} (ferramentas largadas, entulho, um veio de minério claro demais no paredão e a entrada gradeada do calabouço, com a lanterna da Companhia quebrada na boca); \textbf{D, Capela dos Mil Degraus} (covas abertas de dentro para fora e velas ainda acesas; a capela não é refúgio); \textbf{E, Varanda do Vigia} (ramal opcional pela ponte sobre a fenda, com o posto do vigia e um baú). No topo, \textbf{F, o Mirante do Último Sino}: a arena do Necromante, um círculo de pedra vermelha com seis braseiros, o sino rachado e o cadafalso do Lorde, vazio (o carrasco só aparece nas cutscenes). Há um baú em B, C, E e F. Sem seta de objetivo, os marcos guiam: a fumaça e o brilho da pedreira, as velas da capela e os braseiros vermelhos do topo. A vila plana anterior continua no projeto (\texttt{village\_level.tscn}) como referência.
 
-\textbf{Sorteio dos encontros.} O mapa tem seis pontos de nascimento do jogador e treze pontos de grupo. A cada tentativa o jogador nasce num ponto sorteado e cinco grupos ocupam pontos a pelo menos 16\,m dele. Os grupos são cenas prontas: \textbf{patrulha} (2 esqueletos, sem elite), \textbf{guarda} (3 esqueletos, com elite) e \textbf{dormentes} (3 esqueletos deitados, com elite). Um teste garante que de todo ponto de grupo se anda até todo ponto de nascimento. Em grupo, todos usam a mesma semente de sorteio, então a vila sai igual em todas as máquinas, e os jogadores nascem lado a lado no ponto sorteado.
+\textbf{A planta no Figma.} A página \emph{ideia de mapa} do arquivo de design tem a planta da encosta (Figura~\ref{fig:pedraalta}), feita antes de montar a fase: 44\,m $\times$ 122\,m, 1 quadrado = 2\,m, com o sul (a entrada, pelo portão desmoronado) embaixo. Cada faixa de cor é uma cota; as setas brancas são as rampas, que alternam de lado; os pontos laranja são os pontos de grupo de cada zona, com o círculo tracejado do alcance de 6\,m; os triângulos verdes, o nascimento dos jogadores; os quadrados amarelos, os baús; e os anéis laranja, os respiros (a fonte em B, o patamar entre C e D e a antessala do mirante). A planta trazia oito regras de layout, que o mapa seguiu: um grupo por zona; a zona A sempre com o grupo mais fraco e longe do nascimento; rampas de 4\,m com até 25 graus; bordas visíveis (paredão a oeste, cerca e precipício a leste), sem parede invisível; nenhum ponto a menos de 4\,m do paredão, por causa da câmera; marcos visíveis de longe no lugar da seta; e a zona D como a mais exposta, com barracas e carroças cortando a linha de visão. Ela é de 08/11/2026: hoje são sete grupos por tentativa (um por zona e depois um segundo nas outras), não cinco.
 
-% Para incluir um mapa ou esboço, salve a imagem em docs/img/ e ajuste o nome.
-\IfFileExists{img/mapa.png}{%
-\begin{figure}[h]
+\begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.8\textwidth]{img/mapa.png}
-    \caption{Esboço da vila}
-\end{figure}}{}
+    \includegraphics[width=\textwidth]{img/pedraalta_planta.png}
+    \caption{Pedra Alta, a planta da encosta como está no Figma (página \emph{ideia de mapa}).}
+    \label{fig:pedraalta}
+\end{figure}
+
+
+\textbf{A primeira vila.} Antes da Pedra Alta, a fase era um vilarejo medieval de 48\,m $\times$ 48\,m, à noite, iluminado por tochas nas paredes. Todo o chão é de pedra (tijolo, tijolo vermelho e calçamento irregular). No centro, uma praça calçada com carroças, caixotes e barris que servem de cobertura; em volta, oito casas de pedra e enxaimel, de um ou dois andares, formando ruas e becos; ao sul, um campo aberto cercado. As portas em arco são vãos de verdade: dá para entrar nas casas, que viram esconderijos e atalhos.
+
+\textbf{Sorteio dos encontros.} Na primeira vila eram seis pontos de nascimento e treze pontos de grupo: o jogador nascia num ponto sorteado e cinco grupos ocupavam pontos a pelo menos 16\,m dele. Na Pedra Alta o sorteio é por zona, como descrito acima. Os grupos são cenas prontas: \textbf{patrulha} (2 esqueletos, sem elite), \textbf{guarda} (3 esqueletos, com elite) e \textbf{dormentes} (3 esqueletos deitados, com elite). Nos dois mapas, um teste garante que de todo ponto de grupo se anda até todo ponto de nascimento. Em grupo, todos usam a mesma semente de sorteio, então a vila sai igual em todas as máquinas, e os jogadores nascem lado a lado no ponto sorteado.
+
+
+\subsection{O calabouço escondido (fase bônus)}
+\label{sec:calabouco}
+
+\textbf{O alçapão.} Quando o Necromante cai, a HUD avisa ``O Necromante caiu e abriu um alçapão no chão'' e o objetivo vira ``Desça pelo alçapão: 30 s'', em contagem regressiva. Perto do alçapão aparece ``E Descer pelo alçapão''; o pedido passa pelo host, que leva o grupo inteiro de uma vez. Se a contagem acaba, o alçapão fecha e abre a vitória normal. Lá dentro, a contagem de tentativas e as bênçãos continuam as mesmas; uma nova tentativa recomeça da entrada do calabouço. Há quatro poções a mais do que na versão avulsa (vida e mana na entrada, vida nos andares 2 e 3), porque o grupo já chega gasto da luta com o Necromante.
+
+Masmorra escura de três andares (cerca de 90\,m $\times$ 120\,m), montada com as peças do KayKit Dungeon em grade de 4\,m, pensada para uns 10 minutos: descer, abrir a descida, chegar ao tesouro e voltar à saída. Sem céu: fundo preto, luz ambiente baixa, neblina volumétrica e tochas que tremulam são a única luz; o nicho do espadachim fica sem tocha nenhuma. \textbf{Andar 1}: entrada, salão de pilares, nicho escuro, sala da guarda (dois esqueletos jogando dados), a biblioteca atrás de uma grade e a adega atrás de uma parede rachada. \textbf{Andar 2}: cripta, ossuário (dormentes), corredor das lâminas, sala dos espinhos, capela (guardas) e o corredor de flechas até o arsenal. A descida para o andar 3 fica atrás do \textbf{portão dos dois selos}: uma alavanca no ossuário e outra na capela, as duas guardadas por mortos-vivos. \textbf{Andar 3}: corredor dos dardos, antessala, subida do barril, sala do tesouro (com o mímico), o abismo da ponte levadiça e a sala secreta com o portão selado (``Além deste portão, outro calabouço espera.''). O chão do calabouço tem colisão de caixa lisa no topo de cada ladrilho: a malha exata, com sulcos e pedrinhas, prendia o personagem nas bordas. Seis grupos de mortos-vivos ocupam os andares, com malha de navegação própria, feita com portões e paredes abertos para que quem persegue atravesse o que o grupo já abriu.
+
+\textbf{Os mapas do Figma.} A página \emph{Calabouço - mapas} desenha os três andares a partir das células reais do GridMap de \texttt{scenes/maps/calabouco\_escondido.tscn}: cada quadrado é uma célula de 4\,m, o norte fica para cima e os marcadores estão nas posições reais da cena. Os nomes das salas foram postos à mão, em posição aproximada. A etiqueta colorida marca a trava de classe, na cor do aventureiro, e o anel dos restos da Lanterna leva a cor da classe de quem morreu ali. As plantas são de 08/11/2026: as quatro poções extras que o calabouço ganhou quando virou fase bônus ainda não estão nelas.
+
+\textbf{Andar 1, a entrada} (Figura~\ref{fig:andar1}). Desce-se pela escada da entrada até o salão de pilares, onde fica a primeira patrulha. A leste, o nicho escuro, sem tocha, onde o Michio aparece pela primeira vez. A oeste, a sala da guarda, com o esqueletinho, e a parede rachada que esconde a adega (trava do Barbarian, restos de Brakka e um baú). A nordeste, a grade da biblioteca (trava do Mage), com a alavanca, os restos de Maelis, o baú e duas poções de mana. As duas escadas do sul levam ao andar 2.
+
+\textbf{Andar 2, os selos} (Figura~\ref{fig:andar2}). Uma fileira de salas de oeste a leste: o ossuário, com os dormentes e o selo 1; a cripta, com uma patrulha; o corredor das lâminas, com duas lâminas pendulares; a sala dos espinhos, com quatro armadilhas em ritmo; e a capela, com os guardas e o selo 2. O portão dos selos, entre os espinhos e a capela, só abre com as duas alavancas puxadas e leva ao andar 3. Da cripta desce para o sul o corredor de flechas (trava do Knight) até o arsenal, com a alavanca que desarma o corredor, os restos de Aldren e um baú.
+
+\textbf{Andar 3, o tesouro} (Figura~\ref{fig:andar3}). Tem dois níveis, a $-6$ e a $-8$\,m (o mais claro é o de baixo). Do portão dos selos desce-se pelo corredor dos dardos até a antessala, com uma patrulha e o Michio; a escada solta o barril; e no fim fica a sala do tesouro, com os guardas, o baú de verdade e o mímico ao lado. A leste, o fosso de lâminas e a ponte erguida do abismo (trava da Rogue), com os restos de Wren; a ponte abre a galeria, que sobe de volta ao andar 2. A oeste, atrás da segunda parede rachada, a sala secreta, com o baú secreto, a inscrição e o portão selado.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.72\textwidth]{img/calabouco_andar1.png}
+    \caption{Calabouço, andar 1: entrada, guarda, adega e biblioteca (planta do Figma).}
+    \label{fig:andar1}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{img/calabouco_andar2.png}
+    \caption{Calabouço, andar 2: os dois selos, as armadilhas e o arsenal (planta do Figma).}
+    \label{fig:andar2}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.8\textwidth]{img/calabouco_andar3.png}
+    \caption{Calabouço, andar 3: dardos, barril, tesouro, abismo e sala secreta (planta do Figma).}
+    \label{fig:andar3}
+\end{figure}
+
+
+\textbf{Objetos interativos (Area3D).}
+\begin{itemize}
+    \item \textbf{Poção de mana}: recupera 40 de mana; só quem usa mana (o Mage) consegue pegar, os outros a deixam no chão.
+    \item \textbf{Espinhos}: sobem e descem num ciclo de 4\,s; cada subida fere uma vez quem está em cima, inclusive mortos-vivos, e o escudo não protege de baixo. As armadilhas vizinhas começam defasadas para formar um ritmo de travessia.
+    \item \textbf{Lâmina pendular}: balança de um lado a outro (3 de dano); no fim do balanço deixa o meio livre.
+    \item \textbf{Dardos}: pisar na placa dispara três virotes da parede (recarga de 1,5\,s); atrair um morto-vivo para a placa também o fere.
+    \item \textbf{Barril rolando}: inspirado no level design de Dark Souls. Subir a escada solta um barril lá de cima, um corpo rígido com impulso e torque iniciais que desce rolando pela física e atropela quem estiver no caminho (2 de dano e empurrão), recarga de 4\,s.
+    \item \textbf{Saída}: segurar E na saída encerra o contrato (ver abaixo).
+    \item \textbf{Alavanca, bilhete e saída}: todos mostram ``E <ação>'' para quem chega perto. Alavanca e saída passam pelo host, que confere o alcance; o bilhete abre só na tela de quem leu e fecha ao se afastar.
+\end{itemize}
+
+\textbf{Travas por classe.} O caminho principal e todos os mortos-vivos da cláusula se fazem com qualquer aventureiro; cada classe abre para o grupo um atalho ou uma sala com loot e história, para que em grupo cada um tenha seu momento.
+\begin{itemize}
+    \item \textbf{Mage, a grade da biblioteca}: a grade segura o corpo, mas deixa passar a mira, os tiros e o portal (fica numa camada própria, \texttt{grades}). O Mage abre a saída do portal do lado de dentro e puxa a alavanca que ergue a grade para todos.
+    \item \textbf{Knight, o corredor de flechas}: como no Dark Souls, o chão do corredor tem placas de pressão; pisar numa estala e, 0,5\,s depois, as seteiras da parede do fundo do arsenal disparam pelo corredor. Como vêm de frente, o escudo apara cada flecha (gasta estamina): o Knight pisa, ergue o escudo, avança. Na parede leste do arsenal, a alavanca desarma o corredor.
+    \item \textbf{Rogue, a corda da ponte}: no abismo, a ponte levadiça erguida fecha a passagem e há um fosso de lâminas na frente. A corda que a segura fica a mais de 4\,m de altura: só o virote da besta corta (a magia não corta e a lâmina não alcança). A ponte desce sobre o fosso e abre a galeria, que sobe de volta à capela: um atalho para a volta, no estilo de Dark Souls.
+    \item \textbf{Barbarian, as paredes rachadas}: só o giro pesado do Barbarian as derruba (marcado no golpe, \texttt{breaks\_walls}). Uma esconde a adega do andar 1; a outra, a sala secreta do andar 3.
+\end{itemize}
+
+\textbf{A Companhia da Lanterna.} A história vem pelo cenário: dez bilhetes e os restos de quatro aventureiros (cavaleiro, bárbaro, maga e ladina) que pegaram o mesmo contrato antes do grupo, cada um morto na trava da própria classe. A ordem do Lorde na entrada repete a cláusula; o diário de Sir Aldren conta que eram cinco, contando o espadachim que vivia se perdendo; Maelis descobre que quem morre ali levanta e que o Lorde sabia; o ossuário está cheio de crânios com marca de contrato; e a última página, na sala secreta, pede o que a cláusula exige: derrubar também o espadachim. Ele mesmo, no andar 3, se lembra do nome da companhia.
+Toda armadilha nomeia a própria causa no histórico de dano. Em grupo, cada máquina fere só quem controla, e armadilha sem dono é decidida pelo host.
+
+\textbf{A cláusula do contrato.} O Lorde mandou limpar tudo, e a HUD mostra ``Mortos-vivos restantes''. Com todos derrubados, a porta de saída é liberada e o grupo sai para a vitória, que termina na execução do epílogo (ver Os dois finais). Hoje, no código, a saída já pode ser usada antes disso: sair com algum de pé conta como falha e leva direto à execução, sem o epílogo.
+
+\textbf{O espadachim perdido.} Easter egg inspirado em Zoro (One Piece) e no carisma de Solaire (Dark Souls): um esqueleto de bandana verde com três espadas na cintura, perdido. O grupo o encontra no escuro; quem atira nele ouve ``Uepa! Pra que essa agressividade toda? Vamos com calma.'', e ele sai da sombra sem levar dano. Ele se chama \textbf{Mayoi Michio} (sobrenome primeiro, como no japonês): Michio é ``homem do caminho'' e Mayoi, ``se perder''. A primeira conversa, em qualquer andar, é a apresentação; até lá ele é só o ``Espadachim perdido'' no histórico de dano e nos avisos, e depois dela passa a ser Mayoi Michio. Perto dele aparece ``E Conversar''; cada aperto traz a próxima fala, que fica na tela até a seguinte (o resto do combo depois do susto não corta a fala: ele tem 2\,s de folga). A conversa acompanha o grupo: primeiro o cumprimento do andar, depois o assunto mais importante que já vale, e por fim as falas do andar, em rodízio. Os assuntos ficam na cena da fase (\texttt{DialogueTopic}): cada um observa uma propriedade do mundo (portão aberto, selos puxados, corda cortada, parede derrubada, mímico morto, tesouro aberto, mortos-vivos restantes) e só aparece dentro da faixa marcada. Na ordem: \textbf{lembranças} (abrir a sala de um antigo companheiro faz ele lembrar um nome solto: ``Maelis! Uma moça que brigava com os livros e ganhava''), \textbf{o que o grupo fez} (``Um selo já foi! Falta o outro'') e \textbf{indiretas sobre o que falta} (a biblioteca trancada, a parede que cheira a cerveja, a corda alta demais para a espada). As falas se ajustam ao grupo: sozinho, ele fala com você; em grupo, com vocês. \textbf{Mais um no grupo.} Depois da primeira rodada de falas do andar, ele pergunta ``O que você acha de mais um no grupo?''. Perto dele aparecem E Aceitar e F Recusar (X e B no controle); recusar faz ele perguntar de novo no andar seguinte. Aceito, sozinho ou em grupo, ele segue quem disse sim (ou o aventureiro mais perto, se esse cair), saca uma espada e corta o morto-vivo mais próximo. Ele também atrapalha: com o fogo amigo ligado, as espadas dele pegam o grupo; de vez em quando jura que o caminho é por outro lado (``É por aqui! Confia em mim.''), some até alguém ir buscá-lo ou falar com ele; e pisa em toda placa do caminho, disparando armadilha em cima do grupo (armadilha não fere ele, só a reclamação). Se o grupo sobe de andar com ele perdido longe, ele aparece na frente, como sempre. Continua contando na cláusula: apanhar do grupo só magoa (``Ei! Eu tô do seu lado!''), mas com a vida baixa ele sai do grupo e a luta dos três estilos começa.
+
+A cláusula vira piada que dói: ``Faltam 3 mortos-vivos. Engraçado: toda vez que eu conto, sobra um que eu não acho''. A cada descida ele reaparece, perdido, no andar seguinte. Ele também é um morto-vivo e conta na cláusula: para vencer é preciso derrubá-lo. Com a vida alta ele só reclama; com 3 de vida (de 12) saca uma espada e luta (estilo de uma espada), com 2 saca a segunda (duas espadas) e com 1 a terceira, mordida pelo cabo (Santoryuu, estilo de três espadas). Brigando, cada golpe que ele recebe vale só 25\%, o que o torna um semi-boss; cada estilo tem golpe, recarga e animações próprios, ajustáveis no inspetor.
+
+\textbf{O esqueletinho.} Easter egg na sala da guarda, perto da parede rachada da adega: um esqueleto pequeno que segue quem chega pedindo ``Faz o urro! Faz o urro!''. Só quem urra (o Barbarian) vê ``E Urrar''; o urro faz ele desmontar de emoção, se remontar e pedir de novo, e o primeiro urro dá uma poção de presente e a dica da adega (``O tio grandão que morava atrás daquela parede rachada também urrava assim!''). Para as outras classes ele só pergunta pelo grandão. Apanhar só o desmonta, e ele não conta na cláusula, a não ser que um Barbarian por perto negue o urro seis vezes: emburrado, ele vira um morto-vivo de verdade, entra na conta e pode cair. Um urro tardio faz as pazes e o tira da conta de novo.
+
+\textbf{O mímico.} Na sala do tesouro, ao lado do baú de verdade, há um baú igual que é um mímico. A única pista é a tampa, que de vez em quando abre uma fresta quase imperceptível. Quem tenta abrir ou bate nele é mordido: ele mostra os dentes e a língua e persegue o aventureiro mais perto aos pulos (14 de vida, mordida de 2). Derrotado, solta uma poção de vida. Não é morto-vivo, então não conta na cláusula.
+
+\subsection{Segredos e easter eggs}
+
+Resumo de tudo que é escondido ou opcional, com como ativar e o que acontece se ninguém ativar. Serve também para conferir no playtest quantos jogadores acham cada um. Nenhum é obrigatório para terminar o jogo; os que contam na cláusula estão marcados.
+
+\begin{xltabular}{\textwidth}{@{}>{\raggedright\arraybackslash}p{2.6cm}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X@{}}
+\toprule
+\textbf{Segredo} & \textbf{Como ativar e o que acontece} & \textbf{Se ninguém ativar} \\
+\midrule
+O alçapão & Matar o Necromante e, em 30\,s, chegar perto e apertar E (Descer pelo alçapão). O host leva o grupo inteiro para o calabouço. & O alçapão fecha, vem ``Contrato cumprido'' e o epílogo com a execução. O calabouço inteiro fica sem ser visto. \\
+A lanterna quebrada & Só olhar: fica na boca gradeada do calabouço, na Pedreira (zona C). É a primeira pista da Companhia. & Nada muda; só a pista passa batida. \\
+Mayoi Michio \newline (conta na cláusula) & Chegar perto no nicho escuro do andar 1 e apertar E (Conversar); atirar nele dá ``Uepa!''. Depois da primeira rodada ele pede para entrar no grupo: E aceita, F recusa. Aceito, segue o grupo e corta mortos-vivos, mas se perde e pisa nas armadilhas. Com 3, 2 e 1 de vida luta com uma, duas e três espadas. & Ele continua perdido e reaparece a cada andar. Como é morto-vivo, sem derrubá-lo a cláusula não fecha e a saída não libera. \\
+O esqueletinho \newline (pode contar) & Na sala da guarda, só o Barbarian vê E (Urrar). O primeiro urro dá uma poção e a dica da adega. & Com outras classes ele só pergunta pelo grandão e não conta. Se um Barbarian negar o urro seis vezes, ele vira morto-vivo de verdade e entra na conta; um urro tardio faz as pazes. \\
+Os jogadores de dados & Chegar à sala da guarda e ouvir: os dois esqueletos jogam e conversam sobre o Necromante e o Lorde, sem notar o grupo. & Nada muda. \\
+A adega do Lorde & O giro pesado do Barbarian derruba a parede rachada do andar 1 (a que cheira a cerveja). Lá dentro: baú, restos e bilhete de Brakka. & O baú e o bilhete ficam para trás. \\
+As salas das travas & Mage: portal dentro da grade e alavanca (biblioteca, poções de mana, bilhete de Maelis). Knight: escudo no corredor de flechas e alavanca (arsenal, diário de Aldren). Rogue: virote na corda (ponte, galeria de atalho, bilhete de Wren). & O caminho principal continua aberto; perde-se o loot e o pedaço da história de cada sala. \\
+O mímico & Tentar abrir ou bater no baú falso ao lado do tesouro (a pista é a tampa que abre uma fresta). Ele morde e persegue; derrotado, solta uma poção. & Fica parado. Não é morto-vivo, então não conta na cláusula. \\
+A sala secreta & O giro do Barbarian derruba a segunda parede rachada, no andar 3: baú secreto, a última página de Aldren e o portão selado (``Além deste portão, outro calabouço espera.''). & O pedido de Aldren e o gancho do próximo contrato ficam sem ser lidos. \\
+A lápide & Inscrição na cripta do andar 2: ``Aqui jaz o último aventureiro que confiou no Lorde.'' & Nada muda; é um aviso para quem lê. \\
+Os dez bilhetes & Chegar perto e apertar E (Ler): a ordem do Lorde, o diário e a última página de Aldren, Brakka, Maelis, Wren (dois), o ossuário, a saída riscada na pedra e a placa dos selos. & A traição do epílogo chega sem aviso, e a placa dos selos é a dica de como abrir o andar 3. \\
+\bottomrule
+\end{xltabular}
+
 
 % ===============================================================
 \section{Interface}
 
 Todas as telas compartilham um tema único de madeira escura e dourado. Ações destrutivas usam borda vermelha e sempre pedem confirmação; a ação principal de cada tela vem destacada e recebe o foco do teclado. A interface foi desenhada para 1152$\times$648 e escala com o tamanho da janela, mantendo a proporção.
 
-\textbf{Fluxo de telas:} Menu principal $\rightarrow$ Seleção de aventureiro (sozinho) ou Contrato em grupo (lobby) $\rightarrow$ Entrada na missão $\rightarrow$ Partida (HUD, Pausa) $\rightarrow$ Morte $\rightarrow$ Reviver (nova tentativa na mesma partida) ou Desistir $\rightarrow$ Execução $\rightarrow$ Menu principal. Abandonar o contrato pela pausa também leva à Execução.
+\textbf{Fluxo de telas:} Menu principal $\rightarrow$ Seleção de aventureiro e Assinatura do contrato (sozinho) ou Contrato em grupo (lobby) $\rightarrow$ Entrada na missão $\rightarrow$ Partida (HUD, Pausa) $\rightarrow$ Morte $\rightarrow$ Reviver (nova tentativa na mesma partida) ou Desistir $\rightarrow$ Execução $\rightarrow$ Menu principal. Abandonar o contrato pela pausa também leva à Execução.
 
-\begin{tabularx}{\textwidth}{@{}lX@{}}
+\begin{xltabular}{\textwidth}{@{}lX@{}}
 \toprule
 \textbf{Tela} & \textbf{Conteúdo} \\
 \midrule
-Menu principal & Título, ``Aceitar contrato'', ``Contrato em grupo'', Configurações, Sair e créditos, sobre uma cena 3D da vila com câmera girando \\
-Contrato em grupo & Nome do jogador, Hospedar ou Entrar (pelo endereço do host). Na sala, em duas colunas: à esquerda os endereços do host (clicar copia) e o grupo; à direita a escolha do aventureiro (sem repetir), o fogo amigo (só o host) e Iniciar (só o host, quando todos escolheram) \\
+Menu principal & Título, ``Aceitar contrato'', ``Contrato em grupo'', Placar, Configurações, Sair e créditos, sobre uma cena 3D da vila com câmera girando. Se a partida em grupo caiu, o motivo aparece em vermelho \\
+Placar & Painel por cima do menu, com duas abas (LB/RB). \textbf{Grupo}: as 20 melhores partidas vencidas em grupo, com posição, nome do grupo (ou os apelidos), jogadores, tentativas e tempo; menos tentativas primeiro, o tempo desempata. \textbf{Solo}: os recordes de cada classe (partidas, vitórias, melhor tempo e média de tentativas), sem nomes, porque no solo o nome assinado não sai do computador. Vem da API; sem internet, mostra o aviso e ``Tentar de novo'' \\
+Contrato em grupo & A sala online vem primeiro: ``Criar sala online'' gera um código de 6 letras, e quem entra digita o código e clica ``Entrar na sala''. Na sala, em duas colunas: à esquerda o código (clicar copia) e o grupo; à direita a escolha do aventureiro (sem repetir), o nome do grupo (opcional, até 24 caracteres, vai para o placar de grupos), o fogo amigo (só o host) e Iniciar (só o host, quando todos escolheram). Cada jogador continua assinando o próprio nome \\
+Consentimento & ``Participar do playtest'', na primeira vez que o jogo abre, antes do menu: explica em poucas linhas o que vai (classe, resultado, duração, mortes, bênçãos e onde caiu, com um código aleatório do PC e sem o nome; no co-op pela sala online, o apelido também), que os dados ficam 90 dias em servidores da Cloudflare fora do Brasil e onde desistir ou apagar. Botões Participar e Não participar; a escolha pode ser trocada em Configurações \\
 Seleção de aventureiro & Os quatro aventureiros lado a lado em 3D; o escolhido dá um passo à frente, ganha um anel dourado no chão e o nome destacado. Ficha com estilo, ataque e descrição. Escolha por clique, teclas 1 a 4 ou setas; a escolha vale para todas as tentativas do contrato \\
-Configurações & Áudio (geral, música, efeitos), vídeo (tela cheia, VSync) e controles (sensibilidade do mouse, inverter eixo vertical, lista de teclas). Salvas automaticamente \\
-HUD & Tentativa atual, vida do jogador em número e barra, estamina (amarela) e mana (azul, só o Mage), divididas em blocos do custo do golpe atual (bloco que não encheu não pode ser gasto), bênçãos ativas com efeito e acúmulos, aviso de abates e quedas no canto e placar segurando Tab. No canto inferior esquerdo, uma cruz de slots com ícones: em cima a habilidade ativa (com o custo em \% da barra no canto e o nome ao lado), à esquerda o botão direito (escudo ou segundo machado; some para quem não tem, mantendo o lugar na cruz) e embaixo o item rápido (com a quantidade e o lembrete ``segure E''). Segurar o ataque ou o E enche um anel dourado em volta do slot correspondente, mostrando quanto falta para o golpe pesado ou o gole. Os ícones são renderizados dos próprios modelos 3D do jogo. Para Mage e Rogue, e com o Portal ativo, uma mira no centro da tela indica o alvo. \\
+Assinatura do contrato & Ao aceitar o aventureiro, o contrato do Lorde abre em pergaminho: as cinco cláusulas resumidas, as letras miúdas, o ofício escolhido e a linha ``Assine aqui''. O nome digitado aparece na hora como assinatura inclinada sobre a linha do Contratado; Assinar (ou Enter) começa a missão, Voltar (ou Esc) retorna à escolha. O nome assinado passa pela mesma limpeza do nome do lobby (até 16 caracteres, sem caracteres invisíveis; em branco vira ``Aventureiro''), fica salvo para o próximo contrato e aparece nos avisos, no placar e na vitória (``Contrato de Fulano, cumprido na tentativa 2''; em grupo, todos os nomes). Quem já assinou antes encontra o nome preenchido e só confirma, o que serve também para quem joga no controle \\
+Configurações & Áudio (geral, música, efeitos), vídeo (tela cheia, VSync), controles (dispositivo, sensibilidade do mouse, inverter eixo vertical, lista de teclas) e Dados (ligar ou desligar a telemetria e ``Apagar meus dados'', que apaga no servidor tudo do código deste PC e gera um código novo). Salvas automaticamente \\
+HUD & Segue o estudo de HUD do Figma. No canto superior direito, o objetivo: ``Grupos restantes'' com um losango por grupo, aceso enquanto o grupo vive, e depois ``Derrote o Necromante''. Ele não aponta direção, porque achar os grupos faz parte de explorar a vila. Na primeira tentativa, um aviso no centro lembra que Esc (ou Start) abre a pausa com os controles, e o aviso de que o Necromante despertou fica 5\,s na tela, com som. No canto superior esquerdo, a tentativa em numeral romano com as bênçãos ativas em etiquetas ao lado (nome e acúmulos; o efeito de cada uma fica na pausa), a vida em barra vermelha com número e um rastro claro que mostra por um instante quanto o golpe tirou, e a estamina (âmbar) e a mana (azul, só o Mage), divididas em blocos do custo do golpe atual (bloco que não encheu não pode ser gasto); aviso de abates e quedas no canto e placar segurando Tab. No canto inferior esquerdo, uma cruz de slots com ícones: em cima a habilidade ativa (com o custo em \% num selo âmbar no canto e só o nome ao lado; o resto fica na tela de controles e habilidades da pausa), à esquerda o botão direito (escudo ou segundo machado; some para quem não tem, mantendo o lugar na cruz) e embaixo o item rápido (com a quantidade, o nome e o lembrete ``segure E''; sem item, o slot fica vazio, sem texto). Segurar o ataque ou o E enche um anel dourado em volta do slot correspondente, mostrando quanto falta para o golpe pesado ou o gole. Os ícones são renderizados dos próprios modelos 3D do jogo. Para Mage e Rogue, e com o Portal ativo, uma mira no centro da tela indica o alvo. \\
 Barras 3D & Sobre os mortos-vivos (vermelha, com rastro do dano); escondida enquanto o morto-vivo dorme, aparece quando ele começa a levantar. Sobre os aliados, nome e barra verde; sobre um aliado caído, o aviso de reviver para quem tem poção por perto. O jogador usa a barra do HUD. Números de dano sobem de todos os personagens \\
 Entrada na missão & Cena curta à noite: o aventureiro escolhido chega pela estrada até a entrada da vila (``Contrato aceito.'', ``O Lorde quer a vila livre dos mortos.''); em grupo, os aliados vêm em formação atrás. Qualquer tecla marca ``pronto''; a partida começa quando todos estão prontos \\
-Pausa & Continuar, Configurações e Abandonar contrato (com confirmação; leva à execução). Em grupo, o jogo não congela, mas o aventureiro para de obedecer enquanto o menu está aberto (solta o escudo e cancela o que estava segurado); abandonar tira só quem saiu \\
-Morte & Histórico de dano da vida (de quem veio cada golpe, curas e o golpe final), tentativa, bênçãos acumuladas, Reviver ou Desistir (só o host; com confirmação; leva à execução). Reviver mostra duas cartas de bênção para votar, com o mouse ou as teclas 1 e 2 \\
+Pausa & Em duas colunas e com pouco texto. À esquerda, o selo, ``Contrato pausado'' e os botões Continuar, Controles e habilidades, Configurações e Abandonar contrato (com confirmação; leva à execução). À direita, só a situação do contrato: tentativa, aventureiro, objetivo atual e as bênçãos ativas com o efeito de cada uma (``Os mortos-vivos recebem 20\% de cada uma.''). O botão Controles e habilidades abre uma tela à parte com a tabela de controles, que troca sozinha entre teclado e controle, e a ficha da classe: estilo, descrição e cada habilidade com o custo em \% da barra (rápido e pesado) e o botão direito; Esc volta à pausa. Em grupo, o jogo não congela, mas o aventureiro para de obedecer enquanto o menu está aberto (solta o escudo e cancela o que estava segurado); abandonar tira só quem saiu \\
+Morte & Histórico de dano da vida (de quem veio cada golpe, curas e o golpe final), tentativa, bênçãos acumuladas, Reviver ou Desistir (só o host; com confirmação; leva à execução). Reviver mostra duas cartas de bênção (três com a Cláusula de Acréscimo) para votar, com o mouse ou as teclas numéricas \\
 Execução & Cena em duas tomadas: o aventureiro escolhido vai embora pela estrada da vila ao entardecer (``Ele deu as costas ao contrato''); corta para a praça pública, onde ele está ajoelhado num cadafalso diante da multidão, ouve o veredito do Lorde e recebe o golpe de machado do carrasco encapuzado, enquanto a multidão comemora; termina em ``Contrato encerrado'' e volta ao menu. Qualquer tecla pula \\
+Vitória e epílogo & A tela ``Contrato cumprido'' mostra quem assinou e em qual tentativa, com ``Voltar à vila''. O epílogo da traição (descrito na História) roda em seguida e volta ao menu; qualquer tecla pula \\
 \bottomrule
-\end{tabularx}
+\end{xltabular}
 
 \subsection{Áudio}
 
@@ -377,24 +662,67 @@ O aventureiro tem um nó \texttt{StateMachine} com um nó filho por estado, no m
 
 \subsection{Rede (co-op)}
 
-Um jogador hospeda (ENet, porta UDP 7777) e os outros entram pelo endereço dele. Cada máquina manda no movimento do próprio aventureiro e envia posição e animação 20 vezes por segundo; o host manda nos mortos-vivos, no elite, no boss e na votação. O dano é aplicado na máquina de quem é dono do alvo. Antes de começar cada fase todos esperam a última máquina carregar, para nenhuma mensagem chegar a uma cena que ainda não existe. Jogar sozinho usa o mesmo código, sem rede. Todo pedido que chega de outra máquina é conferido antes de valer: quem pediu (só o dono do atacante relata o golpe dele), se ele está vivo e perto do que quer mexer (até 35\,m para tiros, o alcance da seta mais o que dá para andar enquanto ela voa) e se o valor é plausível (dano ou cura de no máximo 20, perto do golpe mais forte do jogo). Baú, barril e poção são decididos pelo host, que avisa todas as máquinas juntas; a queda de cada jogador conta uma vez só no placar; depois do início ninguém troca de aventureiro nem de nome; e nomes perdem caracteres de controle e invisíveis.
+O co-op roda pela \textbf{sala online}, a API do próprio jogo na Cloudflare, mantida num repositório privado separado (\texttt{the-last-contract-api}) e publicada a cada push na \texttt{main}. Ela é um \textbf{Cloudflare Worker} com um \textbf{Durable Object} por sala e um banco \textbf{D1} para o placar e a telemetria do playtest. Qualquer PC pode hospedar: o jogo só abre uma conexão WebSocket de saída por HTTPS, então funciona em rede de faculdade que bloqueia o resto, sem abrir porta nem usar VPN.
+
+\textbf{Como uma partida usa a sala.} O host cria a sala e recebe um código de 6 letras; os outros digitam o código e entram. A sala não roda o jogo: ela só repassa os pacotes entre as máquinas. Do lado do jogo, \texttt{scripts/network/relay\_peer.gd} conversa com a sala e junta os pacotes em lotes de 100\,ms, e \texttt{scripts/autoload/net.gd} guarda o endereço publicado e manda o relatório do fim da partida. O formato das mensagens binárias tem versão nos dois lados (\texttt{VERSAO} na API, \texttt{PROTOCOL\_VERSION} no jogo), e um jogo desatualizado não entra numa sala nova.
+
+\begin{xltabular}{\textwidth}{@{}lX@{}}
+\toprule
+\textbf{Rota} & \textbf{Para que serve} \\
+\midrule
+\texttt{GET /salas} (WebSocket) & Cria a sala e entra como host; a resposta traz o código de 6 letras. \\
+\texttt{GET /salas/CODIGO} (WebSocket) & Entra na sala como cliente. \\
+\texttt{POST /telemetria} & Relatório do fim da partida em grupo, com a ficha de uso único que a sala deu a cada jogador. \\
+\texttt{POST /solo/inicio} e \texttt{/solo/marco} & Sessão e resumos da partida solo; o marco final devolve o selo (verificado ou suspeito). \\
+\texttt{GET /placar}, \texttt{/placar/grupos}, \texttt{/placar/solo} & Os placares: melhores apelidos, melhores grupos (com o nome do grupo) e recordes do solo por classe, sem nomes. \\
+\texttt{DELETE /jogador/CODIGO} & O próprio jogador apaga o que o PC dele gerou. \\
+\texttt{GET /painel} e \texttt{/uso} & Painel do playtest e consumo do dia; pedem o token de administrador. \\
+\texttt{GET /saude} & Responde ``ok''. \\
+\bottomrule
+\end{xltabular}
+
+\textbf{Limites e custo.} Tudo cabe na cota grátis da Cloudflare (100 mil requisições por dia; cada 20 mensagens recebidas contam como uma). A API aceita até 8 salas ao mesmo tempo, com 4 jogadores cada; como a turma joga atrás do mesmo IP da faculdade, cabem 6 salas abertas por rede, 10 criadas por minuto, 120 relatórios por minuto e 40 mil requisições por rede por dia. Perto de 50 mil requisições no dia, nenhuma sala nova abre até as 21h. A sala fecha sozinha em 2 minutos sem cliente, em 10 minutos parada ou em 90 minutos aberta. Medido em 13/11/2026 com 4 bots jogando pela sala: 45 minutos gastaram 1.971 requisições (39.412 mensagens), e os 2 primeiros minutos, com todo mundo correndo, gastam o dobro do ritmo médio.
+
+\textbf{Dados pessoais.} O banco guarda só o apelido digitado no lobby, nunca o IP; a ficha de cada jogador fica guardada como hash; e o que passa de 90 dias é apagado todo dia às 03:00.
+
+\textbf{Testes.} O teste de ponta a ponta \texttt{coop-relay} sobe a API localmente (\texttt{wrangler dev}) e joga uma partida em grupo pela sala; a partida de carga põe 4 bots jogando por ela para medir o custo. A API tem 66 testes próprios em Node.
+
+\textbf{O que a sala carrega.} Cada máquina manda no movimento do próprio aventureiro e envia posição e animação 20 vezes por segundo; o host manda nos mortos-vivos, no elite, no boss e na votação. O dano é aplicado na máquina de quem é dono do alvo. Antes de começar cada fase todos esperam a última máquina carregar, para nenhuma mensagem chegar a uma cena que ainda não existe. Jogar sozinho usa o mesmo código, sem rede. Todo pedido que chega de outra máquina é conferido antes de valer: quem pediu (só o dono do atacante relata o golpe dele), se ele está vivo e perto do que quer mexer (até 35\,m para tiros, o alcance da seta mais o que dá para andar enquanto ela voa) e se o valor é plausível (dano ou cura de no máximo 20, perto do golpe mais forte do jogo). Baú, barril e poção são decididos pelo host, que avisa todas as máquinas juntas; a queda de cada jogador conta uma vez só no placar; depois do início ninguém troca de aventureiro nem de nome; e nomes perdem caracteres de controle e invisíveis.
+
+\subsection{Telemetria do playtest e painel}
+
+Para avaliar o jogo além das impressões da turma, cada partida manda um resumo para a API (banco D1 da Cloudflare), só com consentimento.
+
+\textbf{O que vai.} Sozinho, a partida abre uma sessão no início e manda marcos durante o jogo (grupo limpo, boss morto, bênção escolhida, alçapão aberto, usado ou perdido, entrada e saída do calabouço); em grupo, o host manda um relatório no fim. Cada morte leva o inimigo que matou, a fase, a posição, os últimos golpes recebidos e o total de dano levado e curado. Vão também a classe, as bênçãos, o tempo, o resultado, o dispositivo mais usado (controle ou teclado e mouse, contando só o tempo em que o jogador está mexendo) com a fração do tempo no controle, e um código aleatório do PC, que liga as partidas do mesmo jogador sem identificá-lo. Na partida solo o nome assinado não vai (até a causa de morte por fogo amigo é enviada sem o nome de quem atirou); no co-op pela sala online vai o apelido, como o lobby avisa. Os eventos de cada envio cabem em 12\,kB, e o jogo manda um pedido por vez, numa fila, esperando o último ao fechar.
+
+\textbf{Selo da partida solo.} O servidor confere se há início de tentativa, se as tentativas batem com os eventos e se os marcos chegaram em ordem e num ritmo possível (até 200 marcos, no mínimo 1\,s entre eles, tempo do servidor contra o do jogo) e marca a partida como \emph{verificada}, \emph{aberta} (ainda sem fim) ou \emph{suspeita}. Só as verificadas entram nos recordes.
+
+\textbf{Painel.} Uma página protegida por senha (\texttt{/painel}) mostra: partidas e jogadores, quanto cada bênção é escolhida, mortes por inimigo e por fase, o mapa das mortes da Pedra Alta (passando o mouse, quem morreu, para quem e em qual tentativa), o tempo das partidas, quantos acharam e usaram o alçapão, em qual tentativa cada um desistiu, a melhora de cada jogador entre partidas e quantos jogam com controle e quantos com teclado e mouse, e o custo em requisições por modo e por classe, contra o orçamento diário do plano gratuito.
+
+\textbf{Placares.} Recordes solo verificados e um placar de grupos, pelo nome do grupo escolhido no lobby.
+
+\textbf{LGPD.} Consentimento explícito antes do primeiro envio, finalidade só de avaliação da disciplina, rodada marcada (\texttt{PLAYTEST-NOV-2026}), retenção de 90 dias, opção de desligar e de apagar tudo pelo próprio jogo e um contato para pedidos.
 
 \subsection{Mapa}
 
-A vila é montada com dois GridMaps: \textbf{Chão} (células de 2\,m para ruas e praça) e \textbf{Estrutura} (células de 1\,m para pisos, paredes, cantos e escadas das casas). Telhados, portas, janelas e objetos de cenário ficam fora da grade, como cenas avulsas. As bibliotecas de peças são geradas por um script a partir dos modelos importados. Em volta da vila, quatro paredes invisíveis de 6\,m (\texttt{Limites}) seguram quem sai pelas portas das casas da borda antes do fim do chão. Cada mapa é uma cena própria em \texttt{scenes/maps/} (\texttt{village}, \texttt{grid\_sandbox}, \texttt{public\_square} e \texttt{village\_road}) e é desenhado inteiro pela paleta do GridMap: cada grade é uma cena separada em \texttt{scenes/maps/<mapa>/} (\texttt{ground}, \texttt{structure} e \texttt{objects}), que pode ser reaproveitada em outras cenas. São três bibliotecas de peças: \textbf{ground} (pisos de pedra e madeira do Medieval Village MegaKit; os pisos do KayKit saíram por serem de cor lisa e destoarem das texturas), \textbf{village\_structure} (paredes, cantos, escadas, telhados e empenas) e \textbf{props} (carroça, caixotes, barris, cercas e tocha de parede, com colisão). Fora da grade ficam só as luzes, os limites invisíveis do mapa, os pontos de sorteio e peças com personagens, como o cadafalso da execução.
+Cada mapa é uma cena própria em \texttt{scenes/maps/} e é desenhado com três GridMaps: \textbf{Chao} (células de 2\,m para ruas e praça), \textbf{Estrutura} (células de 1\,m para pisos, paredes, cantos e escadas das casas) e \textbf{Objetos} (carroças, caixotes, barris e cercas). São três bibliotecas de peças, geradas por um script a partir dos modelos importados: \textbf{ground} (pisos de pedra e madeira do Medieval Village MegaKit; os do KayKit saíram por serem de cor lisa e destoarem das texturas), \textbf{village\_structure} (paredes, cantos, escadas, telhados e empenas) e \textbf{props} (carroça, caixotes, barris, cercas e tocha de parede, com colisão). Telhados, portas, janelas e objetos de cenário ficam fora da grade, como cenas avulsas, junto com as luzes, os limites do mapa, os pontos de sorteio e peças com personagens, como o cadafalso da execução.
+
+A Pedra Alta (\texttt{scenes/maps/pedraalta.tscn}) usa os mesmos três GridMaps, com o chão em várias alturas. Os terraços, rampas, paredões e a cerca são blocos com colisão, com a textura de pedra (RockTrim) e de tijolo irregular do kit da vila para não sumirem no céu noturno. A decoração grande (entulho, caixotes, chaminés, camas, mesas, portões) tem caixa de colisão do tamanho do modelo, e o navmesh é assado a partir das colisões (\texttt{pedraalta\_navmesh.res}, inclinação máxima de 30 graus, gerado por \texttt{tools/pedraalta/}). Os pontos de grupo levam a zona como metadado, e o sorteio espalha os grupos pelas zonas (no máximo dois por zona); mapas sem zona sorteiam como antes. As outras cenas de mapa são a primeira vila (\texttt{village}), a estrada e a praça das cutscenes (\texttt{village\_road} e \texttt{public\_square}), o calabouço e uma área de teste (\texttt{grid\_sandbox}). Na primeira vila, quatro paredes invisíveis de 6\,m (\texttt{Limites}) seguram quem sai pelas portas das casas da borda antes do fim do chão; a Pedra Alta não tem parede invisível, as bordas são visíveis.
+
+\textbf{Floresta de fundo.} Em volta da vila, uma floresta low-poly fecha o horizonte: três árvores modeladas no Blender (pinheiro alto, pinheiro baixo e árvore de copa, de 22 a 32 faces cada) espalhadas com semente fixa entre o quadrado livre de 30\,m de meia largura e o raio de 62\,m, com 2,6\,m entre troncos, desenhadas por \texttt{MultiMeshInstance3D} sem sombra. Embaixo, um chão de terra com textura de ruído; por cima, quatro volumes de neblina rasteira (\texttt{FogVolume}) cobrem o chão entre o mapa e a mata, e as árvores saem da névoa. A floresta é a cena \texttt{scenes/props/forest\_ring.tscn} e serve para qualquer mapa: basta instanciá-la, ajustar no inspetor o quadrado livre, o raio, o espaçamento e a semente e clicar em \emph{Gerar floresta}; o chão e a neblina se ajustam junto. A geração precisa do editor aberto (o modo \texttt{-{}-headless} não guarda as posições das árvores), e a neblina só aparece se o \texttt{Environment} da fase tiver a neblina volumétrica ligada (com densidade global zero, só os volumes contam).
 
 As cutscenes usam o AnimationPlayer do próprio Godot: câmeras, legendas, fades, movimentos e animações dos personagens são trilhas da animação, ajustáveis no painel Animation sem mexer em código. Todas usam o mesmo script (\texttt{AdventurerCutscene}), que só coloca o aventureiro escolhido nos marcadores indicados e, ao terminar, abre a cena definida no inspetor; uma cutscene nova não precisa de código.
 
 \subsection{Testes automatizados}
 
-O projeto usa o gdUnit4 (versão 6.2.1). São 389 testes em 52 suítes, incluindo a mira dos ataques à distância, organizados por área: seleção de aventureiro, criação do aventureiro escolhido na partida, cena de execução, um teste específico para cada personagem (Knight, Barbarian, Mage, Rogue e Skeleton Minion), personagem base (vida, morte, buffs), percepção e cérebro dos mortos-vivos (visão, audição, memória, despertar, perseguição, ataque com aviso, busca e navegação contornando paredes), habilidades do botão direito (escudo do Knight, segundo machado do Barbarian), jogo pelo controle (analógicos, gatilhos, filtro por dispositivo, navegação nos menus), formação do elite, movimento do aventureiro (aceleração, andar, correr segurando Espaço, queda, mira pela câmera), comandos de ataque (combo, cancelamento, ataque guardado, golpe interrompido), combate corpo a corpo e à distância, estado da missão, fase da vila (sorteio dos encontros e alcance pela navegação), áudio, baú e poção, Necromante e vitória, configurações, HUD, barra de vida, tela de morte e pausa, máquina de estados do jogador, energia (custos, golpe pesado, dano proporcional, corrida e escudo), votação, histórico de dano e placar, inventário rápido, beber segurando E, troca de habilidade, poção e objetos que quebram, portal e HUD em cruz, e funções de rede do lobby. Para rodar: aba gdUnit do editor ou o workflow de testes no GitHub. Além deles, dois testes de ponta a ponta rodam o jogo de verdade a partir do menu, apertando os mesmos botões que o jogador: um contrato solo até a segunda tentativa e uma partida em grupo com dois processos ligados pela rede local (dano entre máquinas, pedido forjado recusado pelo host, reviver pela rede, votação e placar). Rodam com \texttt{tests/e2e/run\_e2e.sh}, também no GitHub.
+O projeto usa o gdUnit4 (versão 6.2.1). São 838 testes, todos passando em 19/11/2026, incluindo a mira dos ataques à distância, organizados por área: seleção de aventureiro, assinatura do contrato (nome limpo, salvo e usado na vitória), criação do aventureiro escolhido na partida, cena de execução, um teste específico para cada personagem (Knight, Barbarian, Mage, Rogue e Skeleton Minion), personagem base (vida, morte, buffs), percepção e cérebro dos mortos-vivos (visão, audição, memória, despertar, perseguição, ataque com aviso, busca e navegação contornando paredes), habilidades do botão direito (escudo do Knight, segundo machado do Barbarian), jogo pelo controle (analógicos, gatilhos, filtro por dispositivo, navegação nos menus), formação do elite, movimento do aventureiro (aceleração, andar, correr com um toque no Espaço, queda, mira pela câmera), comandos de ataque (combo, cancelamento, ataque guardado, golpe interrompido), combate corpo a corpo e à distância, estado da missão, fase da vila (sorteio dos encontros e alcance pela navegação), áudio, baú e poção, Necromante e vitória, configurações, HUD, barra de vida, tela de morte e pausa, máquina de estados do jogador, energia (custos, golpe pesado, dano proporcional, corrida e escudo), votação, histórico de dano e placar, inventário rápido, beber segurando E, troca de habilidade, poção e objetos que quebram, portal e HUD em cruz, funções de rede do lobby, a fase da Pedra Alta (zonas, grupo fácil na entrada e alcance pela navegação), a floresta de fundo, o registro de playtest e o calabouço escondido (peças, escuridão, armadilhas, poção de mana, escadas, barril, espadachim e seus estilos, mímico, contagem de mortos-vivos, saída, travas de classe, selos, alavancas, bilhetes e o alcance de todos os grupos pela navegação). Para rodar: aba gdUnit do editor ou o workflow de testes no GitHub. Também entram nos testes os inimigos novos (mago, arqueiro, invocador, mago de batalha e a leva do Necromante), o destravar dos mortos-vivos, a mira dos atiradores, o alçapão, o lobby da sala online e o nome do grupo, o consentimento e a fila da telemetria, a corrida por toque e a escolha por clique. Além deles, testes de ponta a ponta rodam o jogo de verdade a partir do menu, apertando os mesmos botões que o jogador: um contrato solo até a segunda tentativa, com a telemetria chegando a uma API local; uma partida em grupo com dois processos na mesma máquina, ligados direto (dano entre máquinas, pedido forjado recusado pelo host, reviver pela rede, votação e placar); a mesma partida pela sala online local; e o alçapão (matar o Necromante, descer e chegar ao calabouço). Uma partida de carga com 4 bots mede o custo da sala. Rodam com \texttt{tests/e2e/run\_e2e.sh}, também no GitHub. A API tem os próprios testes (66, em Node).
 
 % ===============================================================
 \section{Assets}
 
 O projeto utiliza pacotes gratuitos de modelos 3D e áudio, todos sob licença \href{https://creativecommons.org/publicdomain/zero/1.0/}{CC0} (domínio público, crédito opcional):
 
-\begin{tabularx}{\textwidth}{@{}lX@{}}
+\begin{xltabular}{\textwidth}{@{}lX@{}}
 \toprule
 \textbf{Pacote} & \textbf{Uso no jogo} \\
 \midrule
@@ -406,12 +734,61 @@ O projeto utiliza pacotes gratuitos de modelos 3D e áudio, todos sob licença \
 \href{https://opengameart.org/content/dark-cavern-ambient}{Dark Cavern Ambient} (Paul Wortmann) & Música ambiente da vila \\
 \href{https://opengameart.org/content/medieval-fair-loop}{Medieval fair [Loop]} (Woli34) & Música do menu \\
 \bottomrule
-\end{tabularx}
+\end{xltabular}
+
+A fonte dos títulos, \href{https://github.com/NDISCOVER/Cinzel}{Cinzel} (The Cinzel Project Authors), vai embutida no jogo sob a \href{https://openfontlicense.org}{SIL Open Font License 1.1}, que permite uso e redistribuição junto com a licença (\texttt{assets/fonts/OFL.txt}).
+
+\section{Arquivo de design no Figma}
+\label{sec:figma}
+
+Todo o trabalho visual e de história fica no arquivo \href{https://www.figma.com/design/OUXX0RlOXTqWtFt3Azhk1f/The-Last-Contract---Estudo-de-UI}{The Last Contract - Estudo de UI}, aberto para qualquer pessoa com o link. Ele é a fonte da aparência do jogo: cores e textos vêm das variáveis e estilos do próprio arquivo, toda tela leva um selo de status e toda decisão leva uma anotação ao lado. O fluxo de uma tela é: o GDD define o que ela mostra; a Biblioteca dá as peças; o estudo é montado com elas (Rascunho); o grupo comenta (Em revisão); o Godot segue o estudo (Aprovado); e uma captura do jogo vai ao lado (No jogo). São estas as páginas (duas outras, ``a definir'', estão vazias):
+
+\begin{xltabular}{\textwidth}{@{}lX@{}}
+\toprule
+\textbf{Página} & \textbf{O que tem} \\
+\midrule
+Telas & Os estudos de UI. \textbf{Identidade}: o conceito é o contrato, tinta dourada sobre couro escuro com um selo de cera vermelho como marca; o ouro só aparece no que é interativo ou em foco, o vermelho é vida e perigo e o verde fica reservado ao Necromante. São 14 cores em variáveis, Cinzel nos títulos e Alegreya Sans proposta para o texto e os números. \textbf{Menu principal}: sem caixas, texto em Cinzel com um losango no item em foco, o selo ao lado do título e a vila ao fundo, escurecida à esquerda. \textbf{HUD}: vida em vermelho com rastro de dano, estamina em blocos âmbar, tentativa em numeral romano, bênçãos como ícones com acúmulo, grupos restantes como losangos, barra do Necromante centralizada e o histórico de abates. \textbf{Inventário rápido}: os estados do slot (vazio, com item, selecionado, bebendo com anel de progresso, cheio) e a proposta de um cinto com os itens na ordem em que chegaram. \\
+Biblioteca & Os estilos de texto (Título Display, H1, H2, Sobretítulo, Corpo, Citação, Número da HUD), os efeitos (sombra do selo, brilho de foco), os componentes (Selo de cera, Status, Tecla, Anotação, Ficha de personagem, Slot, Item de menu e 11 ícones), o fluxo de seis etapas e a tabela que liga cada variável ao lugar no \texttt{main\_theme.tres}, com o que já está igual no jogo e o que falta trocar. \\
+Personagens & Onze fichas: os quatro aventureiros, cada um com sua cor (Knight aço, Barbarian vermelho, Mage roxo, Rogue verde-água), o esqueleto, o elite, o Necromante, o Lorde, o Carrasco, o Mayoi Michio e a Companhia da Lanterna. As origens e falas dos aventureiros estão como Rascunho. \\
+História e níveis & O modo história em atos (prólogo, vila, Necromante, calabouço, cláusula e o gancho do portão selado), o laço de cada tentativa com a duração de cada parte, a planta da primeira vila e o esquema de fluxo do calabouço com as travas de classe. \\
+Steam & Cápsulas nos tamanhos da loja (principal, cabeçalho, pequena, vertical, biblioteca, logo e fundo), os textos da página em português e inglês, as etiquetas sugeridas e o checklist de publicação: arte final das cápsulas, propriedade intelectual (o Michio precisa de nome de estilo e visual próprios antes de qualquer venda), licenças dos recursos e o que a Steam ainda pede. \\
+O contrato e a história & O contrato em pergaminho com as cinco cláusulas, as letras miúdas e o adendo do calabouço; a história completa em dez momentos, com as citações reais dos bilhetes; a tabela de como cada inimigo, NPC, item, bênção e armadilha encaixa numa cláusula; e o que cada classe abre para o grupo no calabouço. \\
+Ideias de logo & Os estudos da marca a partir do selo de cera. \\
+Ideia de mapa & A planta da encosta da Pedra Alta (Figura~\ref{fig:pedraalta}). \\
+Calabouço - mapas & As plantas dos três andares (Figuras~\ref{fig:andar1} a~\ref{fig:andar3}). \\
+Histórias & A Companhia da Lanterna (origem, a expedição dia a dia e os cinco membros), o grupo atual com o elo de cada um com o antecessor da mesma classe e a tabela de espelhos: cada trava é um reencontro. \\
+\bottomrule
+\end{xltabular}
+
+\textbf{O que mudou depois do Figma.} O arquivo foi montado em 08/11/2026, e algumas coisas andaram desde então; onde há diferença, vale este GDD:
+\begin{itemize}
+    \item A fase principal é a Pedra Alta, com sete grupos por tentativa; a planta da encosta e a página de história ainda falam em cinco grupos.
+    \item A poção cura 20\% da vida máxima (no Figma, 3 pontos), e as bênçãos ficaram mais fracas em 15/11.
+    \item As três perguntas em aberto da página do contrato (o que o Lorde ganha, quem é o Necromante e para que serve o pagamento adiantado) foram respondidas pelo pacto entre o Lorde e o Necromante e pelo epílogo da vitória (ver História).
+    \item O calabouço não é mais avulso: é a fase bônus, aberta pelo alçapão do Necromante.
+\end{itemize}
+
+\section{Estado atual e próximos passos}
+
+\textbf{Pronto e testado:} menu, seleção e assinatura, quatro classes, Pedra Alta com sete grupos e seis tipos de grupo, Necromante, alçapão com moldura de pedra e tampa de madeira, calabouço com travas e segredos, os dois finais, co-op por sala online, telemetria com painel e consentimento. Depois do playtest de 17/11: doze bênçãos (cinco novas) com 20\% para os mortos-vivos, prazo de trinta tentativas, um mímico por jogador, lago em volta da vila e volta ao chão seguro para quem sai do mapa, câmera de espectador em grupo, portal só em chão andável, tempo de golpe do Knight medido na animação e a decoração da Pedra Alta com texturas.
+
+\textbf{Aberto para refazer:}
+\begin{itemize}
+    \item parede de névoa na arena do boss;
+    \item segunda fase do Necromante;
+    \item uma armadilha por zona da Pedra Alta: dardos (A), espinhos (B), barril rolando (C), lâmina pendular (D) e saraivada de flechas (E);
+    \item dificuldade que escala com o número de jogadores, com um multiplicador geral;
+    \item atalho direto ao boss;
+    \item armadilha como causa de morte no painel;
+    \item porta de saída do calabouço trancada até a cláusula zerar (hoje dá para sair antes e ir direto à execução).
+\end{itemize}
+
+\textbf{A medir no playtest de 20/11:} se a dificuldade está justa com as bênçãos novas, a redução de dano e o prazo de trinta tentativas (no build de 17/11 uma partida chegou à tentativa 62 sem terminar), se os mímicos por jogador pesam demais em grupo de quatro e se o Espinhos de Ferro e a Cláusula de Acréscimo desequilibram; o painel mostra em qual inimigo e fase cada desistência aconteceu.
 
 \section{Publicação}
 
-O jogo é exportado para Windows e Linux (64 bits) como um executável único, com o conteúdo embutido, e publicado no itch.io. Para jogar em grupo, o host precisa estar na mesma rede local que os outros, ou liberar a porta UDP 7777 no roteador, ou usar uma VPN de jogo (Radmin, Tailscale). A versão para navegador não é usada porque o jogo depende do renderizador Forward+ (sombras, névoa e luzes dinâmicas), que o navegador não suporta. O GitHub Actions gera os executáveis de Windows e Linux em todo pull request para a \texttt{main} (\texttt{build.yml}), publica uma release com os dois a cada merge na \texttt{main} (\texttt{release.yml}) e gera este documento em PDF (\texttt{gdd.yml}). Como o executável não é assinado, o Windows mostra o aviso do SmartScreen na primeira execução (``Mais informações'', ``Executar assim mesmo''); quem hospeda precisa permitir o jogo no firewall, marcando também a rede Pública, que é como redes de faculdade e VPNs costumam aparecer.
+O jogo é exportado para Windows e Linux (64 bits) como um executável único, com o conteúdo embutido, e publicado no itch.io. Para jogar em grupo, o caminho mais simples é a sala online, que não exige abrir porta nem VPN. A API fica num repositório privado separado e é publicada na Cloudflare a cada push na \texttt{main}. A versão para navegador não é usada porque o jogo depende do renderizador Forward+ (sombras, névoa e luzes dinâmicas), que o navegador não suporta. O GitHub Actions gera os executáveis de Windows e Linux em todo pull request para a \texttt{main} (\texttt{build.yml}), publica uma release com os dois a cada merge na \texttt{main} (\texttt{release.yml}) e gera este documento em PDF (\texttt{gdd.yml}). Como o executável não é assinado, o Windows mostra o aviso do SmartScreen na primeira execução (``Mais informações'', ``Executar assim mesmo'').
 
-O executável usa o ícone do jogo (o Knight sob a luz verde do Necromante). O README do projeto traz os controles, como rodar, como testar e os créditos, e os workflows \texttt{tests.yml} e \texttt{e2e.yml} rodam os testes unitários e os de ponta a ponta a cada pull request.
+O logo é o selo de cera do contrato, partido ao meio, com a lanterna da Companhia da Lanterna guardando um crânio no lugar da chama (\texttt{assets/ui/logo\_seal.svg}). Na interface (ao lado do título no menu e no topo da pausa) ele aparece em uma cor só, dourado sobre o escuro, no tom do título, para não destoar dos botões e da HUD; em cores (cera vermelha e lanterna dourada) ele é o ícone do jogo e do executável; nos tamanhos de 48\,px para baixo o ícone usa o selo inteiro, sem a rachadura, que some nessa escala. O README do projeto traz os controles, como rodar, como testar e os créditos, e os workflows \texttt{tests.yml} e \texttt{e2e.yml} rodam os testes unitários e os de ponta a ponta a cada pull request.
 
 \end{document}

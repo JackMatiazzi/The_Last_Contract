@@ -1,6 +1,6 @@
 extends Node
 ## Gerenciador de rede e multiplayer (Autoload).
-## Responsável por criar/entrar em salas (ENet), gerenciar a lista de jogadores (roster),
+## Responsável por criar/entrar em salas (ENet ou WebSocket), gerenciar a lista de jogadores (roster),
 ## sincronizar nomes, validar caracteres, controlar a barra de carregamento do nível
 ## e intermediar mensagens RPC de estado de jogo.
 # sem peer configurado o Godot usa OfflineMultiplayerPeer: o jogo solo e um host sem ninguem conectado
@@ -8,13 +8,30 @@ extends Node
 signal roster_changed
 signal connection_failed
 signal player_left(peer_id: int)
+signal room_ready(code: String)
+signal match_report_sent(accepted: bool)
+
+## ENET e a rede local (UDP); RELAY e a sala online com codigo, a API no Cloudflare (the-last-contract-api);
+## WEBSOCKET e o host publicando a propria porta com o tunel do cloudflared
+enum Transport { ENET, WEBSOCKET, RELAY }
 
 const PORT := 7777
+## endereco da sala online (repositorio the-last-contract-api) depois do deploy; --relay=ws://... troca,
+## para testar com a API rodando local
+const RELAY_URL := "wss://the-last-contract-api.last-contract.workers.dev"
+const ROOM_CODE_LETTERS := "ABCDEFGHJKMNPQRSTUVWXYZ23456789"
+const ROOM_CODE_LENGTH := 6
+const WEB_SCHEMES := {"https://": "wss://", "http://": "ws://", "wss://": "wss://", "ws://": "ws://"}
+const WEB_BIND_ADDRESS := "127.0.0.1"
+const WEB_MAX_QUEUED_PACKETS := 512
+const WEB_HANDSHAKE_TIMEOUT := 3.0
 const MAX_PLAYERS := 4
 const MISSION_INTRO := "res://scenes/cutscenes/mission_intro.tscn"
 const MAIN_MENU := "res://scenes/ui/main_menu.tscn"
 const NO_CHOICE := -1
 const MAX_NAME_LENGTH := 16
+## o placar de grupos guarda ate 24 caracteres (igual a API)
+const MAX_GROUP_NAME_LENGTH := 24
 const VIRTUAL_ADAPTERS := ["virtualbox", "vmware", "hyper-v", "vethernet", "wsl", "docker", "loopback"]
 ## invisiveis ou que invertem a direcao do texto: um nome com eles baguncaria placar e avisos
 const HIDDEN_CHARACTERS := [
@@ -28,10 +45,17 @@ var roster := {}
 ## peer_id -> nome escolhido no lobby
 var names := {}
 var friendly_fire := true
+## nome do grupo escolhido no lobby (opcional); vai no relatorio para o placar de grupos
+var group_name := ""
 var match_seed := 0
 ## depois do inicio ninguem troca de aventureiro nem de nome
 var in_match := false
 var last_error := ""
+var relay_url := RELAY_URL
+## codigo da sala online que o host passa para os amigos
+var room_code := ""
+## ficha que a sala online deu a este jogador; o relatorio do fim da partida so vale com ela, uma vez
+var relay_ticket := ""
 ## solo (offline ou host sozinho) conta 1: reviver aliado, votacao e pausa sem congelar ficam desligados
 var player_count: int:
 	get:
@@ -40,6 +64,10 @@ var player_count: int:
 var _command_line := Array(OS.get_cmdline_user_args())
 ## entre a troca de fase e a barreira ninguem transmite: o estado inicial sai igual em todas as maquinas
 var waiting_for_peers := false
+## quem não carrega a fase nova nesse tempo sai da partida: o host não fica parado esperando para sempre
+const LOAD_TIMEOUT := 40.0
+## cada espera tem um número: o aviso de tempo esgotado de uma espera antiga não derruba ninguém da nova
+var _load_round := 0
 # so o host conta quem ja terminou de carregar a fase atual
 var _loaded_peers: Array[int] = []
 
@@ -50,6 +78,9 @@ func _ready() -> void:
 	multiplayer.peer_disconnected.connect(_on_peer_disconnected)
 	multiplayer.connection_failed.connect(_on_connection_failed)
 	multiplayer.server_disconnected.connect(_on_server_disconnected)
+	for arg: String in _command_line:
+		if arg.begins_with("--relay="):
+			relay_url = arg.trim_prefix("--relay=")
 
 
 func is_online() -> bool:
@@ -59,10 +90,29 @@ func is_online() -> bool:
 func is_coop() -> bool:
 	return player_count > 1
 
-## Inicia um servidor ENet na porta especificada.
-func host(port := PORT) -> Error:
-	var peer := ENetMultiplayerPeer.new()
-	var error := peer.create_server(port, MAX_PLAYERS - 1)
+## Abre a sala na porta. Em WEBSOCKET os outros entram pelo endereco do tunel (wss://).
+func host(port := PORT, transport := Transport.ENET) -> Error:
+	var peer: MultiplayerPeer
+	var error: Error
+	if transport == Transport.RELAY:
+		var relay_peer := RelayPeer.new()
+		relay_peer.room_ready.connect(_on_room_ready)
+		relay_peer.room_ready.connect(_remember_ticket.bind(relay_peer))
+		# adiado: o aviso sai de dentro do poll do proprio peer, que nao pode ser trocado ali
+		relay_peer.dropped.connect(_on_relay_host_dropped.bind(relay_peer), CONNECT_DEFERRED)
+		error = relay_peer.create_host(relay_url)
+		peer = relay_peer
+	elif transport == Transport.WEBSOCKET:
+		# so o tunel enxerga a porta: na rede local quem quiser entrar sem o link nao consegue
+		var web_peer := WebSocketMultiplayerPeer.new()
+		web_peer.max_queued_packets = WEB_MAX_QUEUED_PACKETS
+		web_peer.handshake_timeout = WEB_HANDSHAKE_TIMEOUT
+		error = web_peer.create_server(port, WEB_BIND_ADDRESS)
+		peer = web_peer
+	else:
+		var enet_peer := ENetMultiplayerPeer.new()
+		error = enet_peer.create_server(port, MAX_PLAYERS - 1)
+		peer = enet_peer
 	if error != OK:
 		return error
 	multiplayer.multiplayer_peer = peer
@@ -71,14 +121,115 @@ func host(port := PORT) -> Error:
 	roster_changed.emit()
 	return OK
 
-## Conecta-se a um servidor hospedado no IP e porta informados.
+## Entra na sala: codigo de 6 letras vai pela sala online, link do tunel (https/wss) por WebSocket,
+## IP ou nome da maquina por ENet.
 func join(address: String, port := PORT) -> Error:
-	var peer := ENetMultiplayerPeer.new()
-	var error := peer.create_client(address, port)
+	var web := web_address(address)
+	var peer: MultiplayerPeer
+	var error: Error
+	if is_room_code(address):
+		var relay_peer := RelayPeer.new()
+		relay_peer.room_ready.connect(_remember_ticket.bind(relay_peer))
+		error = relay_peer.create_client(relay_url, address.strip_edges().to_upper())
+		peer = relay_peer
+	elif not web.is_empty():
+		var web_peer := WebSocketMultiplayerPeer.new()
+		error = web_peer.create_client(web)
+		peer = web_peer
+	else:
+		var enet_peer := ENetMultiplayerPeer.new()
+		error = enet_peer.create_client(address.strip_edges(), port)
+		peer = enet_peer
 	if error != OK:
 		return error
 	multiplayer.multiplayer_peer = peer
 	return OK
+
+
+## o cloudflared mostra um link https://; para o jogo ele vira wss://. Vazio quando nao e endereco web
+static func web_address(raw: String) -> String:
+	var address := raw.strip_edges().trim_suffix("/")
+	for scheme: String in WEB_SCHEMES:
+		if address.to_lower().begins_with(scheme):
+			return WEB_SCHEMES[scheme] + address.substr(scheme.length())
+	return ""
+
+
+static func is_room_code(raw: String) -> bool:
+	var code := raw.strip_edges().to_upper()
+	return code.length() == ROOM_CODE_LENGTH and Array(code.split("")).all(func(letter: String) -> bool: return letter in ROOM_CODE_LETTERS)
+
+
+func _remember_ticket(_code: String, relay_peer: RelayPeer) -> void:
+	relay_ticket = relay_peer.ticket
+
+
+## endereço HTTP de uma rota da API da sala online (relatório, playtest, apagar dados)
+func api_url(path: String) -> String:
+	return http_address(relay_url) + path
+
+
+static func http_address(web_url: String) -> String:
+	if web_url.begins_with("wss://"):
+		return "https://" + web_url.trim_prefix("wss://")
+	return "http://" + web_url.trim_prefix("ws://") if web_url.begins_with("ws://") else web_url
+
+
+## relatorio do fim da partida para o banco da sala online (placar e playtest). Sem ficha nao manda:
+## partida local ou pelo tunel nao passa pela sala. A ficha vale uma vez so
+func send_match_report(report: Dictionary) -> Error:
+	var full := take_match_report(report)
+	if full.is_empty():
+		return ERR_UNCONFIGURED
+	var body := JSON.stringify(full)
+	var request := HTTPRequest.new()
+	add_child(request)
+	request.request_completed.connect(_on_report_sent.bind(request))
+	return request.request(http_address(relay_url) + "/telemetria", ["Content-Type: application/json"], HTTPClient.METHOD_POST, body)
+
+
+## junta a ficha e o apelido ao relatório e gasta a ficha; vazio quando a partida não passou pela sala
+func take_match_report(report: Dictionary) -> Dictionary:
+	if relay_ticket.is_empty():
+		return {}
+	var full := report.merged({"ficha": relay_ticket, "apelido": Settings.player_name})
+	relay_ticket = ""
+	return full
+
+
+func _on_report_sent(result: int, code: int, _headers: PackedStringArray, _body: PackedByteArray, request: HTTPRequest) -> void:
+	var accepted := result == HTTPRequest.RESULT_SUCCESS and code == 200
+	if not accepted:
+		push_warning("Net: relatorio da partida nao foi aceito pela sala online (resultado %d, http %d)" % [result, code])
+	request.queue_free()
+	match_report_sent.emit(accepted)
+
+
+func _on_room_ready(code: String) -> void:
+	room_code = code
+	_share_roster()
+	room_ready.emit(code)
+
+
+# sem internet, sala expirada ou relay fora do ar: no lobby volta a tela de conexao, na partida vai ao menu
+## o aviso chega adiado: se o host ja saiu e abriu outra sala, ele e de uma conexao velha
+func _on_relay_host_dropped(relay_peer: RelayPeer) -> void:
+	if multiplayer.multiplayer_peer != relay_peer:
+		return
+	last_error = _relay_refusal("A conexão com a sala online caiu.")
+	log_network("conexão com a sala caiu na partida=%s: %s" % [in_match, last_error])
+	var was_in_match := in_match
+	leave()
+	if was_in_match:
+		get_tree().paused = false
+		get_tree().change_scene_to_file(MAIN_MENU)
+	else:
+		connection_failed.emit()
+
+
+## o WebSocket nao tem limite de clientes como o ENet: o host recusa o quinto e quem chega no meio
+func admits_new_player() -> bool:
+	return not in_match and roster.size() < MAX_PLAYERS
 
 ## Encerra a conexão de rede e restaura o estado inicial do gerenciador de rede.
 func leave() -> void:
@@ -90,7 +241,9 @@ func leave() -> void:
 	_loaded_peers.clear()
 	waiting_for_peers = false
 	friendly_fire = true
+	group_name = ""
 	in_match = false
+	room_code = ""
 
 ## Solicita a seleção de um aventureiro. Se for o cliente, envia RPC para o servidor.
 func choose_adventurer(index: int) -> void:
@@ -153,6 +306,13 @@ func set_player_name(raw: String) -> void:
 	else:
 		_request_name.rpc_id(1, cleaned)
 
+## so o host define; vazio e permitido (o placar mostra os nomes dos jogadores)
+func set_group_name(raw: String) -> void:
+	if multiplayer.is_server():
+		group_name = clean_text(raw, MAX_GROUP_NAME_LENGTH)
+		_share_roster()
+
+
 ## Define e sincroniza o estado do fogo amigo (somente o Host).
 func set_friendly_fire(enabled: bool) -> void:
 	if multiplayer.is_server():
@@ -179,7 +339,7 @@ func start_match() -> void:
 
 ## Verifica se existem argumentos de linha de comando para autostart/host/join.
 func has_command_line() -> bool:
-	return _command_line.any(func(arg: String) -> bool: return arg == "--host" or arg.begins_with("--join"))
+	return _command_line.any(func(arg: String) -> bool: return arg.begins_with("--host") or arg.begins_with("--join"))
 
 
 ## consumida uma vez so: voltar ao menu nao reconecta sozinho
@@ -196,8 +356,11 @@ func report_level_loaded() -> void:
 		return
 	get_tree().paused = true
 	if multiplayer.is_server():
+		_load_round += 1
+		get_tree().create_timer(LOAD_TIMEOUT, true).timeout.connect(_give_up_on_slow_peers.bind(_load_round))
 		_register_loaded(1)
 	else:
+		log_network("carreguei %s, avisando o host" % _scene_name())
 		_net_level_loaded.rpc_id(1, match_seed)
 
 ## RPC enviado pelos clientes ao servidor confirmando o carregamento da fase.
@@ -213,6 +376,21 @@ func _register_loaded(peer_id: int) -> void:
 		_loaded_peers.append(peer_id)
 	_release_when_everyone_loaded()
 
+# no co-op de teste um cliente nunca chegou ao calabouço e o host ficou travado: passado o tempo, quem
+# não carregou sai da sala (volta ao menu com o motivo) e o resto do grupo segue
+func _give_up_on_slow_peers(load_round: int) -> void:
+	if load_round != _load_round or not waiting_for_peers or not multiplayer.is_server():
+		return
+	for peer_id: int in peers_in_order():
+		if peer_id == 1 or peer_id in _loaded_peers:
+			continue
+		log_network("jogador %d (%s) não carregou a fase em %d s e saiu da partida" % [peer_id, names.get(peer_id, "?"), LOAD_TIMEOUT])
+		if is_online():
+			multiplayer.multiplayer_peer.disconnect_peer(peer_id)
+		_on_peer_disconnected(peer_id)
+	_release_when_everyone_loaded()
+
+
 ## Quando todos os jogadores carregam a fase, despacha a liberação geral do jogo.
 func _release_when_everyone_loaded() -> void:
 	if not _loaded_peers.has(1) or _loaded_peers.size() < player_count:
@@ -223,6 +401,7 @@ func _release_when_everyone_loaded() -> void:
 ## RPC enviado pelo servidor para despausar o jogo em todos os clientes simultaneamente.
 @rpc("authority", "call_local", "reliable")
 func _net_everyone_loaded() -> void:
+	log_network("todos carregaram %s" % _scene_name())
 	waiting_for_peers = false
 	get_tree().paused = false
 
@@ -244,8 +423,9 @@ func _request_name(raw: String) -> void:
 ## RPC recebido pelo servidor solicitando escolha de personagem.
 @rpc("any_peer", "reliable")
 func _request_choice(index: int) -> void:
-	if multiplayer.is_server() and not in_match and index >= 0 and index < RunState.ADVENTURERS.size():
-		_apply_choice(multiplayer.get_remote_sender_id(), index)
+	var sender := multiplayer.get_remote_sender_id()
+	if multiplayer.is_server() and not in_match and is_player(sender) and index >= 0 and index < RunState.ADVENTURERS.size():
+		_apply_choice(sender, index)
 
 ## Processa a escolha de aventureiro de um peer e sincroniza com o grupo.
 func _apply_choice(peer_id: int, index: int) -> void:
@@ -256,17 +436,30 @@ func _apply_choice(peer_id: int, index: int) -> void:
 	_share_roster()
 
 ## Sincroniza a lista inteira de jogadores e configurações do lobby para todos os clientes.
+## a sala online so aceita mensagens depois de responder; ate la a lista fica so aqui
 func _share_roster() -> void:
-	_sync_roster.rpc(roster, names, friendly_fire)
+	if multiplayer.multiplayer_peer.get_connection_status() == MultiplayerPeer.CONNECTION_CONNECTED:
+		_sync_roster.rpc(roster, names, friendly_fire, group_name)
 	roster_changed.emit()
 
 ## RPC de autoridade que substitui o estado do lobby local pelos dados atualizados do host.
+## O host tambem e outro jogador: grupo maior que o limite e ignorado e os nomes sao limpos de novo
 @rpc("authority", "reliable")
-func _sync_roster(shared: Dictionary, shared_names: Dictionary, shared_friendly_fire: bool) -> void:
+func _sync_roster(shared: Dictionary, shared_names: Dictionary, shared_friendly_fire: bool, shared_group_name := "") -> void:
+	if shared.size() > MAX_PLAYERS or shared_names.size() > MAX_PLAYERS or not shared.keys().all(_is_roster_entry.bind(shared)):
+		return
 	roster = shared
-	names = shared_names
+	names = {}
+	for peer_id: Variant in shared_names:
+		names[peer_id] = clean_name(str(shared_names[peer_id]))
 	friendly_fire = shared_friendly_fire
+	group_name = clean_text(shared_group_name, MAX_GROUP_NAME_LENGTH)
 	roster_changed.emit()
+
+
+static func _is_roster_entry(peer_id: Variant, shared: Dictionary) -> bool:
+	var choice: Variant = shared[peer_id]
+	return peer_id is int and choice is int and choice >= NO_CHOICE and choice < RunState.ADVENTURERS.size()
 
 ## RPC enviado pelo Host para iniciar a transição de cena e o loop da partida.
 @rpc("authority", "call_local", "reliable")
@@ -281,14 +474,22 @@ func _start(seed_value: int) -> void:
 
 ## Callback executado no Host quando um novo cliente se conecta.
 func _on_peer_connected(peer_id: int) -> void:
-	if multiplayer.is_server():
-		roster[peer_id] = NO_CHOICE
-		names[peer_id] = "Jogador %d" % roster.size()
-		_share_roster()
+	if not multiplayer.is_server():
+		return
+	if not admits_new_player():
+		multiplayer.multiplayer_peer.disconnect_peer(peer_id)
+		return
+	roster[peer_id] = NO_CHOICE
+	names[peer_id] = "Jogador %d" % roster.size()
+	_share_roster()
 
 
-# sai da lista antes de avisar: quem conta votos e prontos ja ve o grupo menor
+# sai da lista antes de avisar: quem conta votos e prontos ja ve o grupo menor.
+# Quem foi recusado na porta nunca entrou na lista e nao vira aviso
 func _on_peer_disconnected(peer_id: int) -> void:
+	if not roster.has(peer_id):
+		return
+	log_network("jogador %d (%s) saiu" % [peer_id, names.get(peer_id, "?")])
 	roster.erase(peer_id)
 	names.erase(peer_id)
 	_loaded_peers.erase(peer_id)
@@ -297,15 +498,33 @@ func _on_peer_disconnected(peer_id: int) -> void:
 		_share_roster()
 		_release_when_everyone_loaded()
 
+# a sala online explica por que recusou ou fechou (cheia, codigo errado, versao velha); vale mais que o generico
+func _relay_refusal(fallback: String) -> String:
+	var relay_peer := multiplayer.multiplayer_peer as RelayPeer
+	return relay_peer.refusal if relay_peer and not relay_peer.refusal.is_empty() else fallback
+
 ## Callback de falha ao tentar conectar em um servidor.
 func _on_connection_failed() -> void:
-	last_error = "Não foi possível conectar ao host."
+	last_error = _relay_refusal("Não foi possível conectar ao host.")
 	leave()
 	connection_failed.emit()
 
+func _scene_name() -> String:
+	var scene := get_tree().current_scene
+	return str(scene.name) if scene else "?"
+
+
+## linha com horário no godot.log: a queda de uma partida em grupo fica registrada em qualquer máquina
+func log_network(event: String) -> void:
+	print("[rede %s] %s" % [Time.get_datetime_string_from_system(), event])
+
+
 ## Callback executado quando o servidor fecha a sala ou cai.
 func _on_server_disconnected() -> void:
-	last_error = "O host encerrou a partida."
+	log_network("o host desconectou: %s" % _relay_refusal("sem motivo"))
+	# o host recusa sem explicar; quem nunca recebeu a lista foi barrado na porta
+	var was_in_room := roster.has(multiplayer.get_unique_id())
+	last_error = _relay_refusal("O host encerrou a partida." if was_in_room else "A sala está cheia ou a partida já começou.")
 	leave()
 	get_tree().paused = false
 	get_tree().change_scene_to_file(MAIN_MENU)

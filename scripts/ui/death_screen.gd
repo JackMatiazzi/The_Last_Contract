@@ -5,6 +5,8 @@ signal revive_chosen(buff: Buff)
 signal gave_up
 
 const SHOW_DELAY := 1.2
+const HINT := "O contrato ainda pode ser cumprido. Reviver traz uma bênção, e os mortos-vivos recebem %d%% dela."
+const WARNING := "Os mortos-vivos receberão %d%% da bênção."
 
 @export var buff_card_scene: PackedScene
 
@@ -41,8 +43,11 @@ func open_vote(choices: Array[Buff], can_give_up: bool) -> void:
 
 func open() -> void:
 	await get_tree().create_timer(SHOW_DELAY).timeout
-	attempt_label.text = "Tentativa %d" % RunState.attempt
+	attempt_label.text = "Tentativa %s" % Hud.roman(RunState.attempt)
 	active_buffs_label.text = _active_buffs_text()
+	var share := roundi(RunState.enemy_blessing_share() * 100.0)
+	%Hint.text = HINT % share
+	%Warning.text = WARNING % share
 	show()
 	_show_panel(death_panel)
 
@@ -54,7 +59,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if not (visible and choice_panel.visible and event is InputEventKey and event.pressed):
 		return
-	var index: int = [KEY_1, KEY_2].find(event.physical_keycode)
+	var index: int = [KEY_1, KEY_2, KEY_3].find(event.physical_keycode)
 	if index != -1 and index < cards.get_child_count():
 		revive_chosen.emit(cards.get_child(index).buff)
 

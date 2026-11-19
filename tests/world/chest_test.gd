@@ -20,12 +20,12 @@ func _chest_at(position: Vector3) -> Chest:
 
 
 func _potions() -> Array[Node]:
-	return arena.root.find_children("*", "HealthPotion", true, false)
+	return arena.root.find_children("*", "Potion", true, false)
 
 
 # quem esta perto ja pega a pocao: conta a do chao e a do inventario
 func _dropped_for(adventurer: Adventurer) -> int:
-	var on_ground := _potions().filter(func(potion: HealthPotion) -> bool: return potion.model.visible).size()
+	var on_ground := _potions().filter(func(potion: Potion) -> bool: return potion.model.visible).size()
 	return on_ground + adventurer.inventory.count_of(HEALTH_POTION)
 
 
@@ -79,8 +79,8 @@ func test_chest_opens_only_once() -> void:
 	assert_int(_dropped_for(knight)).is_equal(1)
 
 
-func _potion_at(position: Vector3) -> HealthPotion:
-	var potion := POTION.instantiate() as HealthPotion
+func _potion_at(position: Vector3) -> Potion:
+	var potion := POTION.instantiate() as Potion
 	potion.position = position
 	arena.root.add_child(potion)
 	return potion
@@ -180,3 +180,37 @@ func test_a_full_adventurer_takes_the_waiting_potion_after_drinking_one() -> voi
 
 	assert_bool(potion.model.visible).is_false()
 	assert_int(knight.inventory.count_of(HEALTH_POTION)).is_equal(HEALTH_POTION.max_carried)
+
+
+# em grupo a animação do baú anda em tempos diferentes em cada máquina; a poção nasce na abertura, escondida,
+# para nenhuma mensagem de rede sobre ela chegar antes de ela existir
+func test_the_potion_exists_hidden_as_soon_as_the_chest_opens() -> void:
+	var chest := _chest_at(Vector3(0, 0, 5))
+
+	chest.open()
+
+	var potion := arena.root.find_child("%sLoot" % chest.name, true, false) as Node3D
+	assert_object(potion).is_not_null()
+	assert_bool(potion.visible).is_false()
+
+
+func test_the_potion_shows_up_when_the_lid_opens() -> void:
+	var chest := _chest_at(Vector3(0, 0, 5))
+	chest.open()
+
+	chest.drop_loot()
+
+	var potion := arena.root.find_child("%sLoot" % chest.name, true, false) as Node3D
+	assert_bool(potion.visible).is_true()
+
+
+func test_one_potion_per_player_spread_on_the_ground() -> void:
+	var drops := LootDrop.spawn(arena.root, POTION, "Teste", Vector3(0, 0, 5), 3)
+
+	assert_int(drops.size()).is_equal(3)
+	assert_array(drops.map(func(drop: Node3D) -> String: return drop.name)).contains_exactly(["Teste", "Teste2", "Teste3"])
+	assert_float(drops[0].global_position.distance_to(drops[1].global_position)).is_greater(0.5)
+
+
+func test_playing_alone_drops_one_potion() -> void:
+	assert_int(LootDrop.count()).is_equal(1)

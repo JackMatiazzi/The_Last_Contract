@@ -1,6 +1,9 @@
 class_name Enemy
 extends Character
 
+## altura do peito do alvo, onde mira quem ataca de longe
+const AIM_HEIGHT := 1.0
+
 @export var profile: EnemyProfile
 ## desligado, o cerebro nao decide nada (cenas paradas e testes)
 @export var ai_enabled := true
@@ -15,6 +18,11 @@ extends Character
 ## mancha deixada onde o corpo sumiu
 @export var remains_scene: PackedScene
 @export var rise_sound: AudioStreamPlayer3D
+## ataque à distância de quem também bate de perto (o machado arremessado do elite); vazio = só o ataque
+@export var throw_attack: RangedAttack
+## o arremesso só sai com o alvo visto entre essas distâncias: mais perto ele prefere bater
+@export var throw_min_distance := 3.5
+@export var throw_max_distance := 10.0
 
 var _corpse_timeline: Tween
 
@@ -27,6 +35,7 @@ var _corpse_timeline: Tween
 func _ready() -> void:
 	super()
 	assert(profile, "%s: aponte um EnemyProfile no Inspector" % name)
+	add_to_group(UndeadCensus.GROUP)
 	died.connect(brain.change_state.bind("Dead"))
 	died.connect(_clean_up_corpse)
 	health_bar.visible = not start_dormant
@@ -56,11 +65,29 @@ func take_damage(amount: float, source: Node3D = null) -> void:
 	super(amount, source)
 	if is_dead or not is_multiplayer_authority():
 		return
-	perception.acquire_target()
-	if perception.target != null:
-		perception.force_awareness(perception.target)
+	var attacker := source as Character
+	if attacker and attacker.is_in_group("players") and not attacker.is_dead:
+		perception.provoke(attacker)
+	else:
+		perception.acquire_target()
+		if perception.target != null:
+			perception.force_awareness(perception.target)
 	if brain.current_state_name == "Dormant" and ai_enabled:
 		brain.change_state("Awaken")
+
+
+## Quem ataca de longe mira no peito do alvo que está vendo; o corpo pode ainda estar virando.
+## Sem alvo, mira para a frente como os outros personagens.
+func get_aim_point() -> Vector3:
+	var target := perception.target
+	if target and is_instance_valid(target) and not target.is_dead:
+		return target.global_position + Vector3.UP * AIM_HEIGHT
+	return super()
+
+
+## pode arremessar agora no alvo que está vendo, longe demais para o golpe
+func can_throw_at(distance: float) -> bool:
+	return throw_attack != null and distance >= throw_min_distance and distance <= throw_max_distance and throw_attack.can_attack(self)
 
 
 func get_display_name() -> String:
