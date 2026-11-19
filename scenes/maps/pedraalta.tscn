@@ -29,8 +29,8 @@
 [ext_resource type="PackedScene" path="res://assets/kaykit_dungeon/models/wall_gated.gltf" id="deco_gated"]
 [ext_resource type="PackedScene" path="res://assets/kaykit_dungeon/models/banner_red.gltf" id="deco_banner_red"]
 [ext_resource type="PackedScene" path="res://assets/kaykit_dungeon/models/banner_thin_white.gltf" id="deco_banner_white"]
-[ext_resource type="PackedScene" path="res://assets/kaykit_dungeon/models/bed_floor.gltf" id="deco_bed"]
-[ext_resource type="PackedScene" path="res://assets/kaykit_dungeon/models/bed_frame.gltf" id="deco_bed_frame"]
+[ext_resource type="PackedScene" path="res://assets/kaykit_dungeon/models/table_long_tablecloth_decorated_A.gltf" id="deco_mesa_longa"]
+[ext_resource type="PackedScene" path="res://assets/kaykit_dungeon/models/table_medium_tablecloth_decorated_B.gltf" id="deco_mesa_media"]
 [ext_resource type="PackedScene" path="res://assets/kaykit_dungeon/models/table_long_broken.gltf" id="deco_table_broken"]
 [ext_resource type="PackedScene" path="res://assets/kaykit_dungeon/models/box_small.gltf" id="deco_box"]
 [ext_resource type="PackedScene" path="res://assets/kaykit_dungeon/models/barrel_small.gltf" id="deco_barrel"]
@@ -348,9 +348,15 @@ material = SubResource("Mat_water")
 size = Vector2(4, 20)
 
 [sub_resource type="StandardMaterial3D" id="Mat_lago"]
-albedo_color = Color(0.05, 0.13, 0.18, 1)
-metallic = 0.4
-roughness = 0.05
+albedo_color = Color(0.09, 0.2, 0.27, 1)
+metallic = 0.65
+roughness = 0.08
+emission_enabled = true
+emission = Color(0.02, 0.05, 0.08, 1)
+
+[sub_resource type="BoxMesh" id="Penhasco_mesh"]
+material = SubResource("Mat_rock")
+size = Vector3(48.2, 6, 126.2)
 
 [sub_resource type="PlaneMesh" id="Mesh_lago"]
 material = SubResource("Mat_lago")
@@ -447,13 +453,13 @@ size = Vector3(8.13, 3.5, 3.18)
 size = Vector3(4.0, 3.5, 3.0)
 
 [sub_resource type="BoxShape3D" id="Deco_B_Fornos_0"]
-size = Vector3(1.5, 0.56, 3.0)
+size = Vector3(2.06, 1, 4)
 
 [sub_resource type="BoxShape3D" id="Deco_B_Fornos_1"]
-size = Vector3(1.5, 0.56, 3.0)
+size = Vector3(2, 1, 2)
 
 [sub_resource type="BoxShape3D" id="Deco_B_Fornos_2"]
-size = Vector3(1.5, 1.06, 3.0)
+size = Vector3(2.06, 1, 4)
 
 [sub_resource type="BoxShape3D" id="Deco_B_Fornos_3"]
 size = Vector3(2.41, 1.27, 4.4)
@@ -647,8 +653,39 @@ size = Vector3(0.320, 0.450, 0.320)
 material = SubResource("Mat_glass")
 size = Vector3(0.260, 0.300, 0.260)
 
+[sub_resource type="StandardMaterial3D" id="Mat_cova"]
+albedo_color = Color(0.09, 0.065, 0.05, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="Mat_terra"]
+albedo_color = Color(0.5, 0.38, 0.26, 1)
+albedo_texture = ExtResource("plaster_color")
+normal_enabled = true
+normal_texture = ExtResource("plaster_normal")
+roughness = 1.0
+uv1_triplanar = true
+uv1_scale = Vector3(0.8, 0.8, 0.8)
+
+[sub_resource type="BoxMesh" id="Lapide_corpo"]
+material = SubResource("Mat_stone")
+size = Vector3(0.7, 0.75, 0.16)
+
+[sub_resource type="CylinderMesh" id="Lapide_topo"]
+material = SubResource("Mat_stone")
+top_radius = 0.35
+bottom_radius = 0.35
+height = 0.16
+radial_segments = 20
+
+[sub_resource type="SphereMesh" id="Monte_terra"]
+material = SubResource("Mat_terra")
+radius = 0.45
+height = 0.9
+radial_segments = 16
+rings = 8
+
 [sub_resource type="BoxMesh" id="Box_55"]
-material = SubResource("Mat_soot")
+material = SubResource("Mat_cova")
 size = Vector3(1.000, 0.030, 2.000)
 
 [sub_resource type="BoxMesh" id="Box_56"]
@@ -656,7 +693,7 @@ material = SubResource("Mat_stone")
 size = Vector3(0.250, 0.500, 2.000)
 
 [sub_resource type="BoxMesh" id="Box_57"]
-material = SubResource("Mat_soot")
+material = SubResource("Mat_cova")
 size = Vector3(1.000, 0.030, 2.000)
 
 [sub_resource type="BoxMesh" id="Box_58"]
@@ -664,7 +701,7 @@ material = SubResource("Mat_stone")
 size = Vector3(0.250, 0.500, 2.000)
 
 [sub_resource type="BoxMesh" id="Box_59"]
-material = SubResource("Mat_soot")
+material = SubResource("Mat_cova")
 size = Vector3(1.000, 0.030, 2.000)
 
 [sub_resource type="BoxMesh" id="Box_60"]
@@ -672,7 +709,7 @@ material = SubResource("Mat_stone")
 size = Vector3(0.250, 0.500, 2.000)
 
 [sub_resource type="BoxMesh" id="Box_61"]
-material = SubResource("Mat_soot")
+material = SubResource("Mat_cova")
 size = Vector3(1.000, 0.030, 2.000)
 
 [sub_resource type="BoxMesh" id="Box_62"]
@@ -680,7 +717,7 @@ material = SubResource("Mat_stone")
 size = Vector3(0.250, 0.500, 2.000)
 
 [sub_resource type="BoxMesh" id="Box_63"]
-material = SubResource("Mat_soot")
+material = SubResource("Mat_cova")
 size = Vector3(1.000, 0.030, 2.000)
 
 [sub_resource type="BoxMesh" id="Box_64"]
@@ -688,7 +725,7 @@ material = SubResource("Mat_stone")
 size = Vector3(0.250, 0.500, 2.000)
 
 [sub_resource type="BoxMesh" id="Box_65"]
-material = SubResource("Mat_soot")
+material = SubResource("Mat_cova")
 size = Vector3(1.000, 0.030, 2.000)
 
 [sub_resource type="BoxMesh" id="Box_66"]
@@ -1018,6 +1055,10 @@ shape = SubResource("Shape_water")
 position = Vector3(0, 0.4, 0)
 mesh = SubResource("Mesh_water")
 cast_shadow = 0
+
+[node name="Penhasco" type="MeshInstance3D" parent="."]
+position = Vector3(0, -3.5, -9)
+mesh = SubResource("Penhasco_mesh")
 
 [node name="AguaDeFora" type="Area3D" parent="."]
 position = Vector3(0, -2.4, -9)
@@ -1394,31 +1435,31 @@ transform = Transform3D(-1.00000, 0.00000, -0.00000, 0.00000, 1.00000, 0.00000, 
 
 [node name="B_Fornos" type="Node3D" parent="Historia"]
 
-[node name="bed0" parent="Historia/B_Fornos" instance=ExtResource("deco_bed")]
-transform = Transform3D(0.90631, 0.00000, -0.42262, 0.00000, 1.00000, 0.00000, 0.42262, -0.00000, 0.90631, -4.000, 3.000, 4.000)
+[node name="mesa_longa0" parent="Historia/B_Fornos" instance=ExtResource("deco_mesa_longa")]
+transform = Transform3D(0.54379, 0.00000, -0.25357, 0.00000, 0.60000, 0.00000, 0.25357, -0.00000, 0.54379, -4.000, 3.000, 4.000)
 
-[node name="Colisao" type="StaticBody3D" parent="Historia/B_Fornos/bed0"]
+[node name="Colisao" type="StaticBody3D" parent="Historia/B_Fornos/mesa_longa0"]
 
-[node name="Forma" type="CollisionShape3D" parent="Historia/B_Fornos/bed0/Colisao"]
-position = Vector3(0.000, 0.280, 0.000)
+[node name="Forma" type="CollisionShape3D" parent="Historia/B_Fornos/mesa_longa0/Colisao"]
+position = Vector3(0, 0.5, 0)
 shape = SubResource("Deco_B_Fornos_0")
 
-[node name="bed1" parent="Historia/B_Fornos" instance=ExtResource("deco_bed")]
-transform = Transform3D(0.34202, 0.00000, 0.93969, -0.00000, 1.00000, 0.00000, -0.93969, -0.00000, 0.34202, 3.000, 3.000, 0.000)
+[node name="mesa_media1" parent="Historia/B_Fornos" instance=ExtResource("deco_mesa_media")]
+transform = Transform3D(0.25651, 0.00000, 0.70477, -0.00000, 0.75000, 0.00000, -0.70477, -0.00000, 0.25651, 3.000, 3.000, 0.000)
 
-[node name="Colisao" type="StaticBody3D" parent="Historia/B_Fornos/bed1"]
+[node name="Colisao" type="StaticBody3D" parent="Historia/B_Fornos/mesa_media1"]
 
-[node name="Forma" type="CollisionShape3D" parent="Historia/B_Fornos/bed1/Colisao"]
-position = Vector3(0.000, 0.280, 0.000)
+[node name="Forma" type="CollisionShape3D" parent="Historia/B_Fornos/mesa_media1/Colisao"]
+position = Vector3(0, 0.5, 0)
 shape = SubResource("Deco_B_Fornos_1")
 
-[node name="bed_frame2" parent="Historia/B_Fornos" instance=ExtResource("deco_bed_frame")]
-transform = Transform3D(0.98481, 0.00000, -0.17365, 0.00000, 1.00000, 0.00000, 0.17365, -0.00000, 0.98481, 6.000, 3.000, 9.000)
+[node name="mesa_longa2" parent="Historia/B_Fornos" instance=ExtResource("deco_mesa_longa")]
+transform = Transform3D(0.59089, 0.00000, -0.10419, 0.00000, 0.60000, 0.00000, 0.10419, -0.00000, 0.59089, 6.000, 3.000, 9.000)
 
-[node name="Colisao" type="StaticBody3D" parent="Historia/B_Fornos/bed_frame2"]
+[node name="Colisao" type="StaticBody3D" parent="Historia/B_Fornos/mesa_longa2"]
 
-[node name="Forma" type="CollisionShape3D" parent="Historia/B_Fornos/bed_frame2/Colisao"]
-position = Vector3(0.000, 0.530, 0.000)
+[node name="Forma" type="CollisionShape3D" parent="Historia/B_Fornos/mesa_longa2/Colisao"]
+position = Vector3(0, 0.5, 0)
 shape = SubResource("Deco_B_Fornos_2")
 
 [node name="table_broken3" parent="Historia/B_Fornos" instance=ExtResource("deco_table_broken")]
@@ -1786,6 +1827,96 @@ mesh = SubResource("Box_65")
 [node name="Lapide5" type="MeshInstance3D" parent="Historia/Construidos"]
 transform = Transform3D(0.57358, -0.81915, -0.00000, 0.81915, 0.57358, 0.00000, 0.00000, -0.00000, 1.00000, -13.750, 9.250, -35.000)
 mesh = SubResource("Box_66")
+
+[node name="Cabeceira0" type="Node3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 0.99756, -0.06976, 0, 0.06976, 0.99756, -19.5, 9.0, -39.20)
+
+[node name="Corpo" type="MeshInstance3D" parent="Historia/Construidos/Cabeceira0"]
+position = Vector3(0, 0.375, 0)
+mesh = SubResource("Lapide_corpo")
+
+[node name="Topo" type="MeshInstance3D" parent="Historia/Construidos/Cabeceira0"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.75, 0)
+mesh = SubResource("Lapide_topo")
+
+[node name="Monte0" type="MeshInstance3D" parent="Historia/Construidos"]
+transform = Transform3D(0.9, 0, 0, 0, 0.35, 0, 0, 0, 1.7, -20.45, 9.0, -38.0)
+mesh = SubResource("Monte_terra")
+
+[node name="Cabeceira1" type="Node3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 0.99452, 0.10453, 0, -0.10453, 0.99452, -17.0, 9.0, -39.20)
+
+[node name="Corpo" type="MeshInstance3D" parent="Historia/Construidos/Cabeceira1"]
+position = Vector3(0, 0.375, 0)
+mesh = SubResource("Lapide_corpo")
+
+[node name="Topo" type="MeshInstance3D" parent="Historia/Construidos/Cabeceira1"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.75, 0)
+mesh = SubResource("Lapide_topo")
+
+[node name="Monte1" type="MeshInstance3D" parent="Historia/Construidos"]
+transform = Transform3D(0.9, 0, 0, 0, 0.35, 0, 0, 0, 1.7, -17.95, 9.0, -38.0)
+mesh = SubResource("Monte_terra")
+
+[node name="Cabeceira2" type="Node3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 0.99939, -0.03490, 0, 0.03490, 0.99939, -14.5, 9.0, -39.20)
+
+[node name="Corpo" type="MeshInstance3D" parent="Historia/Construidos/Cabeceira2"]
+position = Vector3(0, 0.375, 0)
+mesh = SubResource("Lapide_corpo")
+
+[node name="Topo" type="MeshInstance3D" parent="Historia/Construidos/Cabeceira2"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.75, 0)
+mesh = SubResource("Lapide_topo")
+
+[node name="Monte2" type="MeshInstance3D" parent="Historia/Construidos"]
+transform = Transform3D(0.9, 0, 0, 0, 0.35, 0, 0, 0, 1.7, -15.45, 9.0, -38.0)
+mesh = SubResource("Monte_terra")
+
+[node name="Cabeceira3" type="Node3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 0.99863, 0.05234, 0, -0.05234, 0.99863, -19.5, 9.0, -36.00)
+
+[node name="Corpo" type="MeshInstance3D" parent="Historia/Construidos/Cabeceira3"]
+position = Vector3(0, 0.375, 0)
+mesh = SubResource("Lapide_corpo")
+
+[node name="Topo" type="MeshInstance3D" parent="Historia/Construidos/Cabeceira3"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.75, 0)
+mesh = SubResource("Lapide_topo")
+
+[node name="Monte3" type="MeshInstance3D" parent="Historia/Construidos"]
+transform = Transform3D(0.9, 0, 0, 0, 0.35, 0, 0, 0, 1.7, -20.45, 9.0, -34.8)
+mesh = SubResource("Monte_terra")
+
+[node name="Cabeceira4" type="Node3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 0.99255, -0.12187, 0, 0.12187, 0.99255, -17.0, 9.0, -36.00)
+
+[node name="Corpo" type="MeshInstance3D" parent="Historia/Construidos/Cabeceira4"]
+position = Vector3(0, 0.375, 0)
+mesh = SubResource("Lapide_corpo")
+
+[node name="Topo" type="MeshInstance3D" parent="Historia/Construidos/Cabeceira4"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.75, 0)
+mesh = SubResource("Lapide_topo")
+
+[node name="Monte4" type="MeshInstance3D" parent="Historia/Construidos"]
+transform = Transform3D(0.9, 0, 0, 0, 0.35, 0, 0, 0, 1.7, -17.95, 9.0, -34.8)
+mesh = SubResource("Monte_terra")
+
+[node name="Cabeceira5" type="Node3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 0.99619, 0.08716, 0, -0.08716, 0.99619, -14.5, 9.0, -36.00)
+
+[node name="Corpo" type="MeshInstance3D" parent="Historia/Construidos/Cabeceira5"]
+position = Vector3(0, 0.375, 0)
+mesh = SubResource("Lapide_corpo")
+
+[node name="Topo" type="MeshInstance3D" parent="Historia/Construidos/Cabeceira5"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.75, 0)
+mesh = SubResource("Lapide_topo")
+
+[node name="Monte5" type="MeshInstance3D" parent="Historia/Construidos"]
+transform = Transform3D(0.9, 0, 0, 0, 0.35, 0, 0, 0, 1.7, -15.45, 9.0, -34.8)
+mesh = SubResource("Monte_terra")
 
 [node name="SinoPosteA" type="StaticBody3D" parent="Historia/Construidos"]
 transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -14.000, 14.600, -66.000)
