@@ -48,6 +48,8 @@ const HITSTOP := 0.06
 const HITSTOP_HEAVY := 0.11
 
 @export var max_health := 10.0
+## elite e chefe ficam do lado de cá: o portal do mago serve para fugir deles, não para trazê-los junto
+@export var crosses_portals := true
 @export var walk_speed := 4.0
 @export var run_speed := 7.5
 ## velocidade ganha por segundo ao andar

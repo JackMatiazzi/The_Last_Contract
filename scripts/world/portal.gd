@@ -1,6 +1,7 @@
 class_name Portal
 extends Area3D
-## metade de um par: aventureiro e projetil que entram aqui saem na frente do outro portal; inimigos nao.
+## metade de um par: aventureiro, morto-vivo comum e projetil que entram aqui saem na frente do outro portal;
+## elite e chefe nao passam (crosses_portals).
 ## Cada maquina so move o proprio aventureiro, e a rede leva a posicao nova aos outros
 
 const GROUP := "portals"
@@ -130,7 +131,7 @@ func _follow(eye: Camera3D) -> void:
 # recarga e som em todas as maquinas; so o dono do personagem move o boneco (os mortos-vivos sao do host)
 func _on_body_entered(body: Node3D) -> void:
 	var traveler := body as Character
-	if traveler == null or traveler.is_dead or not is_linked():
+	if traveler == null or traveler.is_dead or not traveler.crosses_portals or not is_linked():
 		return
 	var now := Time.get_ticks_msec() / 1000.0
 	if traveler.get_meta(&"portal_ready_at", 0.0) > now:
