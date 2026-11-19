@@ -245,3 +245,41 @@ func test_the_portal_reaches_terraces_but_not_the_walls() -> void:
 	assert_bool(spell._walkable_from(mage, Vector3(-23.5, 18, -9))).is_false()
 	assert_bool(spell._walkable_from(mage, Vector3(0, 20, -71.5))).is_false()
 	spell.free()
+
+
+func _structures_around(grid: GridMap, spot: Vector3, radius: float) -> int:
+	var count := 0
+	var center := grid.local_to_map(grid.to_local(spot))
+	var reach := ceili(radius / grid.cell_size.x) + 1
+	for dx in range(-reach, reach + 1):
+		for dy in range(-1, 5):
+			for dz in range(-reach, reach + 1):
+				var cell := center + Vector3i(dx, dy, dz)
+				if grid.get_cell_item(cell) == GridMap.INVALID_CELL_ITEM:
+					continue
+				var world := grid.to_global(grid.map_to_local(cell))
+				if Vector2(world.x - spot.x, world.z - spot.z).length() < radius:
+					count += 1
+	return count
+
+
+func _on_navigation(map: RID, point: Vector3) -> bool:
+	var closest := NavigationServer3D.map_get_closest_point(map, point)
+	return Vector2(closest.x - point.x, closest.z - point.z).length() < 0.35 and absf(closest.y - point.y) < 0.7
+
+
+# baú colado em casa afundava na parede e soltava a poção lá dentro; na beira, a poção caía do terraço
+func test_every_chest_spot_stands_clear_with_room_for_the_loot() -> void:
+	var map := await _wait_for_navigation()
+	var houses := level.get_node("Navigation/Pedraalta/Estrutura") as GridMap
+	var spawn: Vector3 = encounters.player_spots.get_child(0).global_position
+	for spot: Marker3D in encounters.chest_spots.get_children():
+		var at := spot.global_position
+		var loot := spot.global_transform * Vector3(0, 0, 1.6)
+		var path := NavigationServer3D.map_get_path(map, spawn, at, true)
+		var end: Vector3 = path[path.size() - 1] if not path.is_empty() else Vector3.INF
+
+		assert_int(_structures_around(houses, at, 2.5)).override_failure_message("%s colado numa casa" % spot.name).is_equal(0)
+		assert_bool(_on_navigation(map, at)).override_failure_message("%s fora do chão andável" % spot.name).is_true()
+		assert_float(Vector2(end.x - at.x, end.z - at.z).length()).override_failure_message("%s sem caminho a pé" % spot.name).is_less(0.5)
+		assert_bool(_on_navigation(map, loot)).override_failure_message("%s solta a poção fora do chão" % spot.name).is_true()
