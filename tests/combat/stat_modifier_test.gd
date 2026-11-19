@@ -24,7 +24,7 @@ func test_whole_points_stay_without_decimals() -> void:
 func test_the_sharp_blade_card_says_what_it_gives() -> void:
 	var blade := load("res://resources/buffs/lamina_afiada.tres") as Buff
 
-	assert_str(blade.describe()).contains("+0,5 de dano")
+	assert_str(blade.describe()).contains("+1 de dano")
 
 
 func test_new_blessing_effects_describe_themselves() -> void:
