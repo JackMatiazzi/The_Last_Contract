@@ -17,6 +17,13 @@ func before_test() -> void:
 	for enemy in get_tree().get_nodes_in_group("enemies"):
 		enemy.process_mode = Node.PROCESS_MODE_DISABLED
 	await _wait_seconds(1.5)
+	# máquina lenta (CI): espera o aventureiro pousar e a guarda gravar o chão seguro
+	for frame in 180:
+		if session.player.is_on_floor():
+			break
+		await get_tree().physics_frame
+	assert_bool(session.player.is_on_floor()).is_true()
+	await _wait_seconds(0.2)
 
 
 func after_test() -> void:

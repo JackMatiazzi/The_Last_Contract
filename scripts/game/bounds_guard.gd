@@ -25,7 +25,7 @@ func _physics_process(delta: float) -> void:
 	var player := session.player if session else null
 	if player == null or player.is_dead or not player.is_multiplayer_authority():
 		return
-	if _safe == Vector3.INF:
+	if _safe == Vector3.INF and player.is_on_floor():
 		_safe = player.global_position
 	if player.global_position.y < fall_limit_y:
 		_return(player)
@@ -63,6 +63,8 @@ func _check_ground(player: Adventurer) -> void:
 
 func _return(player: Adventurer) -> void:
 	_stranded = 0.0
+	if _safe == Vector3.INF:
+		return
 	player.global_position = _safe + Vector3.UP * 0.1
 	player.velocity = Vector3.ZERO
 	# sem isso a interpolação de física desliza o corpo e a câmera do ponto antigo até o seguro

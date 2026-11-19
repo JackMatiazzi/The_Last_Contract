@@ -314,7 +314,11 @@ func test_a_fallen_player_watches_the_allies_still_standing() -> void:
 	assert_object(session.player.camera_subject).is_same(first)
 	assert_str(session.hud.announcement.text).contains("Assistindo Brann")
 
+	# sem mouse capturado (como no CI) o ataque só troca de aliado no controle
+	var device_before: int = Settings.input_device
+	Settings.input_device = Settings.InputDevice.GAMEPAD
 	session._unhandled_input(_attack_press())
+	Settings.input_device = device_before
 	assert_object(session.player.camera_subject).is_same(second)
 
 	second.take_damage(999.0)
