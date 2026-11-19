@@ -58,3 +58,15 @@ func test_walkable_ground_leaves_the_player_where_they_are() -> void:
 	await _wait_seconds(BoundsGuard.STRANDED_LIMIT + 1.5)
 
 	assert_float(Vector2(session.player.global_position.x - terrace.x, session.player.global_position.z - terrace.z).length()).is_less(1.0)
+
+
+# na Pedra Alta, quem passa da muralha ou da cerca cai no lago em volta e se afoga ali mesmo
+func test_falling_past_the_walls_drowns_in_the_lake() -> void:
+	var outside := Vector3(32, 1, 0)
+
+	session.player.global_position = outside
+	await _wait_seconds(2.0)
+
+	assert_bool(session.player.is_dead).is_true()
+	assert_str(session.player.damage_log.death_cause()).contains("Afogado fora da muralha")
+	assert_float(Vector2(session.player.global_position.x - outside.x, session.player.global_position.z - outside.z).length()).is_less(1.0)

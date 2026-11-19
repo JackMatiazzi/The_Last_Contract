@@ -287,6 +287,18 @@ roughness = 0.05
 material = SubResource("Mat_water")
 size = Vector2(4, 20)
 
+[sub_resource type="StandardMaterial3D" id="Mat_lago"]
+albedo_color = Color(0.05, 0.13, 0.18, 1)
+metallic = 0.4
+roughness = 0.05
+
+[sub_resource type="PlaneMesh" id="Mesh_lago"]
+material = SubResource("Mat_lago")
+size = Vector2(400, 400)
+
+[sub_resource type="BoxShape3D" id="Shape_lago"]
+size = Vector3(400, 2, 400)
+
 [sub_resource type="BoxShape3D" id="Shape_water"]
 size = Vector3(4, 1.6, 20)
 
@@ -872,6 +884,19 @@ shape = SubResource("Shape_water")
 [node name="Superficie" type="MeshInstance3D" parent="AguaDaFenda"]
 position = Vector3(0, 0.4, 0)
 mesh = SubResource("Mesh_water")
+cast_shadow = 0
+
+[node name="AguaDeFora" type="Area3D" parent="."]
+position = Vector3(0, -2.4, -9)
+script = ExtResource("kill_zone_script")
+cause = "Afogado fora da muralha"
+
+[node name="Forma" type="CollisionShape3D" parent="AguaDeFora"]
+shape = SubResource("Shape_lago")
+
+[node name="Superficie" type="MeshInstance3D" parent="AguaDeFora"]
+position = Vector3(0, 1, 0)
+mesh = SubResource("Mesh_lago")
 cast_shadow = 0
 
 [node name="Cerca" type="Node3D" parent="."]
