@@ -198,12 +198,30 @@ func _chests() -> Array[Node]:
 	return encounters.get_children().filter(func(child: Node) -> bool: return child is Chest or child is Mimic)
 
 
-func test_each_attempt_draws_five_chests_and_one_is_a_mimic() -> void:
+func test_solo_draws_five_chests_and_one_mimic() -> void:
 	var chests := _chests()
 
-	assert_int(chests.size()).is_equal(encounters.chest_count)
+	assert_int(chests.filter(func(chest: Node) -> bool: return chest is Chest).size()).is_equal(encounters.chest_count)
 	assert_int(chests.filter(func(chest: Node) -> bool: return chest is Mimic).size()).is_equal(1)
 	assert_int(encounters.chest_spots.get_child_count()).is_equal(11)
+
+
+# quatro jogadores: os cinco baús continuam e entram quatro mímicos, em pontos que mudam a cada sorteio
+func test_each_player_adds_a_mimic_in_a_drawn_spot() -> void:
+	for chest in _chests():
+		chest.free()
+	var mimic_spots := {}
+	for draw in 6:
+		var spawned := encounters.spawn_chests(4)
+		var mimics := spawned.filter(func(chest: Node3D) -> bool: return chest is Mimic)
+		assert_int(spawned.size()).is_equal(encounters.chest_count + 4)
+		assert_int(mimics.size()).is_equal(4)
+		for mimic: Node3D in mimics:
+			mimic_spots[Vector2i(roundi(mimic.global_position.x), roundi(mimic.global_position.z))] = true
+		for chest in spawned:
+			chest.free()
+
+	assert_int(mimic_spots.size()).is_greater(4)
 
 
 func test_the_chests_land_on_the_drawn_spots() -> void:

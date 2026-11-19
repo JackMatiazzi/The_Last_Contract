@@ -23,7 +23,8 @@ extends Node3D
 @export var chest_scene: PackedScene
 @export var mimic_scene: PackedScene
 @export var chest_count := 5
-@export var mimic_count := 1
+## os mímicos vêm além dos baús: um por jogador da partida
+@export var mimics_per_player := 1
 
 ## Escolhe aleatoriamente um dos marcadores de posição reservados para os jogadores.
 func pick_player_spot() -> Marker3D:
@@ -49,17 +50,25 @@ func spawn_groups(player_position: Vector3) -> Array[EnemyGroup]:
 		spawned.append(group)
 	return spawned
 
-## Sorteia os baus da tentativa entre os pontos (espalhados por zona, como os grupos); os primeiros da lista
-## viram mimicos. Usa a mesma semente dos grupos, entao todas as maquinas do grupo veem os mesmos baus.
-func spawn_chests() -> Array[Node3D]:
+## Sorteia os baus da tentativa entre os pontos (espalhados por zona, como os grupos) e quais deles sao
+## mimicos. Usa a mesma semente dos grupos, entao todas as maquinas do grupo veem os mesmos baus.
+func spawn_chests(players := 1) -> Array[Node3D]:
 	var spawned: Array[Node3D] = []
 	if chest_spots == null or chest_scene == null:
 		return spawned
 	var spots: Array = _markers(chest_spots)
 	spots.shuffle()
 	spots = _spread_by_zone(spots)
-	for i in mini(chest_count, spots.size()):
-		var is_mimic := mimic_scene != null and i < mimic_count
+	var mimics := players * mimics_per_player if mimic_scene else 0
+	var total := mini(chest_count + mimics, spots.size())
+	if total < chest_count + mimics:
+		push_warning("faltam pontos de baú: %d pedidos, %d pontos" % [chest_count + mimics, spots.size()])
+	var roles: Array[bool] = []
+	for i in total:
+		roles.append(i < mimics)
+	roles.shuffle()
+	for i in total:
+		var is_mimic := roles[i]
 		var chest := (mimic_scene if is_mimic else chest_scene).instantiate() as Node3D
 		chest.name = ("Mimic%d" if is_mimic else "Chest%d") % i
 		chest.transform = global_transform.affine_inverse() * spots[i].global_transform
