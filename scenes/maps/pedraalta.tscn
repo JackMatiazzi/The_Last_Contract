@@ -284,10 +284,10 @@ size = Vector3(48.000, 5.000, 3.000)
 [sub_resource type="PrismMesh" id="Prism_rampa"]
 material = SubResource("Mat_rock")
 left_to_right = 0.0
-size = Vector3(8.56, 2.7, 4)
+size = Vector3(8.08, 3.03, 3.96)
 
 [sub_resource type="ConvexPolygonShape3D" id="Shape_rampa_base"]
-points = PackedVector3Array(-4.28, -1.35, -2, 4.28, -1.35, -2, -4.28, 1.35, -2, -4.28, -1.35, 2, 4.28, -1.35, 2, -4.28, 1.35, 2)
+points = PackedVector3Array(-4.04, -1.515, -1.98, 4.04, -1.515, -1.98, -4.04, 1.515, -1.98, -4.04, -1.515, 1.98, 4.04, -1.515, 1.98, -4.04, 1.515, 1.98)
 
 [sub_resource type="BoxMesh" id="Box_11"]
 material = SubResource("Mat_ramp")
@@ -960,7 +960,7 @@ mesh = SubResource("Box_14")
 shape = SubResource("Shape_14")
 
 [node name="Rampa1Base" type="StaticBody3D" parent="Rampas"]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -8, 1.35, 24)
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -8, 1.405, 23.46)
 
 [node name="Mesh" type="MeshInstance3D" parent="Rampas/Rampa1Base"]
 mesh = SubResource("Prism_rampa")
@@ -969,7 +969,7 @@ mesh = SubResource("Prism_rampa")
 shape = SubResource("Shape_rampa_base")
 
 [node name="Rampa2Base" type="StaticBody3D" parent="Rampas"]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 10, 4.35, -6)
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 10, 4.405, -6.54)
 
 [node name="Mesh" type="MeshInstance3D" parent="Rampas/Rampa2Base"]
 mesh = SubResource("Prism_rampa")
@@ -978,7 +978,7 @@ mesh = SubResource("Prism_rampa")
 shape = SubResource("Shape_rampa_base")
 
 [node name="Rampa3Base" type="StaticBody3D" parent="Rampas"]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -10, 7.35, -28)
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -10, 7.405, -28.54)
 
 [node name="Mesh" type="MeshInstance3D" parent="Rampas/Rampa3Base"]
 mesh = SubResource("Prism_rampa")
@@ -987,7 +987,7 @@ mesh = SubResource("Prism_rampa")
 shape = SubResource("Shape_rampa_base")
 
 [node name="Rampa4Base" type="StaticBody3D" parent="Rampas"]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 0, 10.35, -48)
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 0, 10.405, -48.54)
 
 [node name="Mesh" type="MeshInstance3D" parent="Rampas/Rampa4Base"]
 mesh = SubResource("Prism_rampa")
