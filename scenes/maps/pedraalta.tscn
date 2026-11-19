@@ -20,6 +20,7 @@
 [ext_resource type="Texture2D" path="res://assets/quaternius_village/models/T_Plaster_BaseColor.png" id="plaster_color"]
 [ext_resource type="Texture2D" path="res://assets/quaternius_village/models/T_Plaster_Normal.png" id="plaster_normal"]
 [ext_resource type="Texture2D" path="res://assets/quaternius_village/models/T_RedBrick_BaseColor.png" id="redbrick_color"]
+[ext_resource type="FontFile" path="res://assets/fonts/Cinzel-wght.ttf" id="fonte_cinzel"]
 [ext_resource type="PackedScene" path="res://assets/quaternius_village/models/Prop_Wagon.gltf" id="deco_wagon"]
 [ext_resource type="PackedScene" path="res://assets/quaternius_village/models/Prop_Chimney.gltf" id="deco_chimney"]
 [ext_resource type="PackedScene" path="res://assets/quaternius_village/models/Prop_Support.gltf" id="deco_support"]
@@ -654,8 +655,13 @@ material = SubResource("Mat_glass")
 size = Vector3(0.260, 0.300, 0.260)
 
 [sub_resource type="StandardMaterial3D" id="Mat_cova"]
-albedo_color = Color(0.09, 0.065, 0.05, 1)
+albedo_color = Color(0.3, 0.21, 0.14, 1)
+albedo_texture = ExtResource("plaster_color")
+normal_enabled = true
+normal_texture = ExtResource("plaster_normal")
 roughness = 1.0
+uv1_triplanar = true
+uv1_scale = Vector3(1.4, 1.4, 1.4)
 
 [sub_resource type="StandardMaterial3D" id="Mat_terra"]
 albedo_color = Color(0.5, 0.38, 0.26, 1)
@@ -668,12 +674,12 @@ uv1_scale = Vector3(0.8, 0.8, 0.8)
 
 [sub_resource type="BoxMesh" id="Lapide_corpo"]
 material = SubResource("Mat_stone")
-size = Vector3(0.7, 0.75, 0.16)
+size = Vector3(0.84, 0.85, 0.16)
 
 [sub_resource type="CylinderMesh" id="Lapide_topo"]
 material = SubResource("Mat_stone")
-top_radius = 0.35
-bottom_radius = 0.35
+top_radius = 0.42
+bottom_radius = 0.42
 height = 0.16
 radial_segments = 20
 
@@ -1832,90 +1838,168 @@ mesh = SubResource("Box_66")
 transform = Transform3D(1, 0, 0, 0, 0.99756, -0.06976, 0, 0.06976, 0.99756, -19.5, 9.0, -39.20)
 
 [node name="Corpo" type="MeshInstance3D" parent="Historia/Construidos/Cabeceira0"]
-position = Vector3(0, 0.375, 0)
+position = Vector3(0, 0.425, 0)
 mesh = SubResource("Lapide_corpo")
 
+[node name="Epitafio" type="Label3D" parent="Historia/Construidos/Cabeceira0"]
+position = Vector3(0, 0.62, 0.085)
+pixel_size = 0.0021
+modulate = Color(0.07, 0.065, 0.06, 1)
+outline_modulate = Color(0.85, 0.82, 0.76, 0.35)
+outline_size = 3
+text = "ANDRÉ
+foi até a
+tentativa LXII"
+font = ExtResource("fonte_cinzel")
+font_size = 46
+line_spacing = -8.0
+
 [node name="Topo" type="MeshInstance3D" parent="Historia/Construidos/Cabeceira0"]
-transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.75, 0)
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.85, 0)
 mesh = SubResource("Lapide_topo")
 
 [node name="Monte0" type="MeshInstance3D" parent="Historia/Construidos"]
-transform = Transform3D(0.9, 0, 0, 0, 0.35, 0, 0, 0, 1.7, -20.45, 9.0, -38.0)
+transform = Transform3D(0.85, 0, 0, 0, 0.55, 0, 0, 0, 1.6, -20.45, 9.05, -38.0)
 mesh = SubResource("Monte_terra")
 
 [node name="Cabeceira1" type="Node3D" parent="Historia/Construidos"]
 transform = Transform3D(1, 0, 0, 0, 0.99452, 0.10453, 0, -0.10453, 0.99452, -17.0, 9.0, -39.20)
 
 [node name="Corpo" type="MeshInstance3D" parent="Historia/Construidos/Cabeceira1"]
-position = Vector3(0, 0.375, 0)
+position = Vector3(0, 0.425, 0)
 mesh = SubResource("Lapide_corpo")
 
+[node name="Epitafio" type="Label3D" parent="Historia/Construidos/Cabeceira1"]
+position = Vector3(0, 0.62, 0.085)
+pixel_size = 0.0021
+modulate = Color(0.07, 0.065, 0.06, 1)
+outline_modulate = Color(0.85, 0.82, 0.76, 0.35)
+outline_size = 3
+text = "HAVOO
+afogado
+na fenda"
+font = ExtResource("fonte_cinzel")
+font_size = 46
+line_spacing = -8.0
+
 [node name="Topo" type="MeshInstance3D" parent="Historia/Construidos/Cabeceira1"]
-transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.75, 0)
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.85, 0)
 mesh = SubResource("Lapide_topo")
 
 [node name="Monte1" type="MeshInstance3D" parent="Historia/Construidos"]
-transform = Transform3D(0.9, 0, 0, 0, 0.35, 0, 0, 0, 1.7, -17.95, 9.0, -38.0)
+transform = Transform3D(0.85, 0, 0, 0, 0.55, 0, 0, 0, 1.6, -17.95, 9.05, -38.0)
 mesh = SubResource("Monte_terra")
 
 [node name="Cabeceira2" type="Node3D" parent="Historia/Construidos"]
 transform = Transform3D(1, 0, 0, 0, 0.99939, -0.03490, 0, 0.03490, 0.99939, -14.5, 9.0, -39.20)
 
 [node name="Corpo" type="MeshInstance3D" parent="Historia/Construidos/Cabeceira2"]
-position = Vector3(0, 0.375, 0)
+position = Vector3(0, 0.425, 0)
 mesh = SubResource("Lapide_corpo")
 
+[node name="Epitafio" type="Label3D" parent="Historia/Construidos/Cabeceira2"]
+position = Vector3(0, 0.62, 0.085)
+pixel_size = 0.0021
+modulate = Color(0.07, 0.065, 0.06, 1)
+outline_modulate = Color(0.85, 0.82, 0.76, 0.35)
+outline_size = 3
+text = "ANDRÉ
+abriu o baú
+errado"
+font = ExtResource("fonte_cinzel")
+font_size = 46
+line_spacing = -8.0
+
 [node name="Topo" type="MeshInstance3D" parent="Historia/Construidos/Cabeceira2"]
-transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.75, 0)
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.85, 0)
 mesh = SubResource("Lapide_topo")
 
 [node name="Monte2" type="MeshInstance3D" parent="Historia/Construidos"]
-transform = Transform3D(0.9, 0, 0, 0, 0.35, 0, 0, 0, 1.7, -15.45, 9.0, -38.0)
+transform = Transform3D(0.85, 0, 0, 0, 0.55, 0, 0, 0, 1.6, -15.45, 9.05, -38.0)
 mesh = SubResource("Monte_terra")
 
 [node name="Cabeceira3" type="Node3D" parent="Historia/Construidos"]
 transform = Transform3D(1, 0, 0, 0, 0.99863, 0.05234, 0, -0.05234, 0.99863, -19.5, 9.0, -36.00)
 
 [node name="Corpo" type="MeshInstance3D" parent="Historia/Construidos/Cabeceira3"]
-position = Vector3(0, 0.375, 0)
+position = Vector3(0, 0.425, 0)
 mesh = SubResource("Lapide_corpo")
 
+[node name="Epitafio" type="Label3D" parent="Historia/Construidos/Cabeceira3"]
+position = Vector3(0, 0.62, 0.085)
+pixel_size = 0.0021
+modulate = Color(0.07, 0.065, 0.06, 1)
+outline_modulate = Color(0.85, 0.82, 0.76, 0.35)
+outline_size = 3
+text = "HAVOO
+fogo amigo
+do Knight"
+font = ExtResource("fonte_cinzel")
+font_size = 46
+line_spacing = -8.0
+
 [node name="Topo" type="MeshInstance3D" parent="Historia/Construidos/Cabeceira3"]
-transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.75, 0)
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.85, 0)
 mesh = SubResource("Lapide_topo")
 
 [node name="Monte3" type="MeshInstance3D" parent="Historia/Construidos"]
-transform = Transform3D(0.9, 0, 0, 0, 0.35, 0, 0, 0, 1.7, -20.45, 9.0, -34.8)
+transform = Transform3D(0.85, 0, 0, 0, 0.55, 0, 0, 0, 1.6, -20.45, 9.05, -34.8)
 mesh = SubResource("Monte_terra")
 
 [node name="Cabeceira4" type="Node3D" parent="Historia/Construidos"]
 transform = Transform3D(1, 0, 0, 0, 0.99255, -0.12187, 0, 0.12187, 0.99255, -17.0, 9.0, -36.00)
 
 [node name="Corpo" type="MeshInstance3D" parent="Historia/Construidos/Cabeceira4"]
-position = Vector3(0, 0.375, 0)
+position = Vector3(0, 0.425, 0)
 mesh = SubResource("Lapide_corpo")
 
+[node name="Epitafio" type="Label3D" parent="Historia/Construidos/Cabeceira4"]
+position = Vector3(0, 0.62, 0.085)
+pixel_size = 0.0021
+modulate = Color(0.07, 0.065, 0.06, 1)
+outline_modulate = Color(0.85, 0.82, 0.76, 0.35)
+outline_size = 3
+text = "ANDRÉ
+confiou
+no Lorde"
+font = ExtResource("fonte_cinzel")
+font_size = 46
+line_spacing = -8.0
+
 [node name="Topo" type="MeshInstance3D" parent="Historia/Construidos/Cabeceira4"]
-transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.75, 0)
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.85, 0)
 mesh = SubResource("Lapide_topo")
 
 [node name="Monte4" type="MeshInstance3D" parent="Historia/Construidos"]
-transform = Transform3D(0.9, 0, 0, 0, 0.35, 0, 0, 0, 1.7, -17.95, 9.0, -34.8)
+transform = Transform3D(0.85, 0, 0, 0, 0.55, 0, 0, 0, 1.6, -17.95, 9.05, -34.8)
 mesh = SubResource("Monte_terra")
 
 [node name="Cabeceira5" type="Node3D" parent="Historia/Construidos"]
 transform = Transform3D(1, 0, 0, 0, 0.99619, 0.08716, 0, -0.08716, 0.99619, -14.5, 9.0, -36.00)
 
 [node name="Corpo" type="MeshInstance3D" parent="Historia/Construidos/Cabeceira5"]
-position = Vector3(0, 0.375, 0)
+position = Vector3(0, 0.425, 0)
 mesh = SubResource("Lapide_corpo")
 
+[node name="Epitafio" type="Label3D" parent="Historia/Construidos/Cabeceira5"]
+position = Vector3(0, 0.62, 0.085)
+pixel_size = 0.0021
+modulate = Color(0.07, 0.065, 0.06, 1)
+outline_modulate = Color(0.85, 0.82, 0.76, 0.35)
+outline_size = 3
+text = "AQUI JAZ
+um contratado
+que desistiu"
+font = ExtResource("fonte_cinzel")
+font_size = 46
+line_spacing = -8.0
+
 [node name="Topo" type="MeshInstance3D" parent="Historia/Construidos/Cabeceira5"]
-transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.75, 0)
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.85, 0)
 mesh = SubResource("Lapide_topo")
 
 [node name="Monte5" type="MeshInstance3D" parent="Historia/Construidos"]
-transform = Transform3D(0.9, 0, 0, 0, 0.35, 0, 0, 0, 1.7, -15.45, 9.0, -34.8)
+transform = Transform3D(0.85, 0, 0, 0, 0.55, 0, 0, 0, 1.6, -15.45, 9.05, -34.8)
 mesh = SubResource("Monte_terra")
 
 [node name="SinoPosteA" type="StaticBody3D" parent="Historia/Construidos"]
