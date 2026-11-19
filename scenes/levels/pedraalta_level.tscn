@@ -19,6 +19,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/victory_screen.tscn" id="victory"]
 [ext_resource type="PackedScene" path="res://scenes/world/chest.tscn" id="chest"]
 [ext_resource type="PackedScene" path="res://scenes/characters/enemies/mimic.tscn" id="mimic"]
+[ext_resource type="Script" path="res://scripts/game/bounds_guard.gd" id="bounds_guard"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_night"]
 sky_top_color = Color(0.03, 0.04, 0.09, 1)
@@ -693,3 +694,8 @@ position = Vector3(199.8, 29.8, -19.8)
 rotation = Vector3(0, 5.21, 0)
 mesh = SubResource("Peak_2_13")
 cast_shadow = 0
+
+[node name="BoundsGuard" type="Node" parent="." node_paths=PackedStringArray("session")]
+script = ExtResource("bounds_guard")
+session = NodePath("../GameSession")
+fall_limit_y = -6.0

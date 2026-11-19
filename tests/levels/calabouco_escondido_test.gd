@@ -289,3 +289,35 @@ func test_the_portal_can_open_inside_the_closed_library() -> void:
 	spell.free()
 
 	assert_bool(walkable).is_true()
+
+
+# o BoundsGuard puxa de volta quem para longe do caminho a pé: nenhuma sala do calabouço pode parecer ilha,
+# nem a biblioteca atrás da grade, a adega, a sala secreta ou o outro lado da ponte
+func test_no_room_the_party_can_open_looks_out_of_bounds_to_the_guard() -> void:
+	var map := _map().get_world_3d().navigation_map
+	var start: Vector3 = (_map().get_node("PlayerSpots").get_child(0) as Node3D).global_position
+	for frame in 60:
+		if NavigationServer3D.map_get_closest_point(map, start).distance_to(start) < 1.0:
+			break
+		await get_tree().physics_frame
+	var places: Array[Node3D] = []
+	for group in ["Interativos", "Historia", "Segredos", "PontosDoEspadachim"]:
+		for child in _map().get_node(group).get_children():
+			if child is Node3D:
+				places.append(child)
+	for child in _map().get_node("Mecanismos").get_children():
+		if child is Lever:
+			places.append(child)
+	for spot in ["SaidaSpot", "CryptSpot", "GuardSpot", "PatrolSpot", "MimicSpot"]:
+		places.append(_map().get_node(spot))
+
+	var space := _map().get_world_3d().direct_space_state
+	for place in places:
+		# bilhete e inscrição ficam na parede ou na mesa: vale o chão logo abaixo, onde o aventureiro pisa
+		var below := space.intersect_ray(PhysicsRayQueryParameters3D.create(place.global_position + Vector3.UP * 0.5, place.global_position + Vector3.DOWN * 6.0, 1))
+		var at: Vector3 = below.position if below else place.global_position
+		var path := NavigationServer3D.map_get_path(map, start, at, true)
+		var end: Vector3 = path[path.size() - 1] if not path.is_empty() else Vector3.INF
+		var gap := Vector2(end.x - at.x, end.z - at.z).length()
+		assert_bool(gap <= BoundsGuard.MAX_ROUTE_GAP and at.y - end.y <= BoundsGuard.MAX_ROUTE_RISE) \
+			.override_failure_message("%s parece fora do mapa (distância %.1f, subida %.1f)" % [place.name, gap, at.y - end.y]).is_true()
