@@ -105,6 +105,8 @@ var _aim_query := PhysicsRayQueryParameters3D.new()
 var _framing := Vector2.ZERO
 
 @onready var camera_pivot: Node3D = $CameraPivot
+## caído em grupo, a câmera acompanha este aliado em vez do próprio corpo; null volta para si
+var camera_subject: Character
 @onready var spring_arm: SpringArm3D = $CameraPivot/SpringArm3D
 @onready var camera: Camera3D = $CameraPivot/SpringArm3D/Camera3D
 @onready var name_tag: Label3D = $NameTag
@@ -144,10 +146,11 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	if not is_multiplayer_authority():
 		return
-	var target := get_global_transform_interpolated().origin + Vector3.UP * CAMERA_HEIGHT
+	var subject: Node3D = camera_subject if is_instance_valid(camera_subject) else self
+	var target := subject.get_global_transform_interpolated().origin + Vector3.UP * CAMERA_HEIGHT
 	camera_pivot.global_position = camera_pivot.global_position.lerp(target, minf(camera_follow_speed * delta, 1.0))
 	var look := Input.get_vector("look_left", "look_right", "look_up", "look_down")
-	if look != Vector2.ZERO and not is_dead and _has_control():
+	if look != Vector2.ZERO and (_is_spectating() or (not is_dead and _has_control())):
 		_rotate_camera(look * BASE_STICK_SPEED * Settings.stick_sensitivity * delta)
 	_shake_camera(delta)
 
@@ -209,6 +212,9 @@ func _physics_process(delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if _is_spectating() and event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED and not Settings.uses_gamepad():
+		_rotate_camera(event.relative * BASE_MOUSE_SENSITIVITY * Settings.mouse_sensitivity)
+		return
 	if not is_multiplayer_authority() or input_locked or not state_machine.current_state.accepts_input():
 		return
 	var has_control := _has_control()
@@ -280,6 +286,7 @@ func _allow_friendly_fire() -> void:
 
 
 func _on_revived() -> void:
+	camera_subject = null
 	state_machine.change_state("Idle")
 	stamina.refill()
 	if mana:
@@ -565,6 +572,10 @@ func wants_to_run() -> bool:
 
 func _update_animation(direction: Vector3) -> void:
 	state_machine.step(direction)
+
+
+func _is_spectating() -> bool:
+	return is_dead and is_multiplayer_authority() and is_instance_valid(camera_subject)
 
 
 func _rotate_camera(amount: Vector2) -> void:

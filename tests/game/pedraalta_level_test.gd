@@ -301,3 +301,44 @@ func test_every_chest_spot_stands_clear_with_room_for_the_loot() -> void:
 		assert_bool(_on_navigation(map, at)).override_failure_message("%s fora do chão andável" % spot.name).is_true()
 		assert_float(Vector2(end.x - at.x, end.z - at.z).length()).override_failure_message("%s sem caminho a pé" % spot.name).is_less(0.5)
 		assert_bool(_on_navigation(map, loot)).override_failure_message("%s solta a poção fora do chão" % spot.name).is_true()
+
+
+# caído com o grupo de pé, a câmera passa a seguir um aliado; o ataque troca de aliado e reviver volta para si
+func test_a_fallen_player_watches_the_allies_still_standing() -> void:
+	var first := _ally()
+	var second := _ally()
+	second.set_display_name("Iris")
+	await get_tree().physics_frame
+
+	session.player.take_damage(999.0)
+	assert_object(session.player.camera_subject).is_same(first)
+	assert_str(session.hud.announcement.text).contains("Assistindo Brann")
+
+	session._unhandled_input(_attack_press())
+	assert_object(session.player.camera_subject).is_same(second)
+
+	second.take_damage(999.0)
+	assert_object(session.player.camera_subject).is_same(first)
+
+	session.player.revive(5.0)
+	assert_object(session.player.camera_subject).is_null()
+
+
+
+func test_when_the_watched_ally_leaves_the_camera_moves_to_another() -> void:
+	var first := _ally()
+	var second := _ally()
+	await get_tree().physics_frame
+	first.name = "4242"
+	session.player.take_damage(999.0)
+	assert_object(session.player.camera_subject).is_same(first)
+
+	session._on_player_left(4242)
+
+	assert_object(session.player.camera_subject).is_same(second)
+
+func _attack_press() -> InputEventAction:
+	var press := InputEventAction.new()
+	press.action = "attack"
+	press.pressed = true
+	return press

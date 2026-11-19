@@ -4,6 +4,7 @@ extends Node
 ## Gerencia a criação dos jogadores, fluxo de objetivos, invocação do chefe,
 ## captura/liberação do cursor do mouse, votação de bênçãos em caso de derrota e re-inicialização de tentativas.
 
+const SPECTATE_LINE := "Assistindo %s. Ataque para ver outro aliado."
 const EXECUTION := "res://scenes/cutscenes/execution.tscn"
 ## tempo para ler o aviso do prazo antes da execução
 const CONTRACT_EXPIRED_DELAY := 3.0
@@ -91,6 +92,15 @@ func _log_death() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	var watching := player.is_dead and is_instance_valid(player.camera_subject) and not pause_menu.visible
+	if watching and event.is_action_pressed("attack") and (Input.mouse_mode == Input.MOUSE_MODE_CAPTURED or Settings.uses_gamepad()):
+		hud.announce(_spectate_next())
+		get_viewport().set_input_as_handled()
+		return
+	if watching and event is InputEventMouseButton and event.pressed and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
+		capture_cursor()
+		get_viewport().set_input_as_handled()
+		return
 	# Impede interações de jogo se o jogador estiver morto ou menus estiverem abertos
 	if player.is_dead or pause_menu.visible or (victory_screen and victory_screen.visible):
 		return
@@ -256,11 +266,25 @@ func watch_player(adventurer: Adventurer) -> void:
 func _on_player_died(fallen: Adventurer) -> void:
 	if not _all_players_dead():
 		if fallen == player:
-			hud.announce("Você caiu. Seus aliados ainda lutam.")
+			hud.announce("Você caiu. Seus aliados ainda lutam. " + _spectate_next())
 		else:
 			hud.announce("%s caiu. Leve uma poção para reviver." % fallen.get_display_name())
+			if player.is_dead and player.camera_subject == fallen:
+				_spectate_next()
 		return
+	player.camera_subject = null
 	_on_party_down()
+
+
+## caído em grupo, assiste um aliado de pé; o ataque passa para o próximo. Devolve a linha para o aviso
+func _spectate_next() -> String:
+	var standing := players.filter(func(adventurer: Adventurer) -> bool: return adventurer != player and not adventurer.is_dead)
+	if standing.is_empty():
+		player.camera_subject = null
+		return ""
+	var next: Adventurer = standing[(standing.find(player.camera_subject) + 1) % standing.size()]
+	player.camera_subject = next
+	return SPECTATE_LINE % next.get_display_name()
 
 ## Executado quando todos os jogadores do grupo são derrotados.
 func _on_party_down() -> void:
@@ -377,6 +401,8 @@ func _on_player_left(peer_id: int) -> void:
 		_try_close_vote()
 	elif _all_players_dead():
 		_on_party_down()
+	elif player.is_dead and player.camera_subject == adventurer:
+		hud.announce(_spectate_next())
 
 ## Callback de retomada de jogo através do menu de pausa.
 func _on_resumed() -> void:
