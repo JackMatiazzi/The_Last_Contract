@@ -654,14 +654,18 @@ size = Vector3(0.320, 0.450, 0.320)
 material = SubResource("Mat_glass")
 size = Vector3(0.260, 0.300, 0.260)
 
-[sub_resource type="StandardMaterial3D" id="Mat_cova"]
-albedo_color = Color(0.3, 0.21, 0.14, 1)
-albedo_texture = ExtResource("plaster_color")
+[sub_resource type="ORMMaterial3D" id="Mat_cova"]
+albedo_color = Color(0.5, 0.36, 0.26, 1)
+albedo_texture = ExtResource("rock_color")
+orm_texture = ExtResource("rock_orm")
 normal_enabled = true
-normal_texture = ExtResource("plaster_normal")
-roughness = 1.0
+normal_texture = ExtResource("rock_normal")
 uv1_triplanar = true
-uv1_scale = Vector3(1.4, 1.4, 1.4)
+uv1_scale = Vector3(1.6, 1.6, 1.6)
+
+[sub_resource type="BoxMesh" id="Cova_terra"]
+material = SubResource("Mat_cova")
+size = Vector3(1.05, 0.08, 2.05)
 
 [sub_resource type="StandardMaterial3D" id="Mat_lapide"]
 albedo_color = Color(0.62, 0.61, 0.58, 1)
@@ -1756,43 +1760,49 @@ mesh = SubResource("Box_53")
 transform = Transform3D(0.30998, 0.93969, -0.14454, -0.85165, 0.34202, 0.39713, 0.42262, -0.00000, 0.90631, -19.750, 6.120, -23.550)
 mesh = SubResource("Box_54")
 
-[node name="Cova0" parent="Historia/Construidos" instance=ExtResource("deco_dirt")]
-transform = Transform3D(0.25, 0, 0, 0, 0.6, 0, 0, 0, 0.5, -19.5, 9.02, -38.0)
+[node name="Cova0" type="MeshInstance3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -19.5, 9.03, -38.0)
+mesh = SubResource("Cova_terra")
 
 [node name="Lapide0" type="MeshInstance3D" parent="Historia/Construidos"]
 transform = Transform3D(0.57358, -0.81915, -0.00000, 0.81915, 0.57358, 0.00000, 0.00000, -0.00000, 1.00000, -18.750, 9.250, -38.200)
 mesh = SubResource("Box_56")
 
-[node name="Cova1" parent="Historia/Construidos" instance=ExtResource("deco_dirt")]
-transform = Transform3D(0.25, 0, 0, 0, 0.6, 0, 0, 0, 0.5, -17.0, 9.02, -38.0)
+[node name="Cova1" type="MeshInstance3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.0, 9.03, -38.0)
+mesh = SubResource("Cova_terra")
 
 [node name="Lapide1" type="MeshInstance3D" parent="Historia/Construidos"]
 transform = Transform3D(0.57358, -0.81915, -0.00000, 0.81915, 0.57358, 0.00000, 0.00000, -0.00000, 1.00000, -16.250, 9.250, -38.200)
 mesh = SubResource("Box_58")
 
-[node name="Cova2" parent="Historia/Construidos" instance=ExtResource("deco_dirt")]
-transform = Transform3D(0.25, 0, 0, 0, 0.6, 0, 0, 0, 0.5, -14.5, 9.02, -38.0)
+[node name="Cova2" type="MeshInstance3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.5, 9.03, -38.0)
+mesh = SubResource("Cova_terra")
 
 [node name="Lapide2" type="MeshInstance3D" parent="Historia/Construidos"]
 transform = Transform3D(0.57358, -0.81915, -0.00000, 0.81915, 0.57358, 0.00000, 0.00000, -0.00000, 1.00000, -13.750, 9.250, -38.200)
 mesh = SubResource("Box_60")
 
-[node name="Cova3" parent="Historia/Construidos" instance=ExtResource("deco_dirt")]
-transform = Transform3D(0.25, 0, 0, 0, 0.6, 0, 0, 0, 0.5, -19.5, 9.02, -34.8)
+[node name="Cova3" type="MeshInstance3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -19.5, 9.03, -34.8)
+mesh = SubResource("Cova_terra")
 
 [node name="Lapide3" type="MeshInstance3D" parent="Historia/Construidos"]
 transform = Transform3D(0.57358, -0.81915, -0.00000, 0.81915, 0.57358, 0.00000, 0.00000, -0.00000, 1.00000, -18.750, 9.250, -35.000)
 mesh = SubResource("Box_62")
 
-[node name="Cova4" parent="Historia/Construidos" instance=ExtResource("deco_dirt")]
-transform = Transform3D(0.25, 0, 0, 0, 0.6, 0, 0, 0, 0.5, -17.0, 9.02, -34.8)
+[node name="Cova4" type="MeshInstance3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.0, 9.03, -34.8)
+mesh = SubResource("Cova_terra")
 
 [node name="Lapide4" type="MeshInstance3D" parent="Historia/Construidos"]
 transform = Transform3D(0.57358, -0.81915, -0.00000, 0.81915, 0.57358, 0.00000, 0.00000, -0.00000, 1.00000, -16.250, 9.250, -35.000)
 mesh = SubResource("Box_64")
 
-[node name="Cova5" parent="Historia/Construidos" instance=ExtResource("deco_dirt")]
-transform = Transform3D(0.25, 0, 0, 0, 0.6, 0, 0, 0, 0.5, -14.5, 9.02, -34.8)
+[node name="Cova5" type="MeshInstance3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.5, 9.03, -34.8)
+mesh = SubResource("Cova_terra")
 
 [node name="Lapide5" type="MeshInstance3D" parent="Historia/Construidos"]
 transform = Transform3D(0.57358, -0.81915, -0.00000, 0.81915, 0.57358, 0.00000, 0.00000, -0.00000, 1.00000, -13.750, 9.250, -35.000)
