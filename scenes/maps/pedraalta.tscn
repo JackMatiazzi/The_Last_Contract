@@ -663,15 +663,6 @@ roughness = 1.0
 uv1_triplanar = true
 uv1_scale = Vector3(1.4, 1.4, 1.4)
 
-[sub_resource type="StandardMaterial3D" id="Mat_terra"]
-albedo_color = Color(0.5, 0.38, 0.26, 1)
-albedo_texture = ExtResource("plaster_color")
-normal_enabled = true
-normal_texture = ExtResource("plaster_normal")
-roughness = 1.0
-uv1_triplanar = true
-uv1_scale = Vector3(0.8, 0.8, 0.8)
-
 [sub_resource type="StandardMaterial3D" id="Mat_lapide"]
 albedo_color = Color(0.62, 0.61, 0.58, 1)
 albedo_texture = ExtResource("plaster_color")
@@ -693,56 +684,25 @@ bottom_radius = 0.42
 height = 0.16
 radial_segments = 20
 
-[sub_resource type="SphereMesh" id="Monte_terra"]
-material = SubResource("Mat_terra")
-radius = 0.45
-height = 0.9
-radial_segments = 16
-rings = 8
-
-[sub_resource type="BoxMesh" id="Box_55"]
-material = SubResource("Mat_cova")
-size = Vector3(1.000, 0.030, 2.000)
-
 [sub_resource type="BoxMesh" id="Box_56"]
 material = SubResource("Mat_stone")
 size = Vector3(0.250, 0.500, 2.000)
-
-[sub_resource type="BoxMesh" id="Box_57"]
-material = SubResource("Mat_cova")
-size = Vector3(1.000, 0.030, 2.000)
 
 [sub_resource type="BoxMesh" id="Box_58"]
 material = SubResource("Mat_stone")
 size = Vector3(0.250, 0.500, 2.000)
 
-[sub_resource type="BoxMesh" id="Box_59"]
-material = SubResource("Mat_cova")
-size = Vector3(1.000, 0.030, 2.000)
-
 [sub_resource type="BoxMesh" id="Box_60"]
 material = SubResource("Mat_stone")
 size = Vector3(0.250, 0.500, 2.000)
-
-[sub_resource type="BoxMesh" id="Box_61"]
-material = SubResource("Mat_cova")
-size = Vector3(1.000, 0.030, 2.000)
 
 [sub_resource type="BoxMesh" id="Box_62"]
 material = SubResource("Mat_stone")
 size = Vector3(0.250, 0.500, 2.000)
 
-[sub_resource type="BoxMesh" id="Box_63"]
-material = SubResource("Mat_cova")
-size = Vector3(1.000, 0.030, 2.000)
-
 [sub_resource type="BoxMesh" id="Box_64"]
 material = SubResource("Mat_stone")
 size = Vector3(0.250, 0.500, 2.000)
-
-[sub_resource type="BoxMesh" id="Box_65"]
-material = SubResource("Mat_cova")
-size = Vector3(1.000, 0.030, 2.000)
 
 [sub_resource type="BoxMesh" id="Box_66"]
 material = SubResource("Mat_stone")
@@ -1796,49 +1756,43 @@ mesh = SubResource("Box_53")
 transform = Transform3D(0.30998, 0.93969, -0.14454, -0.85165, 0.34202, 0.39713, 0.42262, -0.00000, 0.90631, -19.750, 6.120, -23.550)
 mesh = SubResource("Box_54")
 
-[node name="Cova0" type="MeshInstance3D" parent="Historia/Construidos"]
-transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -19.500, 9.010, -38.000)
-mesh = SubResource("Box_55")
+[node name="Cova0" parent="Historia/Construidos" instance=ExtResource("deco_dirt")]
+transform = Transform3D(0.25, 0, 0, 0, 0.6, 0, 0, 0, 0.5, -19.5, 9.02, -38.0)
 
 [node name="Lapide0" type="MeshInstance3D" parent="Historia/Construidos"]
 transform = Transform3D(0.57358, -0.81915, -0.00000, 0.81915, 0.57358, 0.00000, 0.00000, -0.00000, 1.00000, -18.750, 9.250, -38.200)
 mesh = SubResource("Box_56")
 
-[node name="Cova1" type="MeshInstance3D" parent="Historia/Construidos"]
-transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -17.000, 9.010, -38.000)
-mesh = SubResource("Box_57")
+[node name="Cova1" parent="Historia/Construidos" instance=ExtResource("deco_dirt")]
+transform = Transform3D(0.25, 0, 0, 0, 0.6, 0, 0, 0, 0.5, -17.0, 9.02, -38.0)
 
 [node name="Lapide1" type="MeshInstance3D" parent="Historia/Construidos"]
 transform = Transform3D(0.57358, -0.81915, -0.00000, 0.81915, 0.57358, 0.00000, 0.00000, -0.00000, 1.00000, -16.250, 9.250, -38.200)
 mesh = SubResource("Box_58")
 
-[node name="Cova2" type="MeshInstance3D" parent="Historia/Construidos"]
-transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -14.500, 9.010, -38.000)
-mesh = SubResource("Box_59")
+[node name="Cova2" parent="Historia/Construidos" instance=ExtResource("deco_dirt")]
+transform = Transform3D(0.25, 0, 0, 0, 0.6, 0, 0, 0, 0.5, -14.5, 9.02, -38.0)
 
 [node name="Lapide2" type="MeshInstance3D" parent="Historia/Construidos"]
 transform = Transform3D(0.57358, -0.81915, -0.00000, 0.81915, 0.57358, 0.00000, 0.00000, -0.00000, 1.00000, -13.750, 9.250, -38.200)
 mesh = SubResource("Box_60")
 
-[node name="Cova3" type="MeshInstance3D" parent="Historia/Construidos"]
-transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -19.500, 9.010, -34.800)
-mesh = SubResource("Box_61")
+[node name="Cova3" parent="Historia/Construidos" instance=ExtResource("deco_dirt")]
+transform = Transform3D(0.25, 0, 0, 0, 0.6, 0, 0, 0, 0.5, -19.5, 9.02, -34.8)
 
 [node name="Lapide3" type="MeshInstance3D" parent="Historia/Construidos"]
 transform = Transform3D(0.57358, -0.81915, -0.00000, 0.81915, 0.57358, 0.00000, 0.00000, -0.00000, 1.00000, -18.750, 9.250, -35.000)
 mesh = SubResource("Box_62")
 
-[node name="Cova4" type="MeshInstance3D" parent="Historia/Construidos"]
-transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -17.000, 9.010, -34.800)
-mesh = SubResource("Box_63")
+[node name="Cova4" parent="Historia/Construidos" instance=ExtResource("deco_dirt")]
+transform = Transform3D(0.25, 0, 0, 0, 0.6, 0, 0, 0, 0.5, -17.0, 9.02, -34.8)
 
 [node name="Lapide4" type="MeshInstance3D" parent="Historia/Construidos"]
 transform = Transform3D(0.57358, -0.81915, -0.00000, 0.81915, 0.57358, 0.00000, 0.00000, -0.00000, 1.00000, -16.250, 9.250, -35.000)
 mesh = SubResource("Box_64")
 
-[node name="Cova5" type="MeshInstance3D" parent="Historia/Construidos"]
-transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -14.500, 9.010, -34.800)
-mesh = SubResource("Box_65")
+[node name="Cova5" parent="Historia/Construidos" instance=ExtResource("deco_dirt")]
+transform = Transform3D(0.25, 0, 0, 0, 0.6, 0, 0, 0, 0.5, -14.5, 9.02, -34.8)
 
 [node name="Lapide5" type="MeshInstance3D" parent="Historia/Construidos"]
 transform = Transform3D(0.57358, -0.81915, -0.00000, 0.81915, 0.57358, 0.00000, 0.00000, -0.00000, 1.00000, -13.750, 9.250, -35.000)
@@ -1868,9 +1822,8 @@ line_spacing = -12.0
 transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.85, 0)
 mesh = SubResource("Lapide_topo")
 
-[node name="Monte0" type="MeshInstance3D" parent="Historia/Construidos"]
-transform = Transform3D(0.85, 0, 0, 0, 0.55, 0, 0, 0, 1.6, -20.45, 9.05, -38.0)
-mesh = SubResource("Monte_terra")
+[node name="Monte0" parent="Historia/Construidos" instance=ExtResource("deco_rubble_half")]
+transform = Transform3D(0.15975, 0, -0.05814, 0, 0.11900, 0, 0.05814, 0, 0.15975, -20.50, 9.0, -37.80)
 
 [node name="Cabeceira1" type="Node3D" parent="Historia/Construidos"]
 transform = Transform3D(1, 0, 0, 0, 0.99452, 0.10453, 0, -0.10453, 0.99452, -17.0, 9.0, -39.20)
@@ -1896,9 +1849,8 @@ line_spacing = -12.0
 transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.85, 0)
 mesh = SubResource("Lapide_topo")
 
-[node name="Monte1" type="MeshInstance3D" parent="Historia/Construidos"]
-transform = Transform3D(0.85, 0, 0, 0, 0.55, 0, 0, 0, 1.6, -17.95, 9.05, -38.0)
-mesh = SubResource("Monte_terra")
+[node name="Monte1" parent="Historia/Construidos" instance=ExtResource("deco_rubble_half")]
+transform = Transform3D(0.04400, 0, -0.16421, 0, 0.11900, 0, 0.16421, 0, 0.04400, -18.00, 9.0, -37.80)
 
 [node name="Cabeceira2" type="Node3D" parent="Historia/Construidos"]
 transform = Transform3D(1, 0, 0, 0, 0.99939, -0.03490, 0, 0.03490, 0.99939, -14.5, 9.0, -39.20)
@@ -1924,9 +1876,8 @@ line_spacing = -12.0
 transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.85, 0)
 mesh = SubResource("Lapide_topo")
 
-[node name="Monte2" type="MeshInstance3D" parent="Historia/Construidos"]
-transform = Transform3D(0.85, 0, 0, 0, 0.55, 0, 0, 0, 1.6, -15.45, 9.05, -38.0)
-mesh = SubResource("Monte_terra")
+[node name="Monte2" parent="Historia/Construidos" instance=ExtResource("deco_rubble_half")]
+transform = Transform3D(-0.13023, 0, -0.10927, 0, 0.11900, 0, 0.10927, 0, -0.13023, -15.50, 9.0, -37.80)
 
 [node name="Cabeceira3" type="Node3D" parent="Historia/Construidos"]
 transform = Transform3D(1, 0, 0, 0, 0.99863, 0.05234, 0, -0.05234, 0.99863, -19.5, 9.0, -36.00)
@@ -1952,9 +1903,8 @@ line_spacing = -12.0
 transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.85, 0)
 mesh = SubResource("Lapide_topo")
 
-[node name="Monte3" type="MeshInstance3D" parent="Historia/Construidos"]
-transform = Transform3D(0.85, 0, 0, 0, 0.55, 0, 0, 0, 1.6, -20.45, 9.05, -34.8)
-mesh = SubResource("Monte_terra")
+[node name="Monte3" parent="Historia/Construidos" instance=ExtResource("deco_rubble_half")]
+transform = Transform3D(-0.15975, 0, 0.05814, 0, 0.11900, 0, -0.05814, 0, -0.15975, -20.50, 9.0, -34.60)
 
 [node name="Cabeceira4" type="Node3D" parent="Historia/Construidos"]
 transform = Transform3D(1, 0, 0, 0, 0.99255, -0.12187, 0, 0.12187, 0.99255, -17.0, 9.0, -36.00)
@@ -1980,9 +1930,8 @@ line_spacing = -12.0
 transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.85, 0)
 mesh = SubResource("Lapide_topo")
 
-[node name="Monte4" type="MeshInstance3D" parent="Historia/Construidos"]
-transform = Transform3D(0.85, 0, 0, 0, 0.55, 0, 0, 0, 1.6, -17.95, 9.05, -34.8)
-mesh = SubResource("Monte_terra")
+[node name="Monte4" parent="Historia/Construidos" instance=ExtResource("deco_rubble_half")]
+transform = Transform3D(-0.02952, 0, 0.16742, 0, 0.11900, 0, -0.16742, 0, -0.02952, -18.00, 9.0, -34.60)
 
 [node name="Cabeceira5" type="Node3D" parent="Historia/Construidos"]
 transform = Transform3D(1, 0, 0, 0, 0.99619, 0.08716, 0, -0.08716, 0.99619, -14.5, 9.0, -36.00)
@@ -2008,9 +1957,8 @@ line_spacing = -12.0
 transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.85, 0)
 mesh = SubResource("Lapide_topo")
 
-[node name="Monte5" type="MeshInstance3D" parent="Historia/Construidos"]
-transform = Transform3D(0.85, 0, 0, 0, 0.55, 0, 0, 0, 1.6, -15.45, 9.05, -34.8)
-mesh = SubResource("Monte_terra")
+[node name="Monte5" parent="Historia/Construidos" instance=ExtResource("deco_rubble_half")]
+transform = Transform3D(0.13023, 0, 0.10927, 0, 0.11900, 0, -0.10927, 0, 0.13023, -15.50, 9.0, -34.60)
 
 [node name="SinoPosteA" type="StaticBody3D" parent="Historia/Construidos"]
 transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -14.000, 14.600, -66.000)
