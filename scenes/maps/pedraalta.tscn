@@ -12,6 +12,14 @@
 [ext_resource type="Texture2D" path="res://assets/quaternius_village/models/T_UnevenBrick_BaseColor.png" id="brick_color"]
 [ext_resource type="Texture2D" path="res://assets/quaternius_village/models/T_UnevenBrick_Normal.png" id="brick_normal"]
 [ext_resource type="Texture2D" path="res://assets/quaternius_village/models/T_UnevenBrick_Roughness.png" id="brick_rough"]
+[ext_resource type="Texture2D" path="res://assets/quaternius_village/models/T_WoodTrim_BaseColor.png" id="wood_color"]
+[ext_resource type="Texture2D" path="res://assets/quaternius_village/models/T_WoodTrim_Normal.png" id="wood_normal"]
+[ext_resource type="Texture2D" path="res://assets/quaternius_village/models/T_WoodTrim_Roughness.png" id="wood_rough"]
+[ext_resource type="Texture2D" path="res://assets/quaternius_village/models/T_MetalOrnaments_BaseColor.png" id="metal_color"]
+[ext_resource type="Texture2D" path="res://assets/quaternius_village/models/T_MetalOrnaments_Roughness.png" id="metal_rough"]
+[ext_resource type="Texture2D" path="res://assets/quaternius_village/models/T_Plaster_BaseColor.png" id="plaster_color"]
+[ext_resource type="Texture2D" path="res://assets/quaternius_village/models/T_Plaster_Normal.png" id="plaster_normal"]
+[ext_resource type="Texture2D" path="res://assets/quaternius_village/models/T_RedBrick_BaseColor.png" id="redbrick_color"]
 [ext_resource type="PackedScene" path="res://assets/quaternius_village/models/Prop_Wagon.gltf" id="deco_wagon"]
 [ext_resource type="PackedScene" path="res://assets/quaternius_village/models/Prop_Chimney.gltf" id="deco_chimney"]
 [ext_resource type="PackedScene" path="res://assets/quaternius_village/models/Prop_Support.gltf" id="deco_support"]
@@ -41,7 +49,6 @@
 [ext_resource type="PackedScene" path="res://assets/kaykit_adventurers/accessories/axe_1handed.gltf" id="deco_axe1"]
 [ext_resource type="PackedScene" path="res://assets/kaykit_adventurers/accessories/quiver.gltf" id="deco_quiver"]
 [ext_resource type="PackedScene" path="res://assets/kaykit_adventurers/accessories/arrow_bundle.gltf" id="deco_arrows"]
-[ext_resource type="PackedScene" path="res://scenes/props/scaffold.tscn" id="deco_scaffold"]
 
 
 [sub_resource type="Gradient" id="Ramp_rock"]
@@ -77,12 +84,22 @@ uv1_triplanar = true
 uv1_scale = Vector3(0.5, 0.5, 0.5)
 
 [sub_resource type="StandardMaterial3D" id="Mat_wood"]
-albedo_color = Color(0.36, 0.24, 0.14, 1)
-roughness = 0.9
+albedo_color = Color(0.8, 0.68, 0.56, 1)
+albedo_texture = ExtResource("wood_color")
+normal_enabled = true
+normal_texture = ExtResource("wood_normal")
+roughness_texture = ExtResource("wood_rough")
+uv1_triplanar = true
+uv1_scale = Vector3(0.7, 0.7, 0.7)
 
-[sub_resource type="StandardMaterial3D" id="Mat_stone"]
-albedo_color = Color(0.42, 0.42, 0.43, 1)
-roughness = 1.0
+[sub_resource type="ORMMaterial3D" id="Mat_stone"]
+albedo_color = Color(0.8, 0.78, 0.76, 1)
+albedo_texture = ExtResource("rock_color")
+orm_texture = ExtResource("rock_orm")
+normal_enabled = true
+normal_texture = ExtResource("rock_normal")
+uv1_triplanar = true
+uv1_scale = Vector3(0.8, 0.8, 0.8)
 
 [sub_resource type="StandardMaterial3D" id="Mat_water"]
 albedo_color = Color(0.06, 0.12, 0.16, 1)
@@ -100,9 +117,12 @@ emission = Color(0.55, 0.8, 1, 1)
 emission_energy_multiplier = 1.6
 
 [sub_resource type="StandardMaterial3D" id="Mat_iron"]
-albedo_color = Color(0.12, 0.12, 0.13, 1)
+albedo_color = Color(0.35, 0.35, 0.37, 1)
+albedo_texture = ExtResource("metal_color")
 metallic = 0.7
-roughness = 0.5
+roughness_texture = ExtResource("metal_rough")
+uv1_triplanar = true
+uv1_scale = Vector3(1.5, 1.5, 1.5)
 
 [sub_resource type="StandardMaterial3D" id="Mat_glass"]
 transparency = 1
@@ -110,23 +130,63 @@ albedo_color = Color(0.9, 0.8, 0.5, 0.35)
 roughness = 0.1
 
 [sub_resource type="StandardMaterial3D" id="Mat_bronze"]
-albedo_color = Color(0.55, 0.38, 0.18, 1)
+albedo_color = Color(0.85, 0.6, 0.32, 1)
+albedo_texture = ExtResource("metal_color")
 metallic = 0.85
-roughness = 0.35
+roughness_texture = ExtResource("metal_rough")
+uv1_triplanar = true
+uv1_scale = Vector3(1.5, 1.5, 1.5)
 
 [sub_resource type="StandardMaterial3D" id="Mat_cloth"]
-albedo_color = Color(0.85, 0.82, 0.74, 1)
+albedo_color = Color(0.95, 0.9, 0.8, 1)
+albedo_texture = ExtResource("plaster_color")
+normal_enabled = true
+normal_texture = ExtResource("plaster_normal")
+normal_scale = 0.5
 roughness = 1.0
 cull_mode = 2
+uv1_triplanar = true
+uv1_scale = Vector3(1.2, 1.2, 1.2)
 
 [sub_resource type="StandardMaterial3D" id="Mat_cloth_dark"]
-albedo_color = Color(0.55, 0.42, 0.32, 1)
+albedo_color = Color(0.62, 0.45, 0.32, 1)
+albedo_texture = ExtResource("plaster_color")
+normal_enabled = true
+normal_texture = ExtResource("plaster_normal")
+normal_scale = 0.5
 roughness = 1.0
 cull_mode = 2
+uv1_triplanar = true
+uv1_scale = Vector3(1.2, 1.2, 1.2)
+
+[sub_resource type="StandardMaterial3D" id="Mat_cloth_red"]
+albedo_color = Color(0.7, 0.32, 0.26, 1)
+albedo_texture = ExtResource("plaster_color")
+normal_enabled = true
+normal_texture = ExtResource("plaster_normal")
+normal_scale = 0.5
+roughness = 1.0
+cull_mode = 2
+uv1_triplanar = true
+uv1_scale = Vector3(1.2, 1.2, 1.2)
+
+[sub_resource type="StandardMaterial3D" id="Mat_cloth_blue"]
+albedo_color = Color(0.38, 0.48, 0.62, 1)
+albedo_texture = ExtResource("plaster_color")
+normal_enabled = true
+normal_texture = ExtResource("plaster_normal")
+normal_scale = 0.5
+roughness = 1.0
+cull_mode = 2
+uv1_triplanar = true
+uv1_scale = Vector3(1.2, 1.2, 1.2)
 
 [sub_resource type="StandardMaterial3D" id="Mat_arena"]
-albedo_color = Color(0.32, 0.12, 0.12, 1)
+albedo_color = Color(0.62, 0.35, 0.32, 1)
+albedo_texture = ExtResource("redbrick_color")
 roughness = 1.0
+uv1_triplanar = true
+uv1_scale = Vector3(0.5, 0.5, 0.5)
 
 [sub_resource type="CylinderMesh" id="Arena_mesh"]
 material = SubResource("Mat_arena")
@@ -437,20 +497,44 @@ size = Vector3(3.000, 1.400, 2.000)
 [sub_resource type="BoxShape3D" id="Shape_34"]
 size = Vector3(3.000, 1.400, 2.000)
 
-[sub_resource type="BoxMesh" id="Box_35"]
+[sub_resource type="CylinderMesh" id="Box_35"]
 material = SubResource("Mat_stone")
-size = Vector3(3.200, 0.700, 3.200)
+top_radius = 1.6
+bottom_radius = 1.5
+height = 0.7
+radial_segments = 32
 
 [sub_resource type="BoxShape3D" id="Shape_35"]
 size = Vector3(3.200, 0.700, 3.200)
 
-[sub_resource type="BoxMesh" id="Box_36"]
-material = SubResource("Mat_water")
-size = Vector3(2.700, 0.040, 2.700)
-
-[sub_resource type="BoxMesh" id="Box_37"]
+[sub_resource type="TorusMesh" id="Fonte_borda"]
 material = SubResource("Mat_stone")
-size = Vector3(0.500, 1.900, 0.500)
+inner_radius = 1.3
+outer_radius = 1.62
+rings = 48
+ring_segments = 16
+
+[sub_resource type="StandardMaterial3D" id="Mat_fonte"]
+transparency = 1
+albedo_color = Color(0.22, 0.45, 0.55, 0.85)
+metallic = 0.2
+roughness = 0.05
+emission_enabled = true
+emission = Color(0.05, 0.12, 0.16, 1)
+
+[sub_resource type="CylinderMesh" id="Box_36"]
+material = SubResource("Mat_fonte")
+top_radius = 1.45
+bottom_radius = 1.45
+height = 0.04
+radial_segments = 32
+
+[sub_resource type="CylinderMesh" id="Box_37"]
+material = SubResource("Mat_stone")
+top_radius = 0.22
+bottom_radius = 0.3
+height = 1.9
+radial_segments = 16
 
 [sub_resource type="BoxShape3D" id="Shape_37"]
 size = Vector3(0.500, 1.900, 0.500)
@@ -482,7 +566,7 @@ material = SubResource("Mat_cloth_dark")
 size = Vector3(0.900, 1.400, 0.030)
 
 [sub_resource type="BoxMesh" id="Box_43"]
-material = SubResource("Mat_cloth")
+material = SubResource("Mat_cloth_red")
 size = Vector3(0.900, 0.900, 0.030)
 
 [sub_resource type="BoxMesh" id="Box_44"]
@@ -490,19 +574,50 @@ material = SubResource("Mat_cloth_dark")
 size = Vector3(0.900, 1.300, 0.030)
 
 [sub_resource type="BoxMesh" id="Box_45"]
-material = SubResource("Mat_cloth")
+material = SubResource("Mat_cloth_blue")
 size = Vector3(0.900, 1.000, 0.030)
 
 [sub_resource type="BoxMesh" id="Box_46"]
+material = SubResource("Mat_ramp")
+size = Vector3(2.2, 1, 1.8)
+
+[sub_resource type="SphereMesh" id="Forno_cupula"]
 material = SubResource("Mat_stone")
-size = Vector3(2.200, 1.500, 1.800)
+radius = 0.95
+height = 0.95
+is_hemisphere = true
+radial_segments = 32
+rings = 12
+
+[sub_resource type="CylinderMesh" id="Forno_chamine"]
+material = SubResource("Mat_ramp")
+top_radius = 0.14
+bottom_radius = 0.18
+height = 0.9
+radial_segments = 12
+
+[sub_resource type="StandardMaterial3D" id="Mat_brasa"]
+albedo_color = Color(0.12, 0.03, 0.01, 1)
+emission_enabled = true
+emission = Color(0.85, 0.22, 0.04, 1)
+emission_energy_multiplier = 1.1
+
+[sub_resource type="CylinderMesh" id="Forno_brasa"]
+material = SubResource("Mat_brasa")
+top_radius = 0.3
+bottom_radius = 0.3
+height = 0.02
+radial_segments = 24
 
 [sub_resource type="BoxShape3D" id="Shape_46"]
 size = Vector3(2.200, 1.500, 1.800)
 
-[sub_resource type="BoxMesh" id="Box_47"]
+[sub_resource type="CylinderMesh" id="Box_47"]
 material = SubResource("Mat_soot")
-size = Vector3(1.000, 0.700, 0.050)
+top_radius = 0.42
+bottom_radius = 0.42
+height = 0.05
+radial_segments = 24
 
 [sub_resource type="BoxMesh" id="Box_48"]
 material = SubResource("Mat_ore")
@@ -581,14 +696,14 @@ material = SubResource("Mat_stone")
 size = Vector3(0.250, 0.500, 2.000)
 
 [sub_resource type="BoxMesh" id="Box_67"]
-material = SubResource("Mat_stone")
+material = SubResource("Mat_wood")
 size = Vector3(0.500, 5.200, 0.500)
 
 [sub_resource type="BoxShape3D" id="Shape_67"]
 size = Vector3(0.500, 5.200, 0.500)
 
 [sub_resource type="BoxMesh" id="Box_68"]
-material = SubResource("Mat_stone")
+material = SubResource("Mat_wood")
 size = Vector3(0.500, 5.200, 0.500)
 
 [sub_resource type="BoxShape3D" id="Shape_68"]
@@ -605,44 +720,62 @@ size = Vector3(4.600, 0.400, 0.500)
 material = SubResource("Mat_soot")
 size = Vector3(0.060, 0.900, 0.040)
 
-[sub_resource type="BoxMesh" id="Box_71"]
-material = SubResource("Mat_stone")
-size = Vector3(0.600, 1.200, 0.600)
+[sub_resource type="CylinderMesh" id="Box_71"]
+material = SubResource("Mat_iron")
+top_radius = 0.36
+bottom_radius = 0.2
+height = 1.2
+radial_segments = 12
 
 [sub_resource type="BoxShape3D" id="Shape_71"]
 size = Vector3(0.600, 1.200, 0.600)
 
-[sub_resource type="BoxMesh" id="Box_72"]
-material = SubResource("Mat_stone")
-size = Vector3(0.600, 1.200, 0.600)
+[sub_resource type="CylinderMesh" id="Box_72"]
+material = SubResource("Mat_iron")
+top_radius = 0.36
+bottom_radius = 0.2
+height = 1.2
+radial_segments = 12
 
 [sub_resource type="BoxShape3D" id="Shape_72"]
 size = Vector3(0.600, 1.200, 0.600)
 
-[sub_resource type="BoxMesh" id="Box_73"]
-material = SubResource("Mat_stone")
-size = Vector3(0.600, 1.200, 0.600)
+[sub_resource type="CylinderMesh" id="Box_73"]
+material = SubResource("Mat_iron")
+top_radius = 0.36
+bottom_radius = 0.2
+height = 1.2
+radial_segments = 12
 
 [sub_resource type="BoxShape3D" id="Shape_73"]
 size = Vector3(0.600, 1.200, 0.600)
 
-[sub_resource type="BoxMesh" id="Box_74"]
-material = SubResource("Mat_stone")
-size = Vector3(0.600, 1.200, 0.600)
+[sub_resource type="CylinderMesh" id="Box_74"]
+material = SubResource("Mat_iron")
+top_radius = 0.36
+bottom_radius = 0.2
+height = 1.2
+radial_segments = 12
 
 [sub_resource type="BoxShape3D" id="Shape_74"]
 size = Vector3(0.600, 1.200, 0.600)
 
-[sub_resource type="BoxMesh" id="Box_75"]
-material = SubResource("Mat_stone")
-size = Vector3(0.600, 1.200, 0.600)
+[sub_resource type="CylinderMesh" id="Box_75"]
+material = SubResource("Mat_iron")
+top_radius = 0.36
+bottom_radius = 0.2
+height = 1.2
+radial_segments = 12
 
 [sub_resource type="BoxShape3D" id="Shape_75"]
 size = Vector3(0.600, 1.200, 0.600)
 
-[sub_resource type="BoxMesh" id="Box_76"]
-material = SubResource("Mat_stone")
-size = Vector3(0.600, 1.200, 0.600)
+[sub_resource type="CylinderMesh" id="Box_76"]
+material = SubResource("Mat_iron")
+top_radius = 0.36
+bottom_radius = 0.2
+height = 1.2
+radial_segments = 12
 
 [sub_resource type="BoxShape3D" id="Shape_76"]
 size = Vector3(0.600, 1.200, 0.600)
@@ -1446,9 +1579,6 @@ transform = Transform3D(0.86603, 0.00000, 0.50000, -0.50000, 0.00000, 0.86603, 0
 
 [node name="F_Mirante" type="Node3D" parent="Historia"]
 
-[node name="scaffold0" parent="Historia/F_Mirante" instance=ExtResource("deco_scaffold")]
-transform = Transform3D(0.00000, 0.00000, 1.00000, -0.00000, 1.00000, 0.00000, -1.00000, -0.00000, 0.00000, 12.000, 12.000, -66.000)
-
 [node name="banner_red1" parent="Historia/F_Mirante" instance=ExtResource("deco_banner_red")]
 transform = Transform3D(0.00000, 0.00000, -1.20000, 0.00000, 1.20000, 0.00000, 1.20000, -0.00000, 0.00000, -21.800, 13.500, -58.000)
 
@@ -1491,8 +1621,12 @@ mesh = SubResource("Box_35")
 shape = SubResource("Shape_35")
 
 [node name="FonteAgua" type="MeshInstance3D" parent="Historia/Construidos"]
-transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 0.000, 3.710, 10.000)
+transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 0.000, 3.800, 10.000)
 mesh = SubResource("Box_36")
+
+[node name="FonteBorda" type="MeshInstance3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.78, 10)
+mesh = SubResource("Fonte_borda")
 
 [node name="FontePilar" type="StaticBody3D" parent="Historia/Construidos"]
 transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, 0.000, 4.300, 10.000)
@@ -1549,14 +1683,33 @@ mesh = SubResource("Box_45")
 transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -15.500, 3.750, 4.000)
 
 [node name="Mesh" type="MeshInstance3D" parent="Historia/Construidos/Forno"]
+position = Vector3(0, -0.25, 0)
 mesh = SubResource("Box_46")
+
+[node name="Cupula" type="MeshInstance3D" parent="Historia/Construidos/Forno"]
+position = Vector3(0, 0.25, 0)
+mesh = SubResource("Forno_cupula")
+
+[node name="Chamine" type="MeshInstance3D" parent="Historia/Construidos/Forno"]
+position = Vector3(0, 1.05, -0.3)
+mesh = SubResource("Forno_chamine")
 
 [node name="Shape" type="CollisionShape3D" parent="Historia/Construidos/Forno"]
 shape = SubResource("Shape_46")
 
 [node name="FornoBoca" type="MeshInstance3D" parent="Historia/Construidos"]
-transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -15.500, 3.550, 4.910)
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, -15.5, 3.5, 4.91)
 mesh = SubResource("Box_47")
+
+[node name="FornoBrasa" type="MeshInstance3D" parent="Historia/Construidos"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, -15.5, 3.45, 4.94)
+mesh = SubResource("Forno_brasa")
+
+[node name="LuzForno" type="OmniLight3D" parent="Historia/Construidos"]
+position = Vector3(-15.5, 3.5, 5.4)
+light_color = Color(1, 0.55, 0.2, 1)
+light_energy = 1.2
+omni_range = 3.5
 
 [node name="Veio0" type="MeshInstance3D" parent="Historia/Construidos"]
 transform = Transform3D(1, 0, 0, 0, 1.000000, 0.000000, 0, -0.000000, 1.000000, -19.000, 7.100, -32.050)
@@ -1828,7 +1981,3 @@ position = Vector3(-17, 7.8, -31)
 light_color = Color(0.6, 0.85, 1, 1)
 light_energy = 0.9
 omni_range = 5.0
-
-[node name="Executioner" parent="Historia/F_Mirante/scaffold0"]
-visible = false
-process_mode = 4

@@ -1,17 +1,15 @@
 extends GdUnitTestSuite
 
-# o cadafalso do mirante é decoração: o carrasco da execução não fica largado na arena do chefe
+# a arena do chefe no mirante fica limpa: nem cadafalso nem carrasco largados ali
 
 const MAP := preload("res://scenes/maps/pedraalta.tscn")
 
 
-func test_the_scaffold_in_pedra_alta_has_no_executioner() -> void:
+func test_the_boss_arena_has_no_scaffold_or_executioner() -> void:
 	var map: Node3D = auto_free(MAP.instantiate())
 
-	var executioner := map.get_node("Historia/F_Mirante/scaffold0/Executioner") as Node3D
-
-	assert_bool(executioner.visible).is_false()
-	assert_int(executioner.process_mode).is_equal(Node.PROCESS_MODE_DISABLED)
+	assert_object(map.get_node_or_null("Historia/F_Mirante/scaffold0")).is_null()
+	assert_array(map.find_children("Executioner", "", true, false)).is_empty()
 
 
 func test_the_execution_scene_keeps_its_executioner() -> void:
