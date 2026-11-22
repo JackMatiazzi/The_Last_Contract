@@ -5,6 +5,12 @@ extends Node
 ## captura/liberação do cursor do mouse, votação de bênçãos em caso de derrota e re-inicialização de tentativas.
 
 const SPECTATE_LINE := "Assistindo %s. Ataque para ver outro aliado."
+const RESUMING_LINE := "Conexão instável. Voltando para a sala..."
+const RESUMED_LINE := "Conexão de volta."
+## fica na tela enquanto o jogo tenta voltar; some quando volta ou quando a partida cai
+const RESUME_ANNOUNCE_HOLD := 60.0
+const AWAY_LINE := "%s perdeu a conexão. Esperando voltar..."
+const BACK_LINE := "%s voltou."
 const EXECUTION := "res://scenes/cutscenes/execution.tscn"
 ## tempo para ler o aviso do prazo antes da execução
 const CONTRACT_EXPIRED_DELAY := 3.0
@@ -65,6 +71,8 @@ func _ready() -> void:
 	if victory_screen:
 		victory_screen.back_to_menu.connect(_return_to_village)
 	Net.player_left.connect(_on_player_left)
+	Net.connection_resuming.connect(_on_connection_resuming)
+	Net.player_away.connect(_on_player_away)
 	player.died.connect(_log_death)
 	capture_cursor()
 	Net.report_level_loaded()
@@ -403,6 +411,14 @@ func _on_player_left(peer_id: int) -> void:
 		_on_party_down()
 	elif player.is_dead and player.camera_subject == adventurer:
 		hud.announce(_spectate_next())
+
+
+func _on_connection_resuming(active: bool) -> void:
+	hud.announce(RESUMING_LINE if active else RESUMED_LINE, RESUME_ANNOUNCE_HOLD if active else Hud.ANNOUNCE_HOLD)
+
+
+func _on_player_away(peer_id: int, away: bool) -> void:
+	hud.announce((AWAY_LINE if away else BACK_LINE) % Net.display_name(peer_id))
 
 ## Callback de retomada de jogo através do menu de pausa.
 func _on_resumed() -> void:

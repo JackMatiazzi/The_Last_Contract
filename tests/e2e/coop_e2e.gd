@@ -9,6 +9,8 @@ const POTION := preload("res://resources/items/health_potion.tres")
 
 var role := ""
 var players := 2
+## a conexao muda continua aberta na sala, que nem percebe a queda: a volta tem que tomar o lugar dela
+var _muted_socket: WebSocketPeer
 
 
 func run() -> void:
@@ -39,6 +41,7 @@ func run() -> void:
 
 	await _damage_crosses_the_network(host, helper)
 	await _forged_damage_is_ignored()
+	await _connection_drops_and_comes_back(host, helper)
 	await _revive_through_the_network(host, helper)
 	await _everyone_falls_and_votes()
 	await _host_takes_everyone_down_the_trapdoor()
@@ -69,6 +72,53 @@ func _damage_crosses_the_network(host: Adventurer, helper: Adventurer) -> void:
 	var hurt := helper.get_max_health() - 2.0
 	if await wait_until(func() -> bool: return is_equal_approx(helper.health, hurt), "dano do host no cliente"):
 		check(true, "golpe de um jogador chega em todas as maquinas")
+
+
+# pela sala online a conexão cai e volta sozinha, sem ninguém sair do grupo nem perder o que aconteceu
+# enquanto estava fora: primeiro o ajudante com a conexão muda, depois o host com a conexão cortada
+func _connection_drops_and_comes_back(host: Adventurer, helper: Adventurer) -> void:
+	var relay := multiplayer.multiplayer_peer as RelayPeer
+	if relay == null:
+		return
+	var hurt := helper.health - 1.0
+	if role == "host":
+		mark("cortar ajudante")
+		await get_tree().create_timer(1.5).timeout
+		helper.take_damage(1.0, host)
+	elif _is_helper():
+		await wait_mark("cortar ajudante")
+		_muted_socket = relay._socket
+		_cut_and_wait(relay)
+		check(relay.is_resuming(), "o ajudante nota a queda e tenta voltar")
+	if await wait_until(func() -> bool: return is_equal_approx(helper.health, hurt) and not relay.is_resuming(), "golpe dado com o ajudante fora"):
+		check(true, "o golpe dado com o ajudante fora chega quando ele volta")
+	check(Net.player_count == players and session().players.size() == players, "ninguém sai do grupo com a queda do ajudante")
+	mark("ajudante de volta")
+	await wait_mark("ajudante de volta", players - 1)
+
+	if role == "host":
+		mark("host vai cair")
+		await get_tree().create_timer(0.5).timeout
+		_cut_and_wait(relay)
+		check(relay.is_resuming(), "o host nota a queda e tenta voltar")
+		if await wait_mark("enquanto o host estava fora"):
+			check(true, "o que o ajudante mandou com o host fora chega quando ele volta")
+	elif _is_helper():
+		await wait_mark("host vai cair")
+		await get_tree().create_timer(1.5).timeout
+		mark("enquanto o host estava fora")
+	await wait_until(func() -> bool: return not relay.is_resuming(), "host voltar")
+	check(Net.player_count == players and session().players.size() == players, "ninguém sai do grupo com a queda do host")
+	mark("host de volta")
+	await wait_mark("host de volta", players - 1)
+
+
+# troca a conexão por uma que nunca abriu e segura a primeira tentativa de voltar por 3 s, para o resto do
+# grupo jogar um pouco sem este processo
+func _cut_and_wait(relay: RelayPeer) -> void:
+	relay._socket = WebSocketPeer.new()
+	relay._poll()
+	relay._next_resume_msec = Time.get_ticks_msec() + 3000
 
 
 # o ajudante manda um pedido de dano forjado; quando o marco chega ao host, ele ja foi processado
