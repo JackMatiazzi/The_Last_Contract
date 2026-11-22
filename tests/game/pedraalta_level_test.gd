@@ -346,3 +346,20 @@ func _attack_press() -> InputEventAction:
 	press.action = "attack"
 	press.pressed = true
 	return press
+
+
+# a sala online caiu por um instante: o jogador vê que o jogo está voltando, e o grupo vê quem caiu
+func test_a_dropped_connection_shows_while_the_game_resumes() -> void:
+	Net.connection_resuming.emit(true)
+	assert_str(session.hud.announcement.text).is_equal(GameSession.RESUMING_LINE)
+
+	Net.connection_resuming.emit(false)
+	assert_str(session.hud.announcement.text).is_equal(GameSession.RESUMED_LINE)
+
+
+func test_an_ally_losing_the_connection_is_announced_until_they_return() -> void:
+	Net.player_away.emit(1, true)
+	assert_str(session.hud.announcement.text).contains("perdeu a conexão")
+
+	Net.player_away.emit(1, false)
+	assert_str(session.hud.announcement.text).contains("voltou")
