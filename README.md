@@ -16,11 +16,13 @@ os mortos-vivos também recebem) ou desiste e é executado.
 | Correr | Segurar Espaço | Clicar no analógico esquerdo |
 | Câmera | Mouse | Analógico direito |
 | Atacar (segurar para o golpe pesado) | Botão esquerdo | RT |
-| Habilidade | Botão direito | LT |
-| Trocar habilidade / item | Roda do mouse | Direcional |
+| Habilidade secundária | Botão direito | LT |
+| Trocar item | Roda do mouse para baixo | Direcional para baixo |
 | Interagir (segurar para beber o item) | E | X |
 | Placar | Segurar Tab | Segurar Back |
 | Pausar | Esc | Start |
+
+O Mage abre o Portal com a habilidade secundária.
 
 Limpe os grupos de esqueletos da vila. Quando o último cair, o Necromante surge na praça.
 

@@ -126,16 +126,14 @@ func test_guide_explains_controls_and_the_class_abilities() -> void:
 	assert_str(pause.get_node("%AbilityList").text).contains("%s: %d%% da estamina" % [knight.attack.title, cost]).contains("Botão direito: Escudo")
 
 
-func test_mage_abilities_are_paid_in_mana_and_have_no_right_button() -> void:
+func test_mage_guide_lists_mana_costs_and_the_portal_control() -> void:
 	var mage := arena.spawn(TestArena.MAGE, Vector3(4, 0, 0)) as Adventurer
 	await arena.wait_physics(2)
 
 	var lines := PauseMenu.ability_lines(mage)
 
-	assert_int(lines.size()).is_equal(mage.abilities.size())
-	for line in lines:
-		assert_str(line).contains("da mana")
-	assert_str("\n".join(lines)).not_contains("Botão direito")
+	assert_str("\n".join(lines)).contains("Projétil mágico: 20% da mana, pesado 45%")
+	assert_str("\n".join(lines)).contains("Botão direito / LT: Portal (20% da mana)")
 
 
 func test_esc_on_the_guide_goes_back_to_the_pause() -> void:

@@ -24,13 +24,14 @@ func test_the_necromancer_attacks_from_fourteen_meters() -> void:
 	assert_float(NECROMANCER.attack_range).is_equal(14.0)
 
 
-func test_the_mage_reaches_six_ninety_one_and_the_rogue_a_bit_less() -> void:
-	assert_float(_range_of(MAGIC_BOLT)).is_equal_approx(6.91, 0.001)
-	assert_float(_range_of(CROSSBOW_BOLT)).is_less(_range_of(MAGIC_BOLT))
+func test_the_mage_reaches_7_91_meters_and_the_rogue_reaches_7() -> void:
+	assert_float(_range_of(MAGIC_BOLT)).is_equal_approx(7.91, 0.001)
+	assert_float(_range_of(CROSSBOW_BOLT)).is_equal_approx(7.0, 0.001)
 
 
 func test_the_players_ranged_attacks_are_outranged_by_the_necromancer() -> void:
 	assert_float(_range_of(MAGIC_BOLT)).is_less(NECROMANCER.attack_range)
+	assert_float(_range_of(CROSSBOW_BOLT)).is_less(NECROMANCER.attack_range)
 
 
 func test_the_barbarian_charged_spin_costs_half_the_stamina() -> void:
