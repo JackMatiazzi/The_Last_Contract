@@ -8,7 +8,7 @@ const MAGE_INDEX := 2
 func run() -> void:
 	label = "solo"
 	play_with_gamepad()
-	if not await wait_scene("MainMenu"):
+	if not await skip_teaser_to_menu():
 		return
 	(get_tree().current_scene.get_node("%PlayButton") as Button).pressed.emit()
 
