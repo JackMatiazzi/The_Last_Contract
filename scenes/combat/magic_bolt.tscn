@@ -1,6 +1,6 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene format=3 uid="uid://bb1vhggm54kfd"]
 
-[ext_resource type="Script" path="res://scripts/combat/projectile.gd" id="1_projectile"]
+[ext_resource type="Script" uid="uid://d344b0wx1eua6" path="res://scripts/combat/projectile.gd" id="1_projectile"]
 [ext_resource type="PackedScene" path="res://scenes/combat/magic_scorch.tscn" id="2_impact"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_bolt"]
@@ -9,31 +9,28 @@ radius = 0.25
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_glow"]
 shading_mode = 0
 albedo_color = Color(0.78, 0.55, 1, 1)
-emission_enabled = true
-emission = Color(0.6, 0.3, 1, 1)
-emission_energy_multiplier = 3.0
 
 [sub_resource type="SphereMesh" id="SphereMesh_bolt"]
 material = SubResource("StandardMaterial3D_glow")
 radius = 0.18
 height = 0.36
 
-[node name="MagicBolt" type="Area3D"]
+[node name="MagicBolt" type="Area3D" unique_id=427016916]
 collision_layer = 0
 monitorable = false
 script = ExtResource("1_projectile")
-impact_scene = ExtResource("2_impact")
 speed = 14.0
-max_distance = 6.91
+max_distance = 7.91
 pierce = true
+impact_scene = ExtResource("2_impact")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1108044788]
 shape = SubResource("SphereShape3D_bolt")
 
-[node name="Mesh" type="MeshInstance3D" parent="."]
+[node name="Mesh" type="MeshInstance3D" parent="." unique_id=1759139796]
 mesh = SubResource("SphereMesh_bolt")
 
-[node name="Glow" type="OmniLight3D" parent="."]
+[node name="Glow" type="OmniLight3D" parent="." unique_id=199895536]
 light_color = Color(0.7, 0.45, 1, 1)
 light_energy = 1.5
 omni_range = 3.0

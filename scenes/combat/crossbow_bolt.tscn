@@ -1,23 +1,23 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene format=3 uid="uid://dlh8jfoosstn7"]
 
-[ext_resource type="Script" path="res://scripts/combat/projectile.gd" id="1_projectile"]
+[ext_resource type="Script" uid="uid://d344b0wx1eua6" path="res://scripts/combat/projectile.gd" id="1_projectile"]
+[ext_resource type="PackedScene" uid="uid://cgh0yf0lkif6s" path="res://assets/kaykit_adventurers/accessories/arrow.gltf" id="2_arrow"]
 [ext_resource type="PackedScene" path="res://scenes/combat/stuck_arrow.tscn" id="3_impact"]
-[ext_resource type="PackedScene" path="res://assets/kaykit_adventurers/accessories/arrow.gltf" id="2_arrow"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_bolt"]
 radius = 0.15
 
-[node name="CrossbowBolt" type="Area3D"]
+[node name="CrossbowBolt" type="Area3D" unique_id=665807916]
 collision_layer = 0
 monitorable = false
 script = ExtResource("1_projectile")
-impact_scene = ExtResource("3_impact")
 speed = 30.0
-max_distance = 6.0
+max_distance = 7.0
+impact_scene = ExtResource("3_impact")
 cuts_ropes = true
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=76438258]
 shape = SubResource("SphereShape3D_bolt")
 
-[node name="Arrow" parent="." instance=ExtResource("2_arrow")]
-rotation = Vector3(1.5708, 0, 0)
+[node name="Arrow" parent="." unique_id=565349925 instance=ExtResource("2_arrow")]
+transform = Transform3D(1, 0, 0, 0, -3.6199901e-06, -1, 0, 1, -3.6199901e-06, 0, 0, 0)
