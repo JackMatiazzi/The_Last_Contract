@@ -22,24 +22,18 @@ func _portals() -> Array[Node]:
 	return arena.root.find_children("*", "Portal", true, false)
 
 
-func _select_portal_spell() -> void:
+func test_the_mage_has_portal_on_secondary_and_keeps_magic_bolt_on_primary() -> void:
+	assert_object(mage.secondary_attack).is_instanceof(PortalSpell)
 	mage.next_ability()
-
-
-func test_the_mage_switches_to_the_portal_spell() -> void:
-	_select_portal_spell()
-
-	assert_object(mage.attack).is_instanceof(PortalSpell)
-	assert_str(mage.attack.title).is_equal("Portal")
+	assert_object(mage.attack).is_instanceof(RangedAttack)
 
 
 func test_two_casts_open_a_linked_pair_on_the_ground() -> void:
-	_select_portal_spell()
-
-	assert_bool(mage.attack_toward_camera()).is_true()
-	await arena.wait_seconds(mage.attack.impact_delay + mage.attack.cooldown)
-	assert_bool(mage.attack_toward_camera()).is_true()
-	await arena.wait_seconds(mage.attack.impact_delay + 0.1)
+	var spell := mage.secondary_attack
+	mage.use_secondary()
+	await arena.wait_seconds(spell.impact_delay + spell.cooldown)
+	mage.use_secondary()
+	await arena.wait_seconds(spell.impact_delay + 0.1)
 
 	var portals := _portals()
 	assert_int(portals.size()).is_equal(2)
@@ -48,18 +42,16 @@ func test_two_casts_open_a_linked_pair_on_the_ground() -> void:
 
 
 func test_each_portal_costs_its_own_mana() -> void:
-	_select_portal_spell()
+	mage.use_secondary()
 
-	mage.attack_toward_camera()
-
-	assert_float(mage.mana.current).is_equal_approx(mage.mana.maximum - mage.attack.cost_override, 0.01)
+	assert_float(mage.mana.current).is_equal_approx(mage.mana.maximum - mage.secondary_attack.cost_override, 0.01)
 
 
 func test_a_third_cast_closes_the_old_pair() -> void:
-	_select_portal_spell()
+	var spell := mage.secondary_attack
 	for i in 3:
-		mage.attack_toward_camera()
-		await arena.wait_seconds(mage.attack.impact_delay + mage.attack.cooldown)
+		mage.use_secondary()
+		await arena.wait_seconds(spell.impact_delay + spell.cooldown)
 
 	var alive := _portals().filter(func(portal: Node) -> bool: return not portal.is_queued_for_deletion())
 	assert_int(alive.size()).is_equal(1)
@@ -315,8 +307,7 @@ func test_a_shot_that_does_not_cross_a_portal_still_ignores_allies() -> void:
 func test_no_portal_on_top_of_a_wall_the_mage_cannot_walk_to() -> void:
 	arena.add_wall(Vector3(0, 1.5, 8), Vector3(12, 3, 4))
 	await arena.bake_navigation()
-	_select_portal_spell()
-	var spell := mage.attack as PortalSpell
+	var spell := mage.secondary_attack as PortalSpell
 
 	var on_wall: Variant = spell._walkable_from(mage, Vector3(0, 3, 8))
 	var on_ground: Variant = spell._walkable_from(mage, Vector3(0, 0, -6))

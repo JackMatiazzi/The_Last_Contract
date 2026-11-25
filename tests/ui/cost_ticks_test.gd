@@ -54,14 +54,17 @@ func test_the_mage_sees_the_blocks_on_the_mana_bar() -> void:
 	assert_array(hud.stamina_ticks.tick_positions()).is_empty()
 
 
-func test_switching_ability_redraws_the_blocks() -> void:
+func test_casting_portal_keeps_mana_blocks_for_the_primary_attack() -> void:
 	var hud := _hud_for(TestArena.MAGE)
 	var mage := hud.player as Adventurer
 	await arena.wait_physics(2)
 
-	mage.next_ability()
+	var primary := mage.attack
+	mage.use_secondary()
 
-	var step := mage.cost_of(mage.attack) / mage.mana.maximum
+	assert_object(mage.attack).is_same(primary)
+	assert_object(hud.secondary_icon.texture).is_same(mage.secondary_attack.icon)
+	var step := mage.cost_of(primary) / mage.mana.maximum
 	assert_array(hud.mana_ticks.tick_positions()).is_equal(_expected(step))
 
 

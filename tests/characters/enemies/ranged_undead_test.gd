@@ -7,7 +7,6 @@ const MAGE := "res://scenes/characters/enemies/skeleton_mage.tscn"
 const ARCHER := "res://scenes/characters/enemies/skeleton_archer.tscn"
 const SUMMONER := "res://scenes/characters/enemies/skeleton_summoner.tscn"
 const BATTLEMAGE := "res://scenes/characters/enemies/skeleton_battlemage.tscn"
-# o arqueiro e o mago esqueleto atiram da mesma distância que o Rogue e o Mage, sem vantagem de alcance
 const PLAYER_BOLT := preload("res://scenes/combat/crossbow_bolt.tscn")
 const PLAYER_MAGIC := preload("res://scenes/combat/magic_bolt.tscn")
 const CASTERS := "res://scenes/characters/enemies/groups/casters.tscn"
@@ -56,14 +55,14 @@ func test_the_skeleton_mage_is_fragile_and_attacks_with_magic_from_afar() -> voi
 	assert_str(mage.get_display_name()).is_equal("Mago esqueleto")
 
 
-func test_the_skeleton_mage_reaches_as_far_as_the_player_mage_and_no_farther() -> void:
+func test_the_player_mage_outranges_the_skeleton_mage_by_one_meter() -> void:
 	arena = TestArena.new(self)
 	var mage := arena.spawn(MAGE, Vector3.ZERO) as Enemy
 	var bolt := (mage.attack as RangedAttack).projectile_scene.instantiate() as Projectile
 	var player_bolt := PLAYER_MAGIC.instantiate() as Projectile
 
-	assert_float(mage.profile.attack_range).is_less_equal(player_bolt.max_distance)
-	assert_float(bolt.max_distance).is_equal(player_bolt.max_distance)
+	assert_float(mage.profile.attack_range).is_less_equal(bolt.max_distance)
+	assert_float(player_bolt.max_distance - bolt.max_distance).is_equal_approx(1.0, 0.001)
 	bolt.free()
 	player_bolt.free()
 
@@ -84,14 +83,14 @@ func test_the_archer_shoots_arrows_that_reach_its_range() -> void:
 	arrow.free()
 
 
-func test_the_archer_reaches_as_far_as_the_player_rogue_and_no_farther() -> void:
+func test_the_player_rogue_outranges_the_archer_by_one_meter() -> void:
 	arena = TestArena.new(self)
 	var archer := arena.spawn(ARCHER, Vector3.ZERO) as Enemy
 	var arrow := (archer.attack as RangedAttack).projectile_scene.instantiate() as Projectile
 	var player_bolt := PLAYER_BOLT.instantiate() as Projectile
 
-	assert_float(archer.profile.attack_range).is_less_equal(player_bolt.max_distance)
-	assert_float(arrow.max_distance).is_equal(player_bolt.max_distance)
+	assert_float(archer.profile.attack_range).is_less_equal(arrow.max_distance)
+	assert_float(player_bolt.max_distance - arrow.max_distance).is_equal_approx(1.0, 0.001)
 	arrow.free()
 	player_bolt.free()
 
