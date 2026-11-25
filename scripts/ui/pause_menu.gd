@@ -64,9 +64,12 @@ static func ability_lines(adventurer: Adventurer) -> PackedStringArray:
 	if adventurer.sustained_attack:
 		var spin := roundi(adventurer.cost_of(adventurer.sustained_attack) / pool.maximum * 100.0)
 		lines.append("Continue segurando: mais giros, %d%% por volta, andando" % spin)
-	var secondary := "Escudo" if adventurer.block else (adventurer.secondary_attack.title if adventurer.secondary_attack else "")
-	if not secondary.is_empty():
-		lines.append("Botão direito: %s" % secondary)
+	if adventurer.block:
+		lines.append("Botão direito: Escudo")
+	elif adventurer.secondary_attack:
+		var secondary := adventurer.secondary_attack
+		var cost := roundi(adventurer.cost_of(secondary) / pool.maximum * 100.0)
+		lines.append("Botão direito / LT: %s (%d%% da %s)" % [secondary.title, cost, source])
 	return lines
 
 

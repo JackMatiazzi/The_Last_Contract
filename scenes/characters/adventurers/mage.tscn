@@ -11,7 +11,7 @@
 [ext_resource type="Script" path="res://scripts/combat/portal_spell.gd" id="portal_spell"]
 [ext_resource type="PackedScene" path="res://scenes/world/portal.tscn" id="portal_scene"]
 
-[node name="Mage" node_paths=PackedStringArray("animation_player", "attack", "abilities") instance=ExtResource("1_adventurer")]
+[node name="Mage" node_paths=PackedStringArray("animation_player", "attack", "secondary_attack") instance=ExtResource("1_adventurer")]
 uses_mana = true
 stamina_regen_multiplier = 0.5
 mana_regen_multiplier = 1.5
@@ -19,7 +19,7 @@ quick_cost = 20.0
 heavy_cost = 45.0
 animation_player = NodePath("Model/Mage/AnimationPlayer")
 attack = NodePath("Model/MagicBoltAttack")
-abilities = [NodePath("Model/MagicBoltAttack"), NodePath("Model/PortalSpell")]
+secondary_attack = NodePath("Model/PortalSpell")
 
 [node name="Mage" parent="Model" instance=ExtResource("2_model")]
 

@@ -117,7 +117,7 @@ func test_a_shot_announced_outside_the_network_is_not_fired() -> void:
 
 
 func test_a_portal_announced_outside_the_network_is_not_opened() -> void:
-	var spell := mage.abilities[1] as PortalSpell
+	var spell := mage.secondary_attack as PortalSpell
 
 	spell._net_open(spell.get_path_to(mage), Vector3(0, 0, 4), Vector3.FORWARD)
 

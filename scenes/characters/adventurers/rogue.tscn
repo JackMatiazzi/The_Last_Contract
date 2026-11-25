@@ -26,6 +26,7 @@ cooldown = 0.7
 animations = PackedStringArray("2H_Ranged_Shoot")
 impact_delay = 0.35
 projectile_scene = ExtResource("4_projectile")
+heavy_projectile_count = 2
 
 [node name="Muzzle" type="Marker3D" parent="Model/CrossbowAttack"]
 position = Vector3(0, 1.5, 1.0)

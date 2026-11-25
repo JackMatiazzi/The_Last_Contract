@@ -39,6 +39,7 @@ func run() -> void:
 	var guests := game.players.filter(func(adventurer: Adventurer) -> bool: return adventurer != host)
 	check(host.get_display_name() == "Host" and guests.all(func(guest: Adventurer) -> bool: return guest.get_display_name().begins_with("Cliente")), "nomes do lobby sobre os bonecos")
 
+	await _rogue_shot_crosses_the_network(game)
 	await _damage_crosses_the_network(host, helper)
 	await _forged_damage_is_ignored()
 	await _connection_drops_and_comes_back(host, helper)
@@ -72,6 +73,28 @@ func _damage_crosses_the_network(host: Adventurer, helper: Adventurer) -> void:
 	var hurt := helper.get_max_health() - 2.0
 	if await wait_until(func() -> bool: return is_equal_approx(helper.health, hurt), "dano do host no cliente"):
 		check(true, "golpe de um jogador chega em todas as maquinas")
+
+
+func _rogue_shot_crosses_the_network(game: GameSession) -> void:
+	var rogue: Adventurer
+	for player in game.players:
+		if player.attack is RangedAttack and (player.attack as RangedAttack).heavy_projectile_count == 2:
+			rogue = player
+			break
+	if not rogue:
+		return
+	var bolts: Array[Projectile] = []
+	var record_bolt := func(node: Node) -> void:
+		if node is Projectile:
+			bolts.append(node)
+	game.child_entered_tree.connect(record_bolt)
+	mark("pronto para ver os virotes")
+	if await wait_mark("pronto para ver os virotes", players - 1):
+		if rogue.is_multiplayer_authority():
+			check(rogue.heavy_attack(), "Rogue dispara o ataque pesado")
+		if await wait_until(func() -> bool: return bolts.size() >= 2, "dois virotes do Rogue"):
+			check(bolts.size() == 2, "ataque pesado do Rogue cria dois virotes nesta máquina")
+	game.child_entered_tree.disconnect(record_bolt)
 
 
 # pela sala online a conexão cai e volta sozinha, sem ninguém sair do grupo nem perder o que aconteceu
