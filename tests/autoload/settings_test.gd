@@ -4,17 +4,27 @@ extends GdUnitTestSuite
 
 const KEYS := ["master_volume", "music_volume", "sfx_volume", "fullscreen", "vsync", "mouse_sensitivity", "invert_y", "input_device", "stick_sensitivity"]
 
+## gráficos: o teste usa outro arquivo para nunca deixar o jogo do desenvolvedor preso no modo de desempenho
+const TEST_OVERRIDE := "user://graficos_teste.cfg"
+
 var _backup := {}
+var _graphics_before := 0
 
 
 func before_test() -> void:
 	for key in KEYS:
 		_backup[key] = Settings.get(key)
+	_graphics_before = Settings.graphics_mode
+	Settings.graphics_override_path = TEST_OVERRIDE
 
 
+# volta o modo de gráficos e o caminho real e apaga o arquivo de teste, mesmo quando um teste falha
 func after_test() -> void:
 	for key in _backup:
 		Settings.set_value(key, _backup[key])
+	Settings.set_value(&"graphics_mode", _graphics_before)
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(TEST_OVERRIDE))
+	Settings.graphics_override_path = Settings.GRAPHICS_OVERRIDE
 
 
 func test_set_value_saves_to_disk() -> void:
@@ -136,3 +146,47 @@ func test_a_fresh_install_starts_on_keyboard_and_mouse() -> void:
 	var fresh: Node = auto_free(load("res://scripts/autoload/settings.gd").new())
 
 	assert_int(fresh.input_device).is_equal(Settings.InputDevice.KEYBOARD_MOUSE)
+
+
+func test_the_game_reads_the_graphics_file_before_opening_the_window() -> void:
+	assert_str(ProjectSettings.get_setting("application/config/project_settings_override")).is_equal(Settings.GRAPHICS_OVERRIDE)
+
+
+func test_performance_saves_the_light_renderer_and_quality_removes_it() -> void:
+	Settings.set_value(&"graphics_mode", Settings.GraphicsMode.PERFORMANCE)
+	var config := ConfigFile.new()
+	assert_int(config.load(TEST_OVERRIDE)).is_equal(OK)
+	assert_str(config.get_value("rendering", "renderer/rendering_method")).is_equal("gl_compatibility")
+
+	Settings.set_value(&"graphics_mode", Settings.GraphicsMode.QUALITY)
+	assert_bool(FileAccess.file_exists(TEST_OVERRIDE)).is_false()
+
+
+func test_the_graphics_choice_is_saved_with_the_other_settings() -> void:
+	Settings.set_value(&"graphics_mode", Settings.GraphicsMode.PERFORMANCE)
+
+	var config := ConfigFile.new()
+	config.load(Settings.PATH)
+	assert_int(config.get_value(Settings.SECTION, "graphics_mode")).is_equal(Settings.GraphicsMode.PERFORMANCE)
+
+
+func test_a_restart_is_needed_only_when_the_choice_differs_from_the_running_renderer() -> void:
+	var running := Settings.GraphicsMode.PERFORMANCE if RenderingServer.get_current_rendering_method() == "gl_compatibility" else Settings.GraphicsMode.QUALITY
+	var other := Settings.GraphicsMode.QUALITY if running == Settings.GraphicsMode.PERFORMANCE else Settings.GraphicsMode.PERFORMANCE
+
+	Settings.set_value(&"graphics_mode", running)
+	assert_bool(Settings.graphics_restart_needed()).is_false()
+	Settings.set_value(&"graphics_mode", other)
+	assert_bool(Settings.graphics_restart_needed()).is_true()
+
+
+# o settings.cfg manda: ao abrir, um arquivo de gráficos que sobrou de outra escolha é apagado
+func test_opening_the_game_removes_a_leftover_graphics_file() -> void:
+	Settings.set_value(&"graphics_mode", Settings.GraphicsMode.QUALITY)
+	var leftover := ConfigFile.new()
+	leftover.set_value("rendering", "renderer/rendering_method", "gl_compatibility")
+	leftover.save(TEST_OVERRIDE)
+
+	Settings._ready()
+
+	assert_bool(FileAccess.file_exists(TEST_OVERRIDE)).is_false()

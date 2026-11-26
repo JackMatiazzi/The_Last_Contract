@@ -59,4 +59,5 @@ jobs:
             TheLastContract-linux.tar.gz
             TheLastContract-linux.deb
             TheLastContract-windows.zip
+            TheLastContract-web.zip
             projeto.pdf

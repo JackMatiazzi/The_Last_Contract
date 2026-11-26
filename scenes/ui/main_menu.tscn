@@ -8,7 +8,6 @@
 [ext_resource type="Script" uid="uid://c3j34pikkvjgh" path="res://scripts/audio/music_cue.gd" id="cue_script"]
 [ext_resource type="AudioStream" uid="uid://p4baon1vmweg" path="res://assets/audio/music/menu_medieval_fair.ogg" id="cue_track"]
 [ext_resource type="Texture2D" path="res://assets/ui/logo_seal_gold.svg" id="seal"]
-[ext_resource type="PackedScene" path="res://scenes/ui/telemetry_consent.tscn" id="consent"]
 [ext_resource type="PackedScene" path="res://scenes/ui/leaderboard_panel.tscn" id="leaderboard"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_dusk"]
@@ -52,6 +51,7 @@ transform = Transform3D(0.8, 0, 0, 0, 0.8, 0, 0, 0, 0.8, 9, 0, 11)
 transform = Transform3D(-0.8, 0, 2.0281454e-06, 0, 0.8, 0, -2.0281454e-06, 0, -0.8, 9, 0, 13.2)
 
 [node name="CameraPivot" type="Node3D" parent="." unique_id=2127248582]
+physics_interpolation_mode = 2
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 1, 12)
 
 [node name="Camera3D" type="Camera3D" parent="CameraPivot" unique_id=131541290]
@@ -97,6 +97,8 @@ stretch_mode = 5
 [node name="Title" type="Label" parent="UI/MenuPanel/Column/Header" unique_id=1593679912]
 layout_mode = 2
 theme_type_variation = &"TitleLabel"
+theme_override_constants/line_spacing = -32
+theme_override_font_sizes/font_size = 56
 text = "The Last
 Contract"
 
@@ -179,12 +181,10 @@ autowrap_mode = 3
 unique_name_in_owner = true
 grow_horizontal = 2
 grow_vertical = 2
+allows_restart = true
 
 
 [node name="LeaderboardPanel" parent="UI" instance=ExtResource("leaderboard")]
-unique_name_in_owner = true
-
-[node name="TelemetryConsent" parent="UI" instance=ExtResource("consent")]
 unique_name_in_owner = true
 
 [node name="MusicCue" type="Node" parent="." unique_id=300380614]
