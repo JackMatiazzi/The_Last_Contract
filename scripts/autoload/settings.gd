@@ -15,7 +15,7 @@ const SECTION := "settings"
 ## Mapeamento de ações de entrada usadas na jogabilidade que serão reconfiguradas no InputMap.
 const GAMEPLAY_ACTIONS := ["move_forward", "move_back", "move_left", "move_right", "attack", "secondary",
 		"run", "look_left", "look_right", "look_up", "look_down", "interact", "decline", "scoreboard",
-		"next_ability", "next_item"]
+		"next_ability", "next_item", "drop_item"]
 ## quem nunca assinou o contrato aparece assim
 const DEFAULT_PLAYER_NAME := "Aventureiro"
 ## escolha sobre enviar o resumo das partidas ao servidor: ainda não perguntado, aceitou ou recusou

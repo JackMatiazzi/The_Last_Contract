@@ -49,6 +49,11 @@ const ROMAN := [[10, "X"], [9, "IX"], [5, "V"], [4, "IV"], [1, "I"]]
 @onready var boss_panel: Control = %BossPanel
 @onready var boss_bar: ProgressBar = %BossBar
 @onready var announcement: Label = %Announcement
+@onready var escape_panel: PanelContainer = %EscapePanel
+@onready var escape_prompt: Label = %EscapePrompt
+@onready var escape_step: Label = %EscapeStep
+@onready var escape_hold: ProgressBar = %EscapeHold
+@onready var escape_deadline: ProgressBar = %EscapeDeadline
 @onready var boss_cue: AudioStreamPlayer = %BossCue
 @onready var feed: VBoxContainer = %Feed
 @onready var score_layer: CanvasLayer = %ScoreLayer
@@ -75,10 +80,26 @@ func _process(_delta: float) -> void:
 	if adventurer:
 		ability_progress.value = adventurer.heavy_progress()
 		item_progress.value = adventurer.drink_progress()
+		_show_escape(adventurer)
 	var holding := Input.is_action_pressed("scoreboard")
 	if holding and not score_layer.visible:
 		_refresh_scoreboard()
 	score_layer.visible = holding
+
+
+func _show_escape(adventurer: Adventurer) -> void:
+	var mimic := adventurer.grabbed_by
+	escape_panel.visible = is_instance_valid(mimic)
+	if not escape_panel.visible:
+		return
+	var control := "RT" if Settings.uses_gamepad() else "o botão esquerdo"
+	var heavy: bool = Mimic.ESCAPE_SEQUENCE[mimic.escape_step]
+	var command := "Segure e solte" if heavy else "Toque"
+	escape_prompt.text = "%s %s" % [command, control]
+	escape_step.text = "Escape · Etapa %d de %d" % [mimic.escape_step + 1, Mimic.ESCAPE_SEQUENCE.size()]
+	escape_deadline.value = mimic.escape_seconds_left() / Mimic.ESCAPE_STEP_TIME
+	escape_hold.visible = heavy
+	escape_hold.value = adventurer.escape_hold_progress()
 
 
 ## ligar duas vezes no mesmo jogador dobraria cada sinal
@@ -92,6 +113,8 @@ func bind(new_player: Character) -> void:
 		_on_health_changed(player.health, player.get_max_health())
 	_bind_energy(player as Adventurer)
 	_bind_quickbar(player as Adventurer)
+	if player is Adventurer and not player.potion_used.is_connected(announce):
+		player.potion_used.connect(announce)
 
 
 ## com remaining, um losango por grupo: aceso enquanto o grupo vive
@@ -185,9 +208,11 @@ func _show_ability(adventurer: Adventurer) -> void:
 func _show_item(adventurer: Adventurer) -> void:
 	var item := adventurer.inventory.selected()
 	item_icon.texture = item.icon if item else null
+	item_icon.modulate = item.seal_color if item else Color.WHITE
 	item_count.text = "×%d" % adventurer.inventory.count_of(item) if item else ""
 	var hold := "segure X" if Settings.uses_gamepad() else "segure E"
-	item_hint.text = "%s\n%s" % [item.title, hold] if item else ""
+	var drop := "Y" if Settings.uses_gamepad() else "G"
+	item_hint.text = "%s\n%s · %s larga" % [item.title, hold, drop] if item else ""
 
 
 # sem botao direito (Rogue e Mage) o slot some, mas continua ocupando a celula: a cruz nao muda de lugar

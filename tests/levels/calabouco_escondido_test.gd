@@ -72,16 +72,25 @@ func test_the_spike_traps_do_not_rise_together() -> void:
 	assert_int(offsets.size()).is_greater(1)
 
 
-func test_the_treasure_chest_holds_a_mana_potion() -> void:
-	var chest := _map().get_node("Interativos/BauDoTesouro") as Chest
+func test_dungeon_chests_only_drop_health_potions() -> void:
+	for chest: Chest in _map().find_children("*", "Chest", true, false):
+		assert_str(chest.loot_scene.resource_path).override_failure_message(chest.name) \
+			.is_equal("res://scenes/world/health_potion.tscn")
 
-	assert_str(chest.loot_scene.resource_path).is_equal("res://scenes/world/mana_potion.tscn")
 
-
-func test_has_mana_potions_to_find() -> void:
-	var mana_potions := _map().find_children("PocaoMana*", "", true, false)
-
-	assert_int(mana_potions.size()).is_greater(0)
+func test_dungeon_has_health_potions_and_one_black_potion_on_the_second_floor() -> void:
+	var potions := _map().find_children("*", "Potion", true, false)
+	assert_int(potions.size()).is_greater(0)
+	var black_potions := 0
+	for potion: Potion in potions:
+		if potion.item.debuff != QuickItem.Debuff.NONE:
+			black_potions += 1
+			assert_str(potion.name).is_equal("PocaoPretaAndar2")
+			assert_float(potion.position.y).is_equal(-4.0)
+		else:
+			assert_str(potion.scene_file_path).override_failure_message(potion.name) \
+				.is_equal("res://scenes/world/health_potion.tscn")
+	assert_int(black_potions).is_equal(1)
 
 
 # morrer no calabouco recomeca do inicio dele: o grupo acha cura logo na entrada e ao chegar em cada andar
@@ -252,6 +261,10 @@ func test_the_lantern_company_left_its_story_behind() -> void:
 		assert_object(story.get_node_or_null(who)).override_failure_message(who).is_not_null()
 	for note: ReadableNote in story.find_children("*", "ReadableNote", false, false):
 		assert_str(note.text).override_failure_message(note.name).is_not_empty()
+		var book := note.get_node_or_null("Livro")
+		assert_object(book).override_failure_message(note.name).is_not_null()
+		if book:
+			assert_str(book.scene_file_path).ends_with("spellbook_open.gltf")
 
 
 # com tudo aberto, quem persegue chega a todos os grupos; as travas de classe so guardam atalhos e segredos

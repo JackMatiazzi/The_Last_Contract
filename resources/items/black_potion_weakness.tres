@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="QuickItem" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/quick_item.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/potion.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+title = "Poção desconhecida"
+icon = ExtResource("2")
+debuff = 2
+seal_color = Color(1, 0.58, 0.22, 1)

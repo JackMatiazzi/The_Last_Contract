@@ -11,6 +11,16 @@ const RING_RADIUS := 0.75
 const TRAVEL_COOLDOWN := 0.5
 ## sai a frente do portal de destino, longe o bastante para nao entrar nele de volta
 const EXIT_OFFSET := 1.4
+## a saida so vale se a navegacao liga o chao dela ao proprio portal por um caminho curto: a frente pode
+## ser muralha, parapeito baixo ou a beira de uma rampa, e quem saia ali ficava em cima da muralha
+const EXIT_MAX_WALK := 3.0
+const EXIT_NAV_GAP := 0.8
+## quem chega junto nao sai no mesmo ponto: um em cima do outro, a fisica empurrava todos para cima
+const CHARACTER_LAYERS := 2 | 4
+const CROWD_RADIUS := 0.45
+const CROWD_STEP := 1.0
+## a fisica so ve o corpo no lugar novo no passo seguinte: quem chega no mesmo quadro olha a lista
+const CLAIM_TIME := 0.3
 const CLOSE_TIME := 0.4
 const WORLD_LAYER := 1
 const VIEW_SCALE := 0.5
@@ -40,6 +50,8 @@ var link: Portal:
 var _showing := false
 var _age := 0.0
 var _closing := false
+## saidas entregues ha pouco: {"spot", "until"}
+var _claimed: Array[Dictionary] = []
 
 
 func _ready() -> void:
@@ -136,17 +148,64 @@ func _on_body_entered(body: Node3D) -> void:
 	var now := Time.get_ticks_msec() / 1000.0
 	if traveler.get_meta(&"portal_ready_at", 0.0) > now:
 		return
+	var point: Variant
+	if traveler.is_multiplayer_authority():
+		point = link.free_exit_point(traveler)
+		if point == null:
+			return
 	traveler.set_meta(&"portal_ready_at", now + TRAVEL_COOLDOWN)
 	travel_sound.play()
-	if traveler.is_multiplayer_authority():
+	if point != null:
 		# fora do meio da consulta de fisica que disparou o sinal
-		_send_through.call_deferred(traveler, link.exit_point())
+		_send_through.call_deferred(traveler, point)
 
 
 func _send_through(traveler: Character, point: Vector3) -> void:
 	if is_instance_valid(traveler):
 		traveler.global_position = point
 		traveler.reset_physics_interpolation()
+
+
+## a saída livre mais próxima em chão da mesma altura e ligado ao portal
+func free_exit_point(traveler: Character) -> Variant:
+	var point := exit_point()
+	var space := get_world_3d().direct_space_state
+	for offset in [0.0, CROWD_STEP, -CROWD_STEP, 2.0 * CROWD_STEP, -2.0 * CROWD_STEP]:
+		var candidate: Vector3 = point + global_basis.x * offset
+		var ground := PhysicsRayQueryParameters3D.create(candidate + Vector3.UP, candidate + Vector3.DOWN, WORLD_LAYER)
+		var floor_hit := space.intersect_ray(ground)
+		if floor_hit.is_empty() or absf(floor_hit.position.y - point.y) > 0.5:
+			continue
+		var spot: Vector3 = floor_hit.position
+		if _claimed_near(spot) or _occupied(space, spot, CHARACTER_LAYERS, traveler):
+			continue
+		if not _is_walkable_exit(spot) or (offset != 0.0 and _occupied(space, spot, WORLD_LAYER, traveler)):
+			continue
+		_claim(spot)
+		return spot
+	return null
+
+
+func _claimed_near(spot: Vector3) -> bool:
+	var now := Time.get_ticks_msec() / 1000.0
+	_claimed = _claimed.filter(func(claim: Dictionary) -> bool: return claim.until > now)
+	return _claimed.any(func(claim: Dictionary) -> bool: return claim.spot.distance_to(spot) < CROWD_RADIUS * 2.0)
+
+
+func _claim(spot: Vector3) -> void:
+	_claimed.append({"spot": spot, "until": Time.get_ticks_msec() / 1000.0 + CLAIM_TIME})
+
+
+## dentro de parede ou em cima de alguem, a fisica empurra o corpo para cima ao chegar
+func _occupied(space: PhysicsDirectSpaceState3D, spot: Vector3, layers: int, traveler: Character) -> bool:
+	var query := PhysicsShapeQueryParameters3D.new()
+	var shape := SphereShape3D.new()
+	shape.radius = CROWD_RADIUS
+	query.shape = shape
+	query.transform = Transform3D(Basis(), spot + Vector3.UP * 0.9)
+	query.collision_mask = layers
+	query.exclude = [traveler.get_rid()]
+	return not space.intersect_shape(query, 1).is_empty()
 
 
 ## a frente do portal, no chao; com parede no caminho sai no proprio portal (a recarga evita voltar)
@@ -158,4 +217,23 @@ func exit_point() -> Vector3:
 		ahead = global_position
 	var ground := PhysicsRayQueryParameters3D.create(ahead + Vector3.UP * 1.5, ahead + Vector3.DOWN * 3.0, WORLD_LAYER)
 	var hit := space.intersect_ray(ground)
-	return hit.position if hit else ahead
+	var point: Vector3 = hit.position if hit else ahead
+	return point if _is_walkable_exit(point) else global_position
+
+
+## a saída precisa de um caminho curto até o portal
+func _is_walkable_exit(point: Vector3) -> bool:
+	var session := get_parent() as GameSession
+	if session and not session.allows_portal_at(point):
+		return false
+	var map := get_world_3d().navigation_map
+	if not NavigationServer3D.map_get_closest_point_owner(map, global_position).is_valid():
+		return true
+	var home := NavigationServer3D.map_get_closest_point(map, global_position)
+	var near := NavigationServer3D.map_get_closest_point(map, point)
+	var path := NavigationServer3D.map_get_path(map, home, near, true)
+	var walk := 0.0
+	for i in range(1, path.size()):
+		walk += path[i - 1].distance_to(path[i])
+	var reachable := not path.is_empty() and path[path.size() - 1].distance_to(near) < 0.1 and walk <= EXIT_MAX_WALK
+	return reachable and near.distance_to(point) <= EXIT_NAV_GAP

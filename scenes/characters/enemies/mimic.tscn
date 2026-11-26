@@ -7,8 +7,9 @@
 [ext_resource type="PackedScene" path="res://scenes/world/health_potion.tscn" id="5_loot"]
 [ext_resource type="AudioStream" path="res://resources/audio/hit.tres" id="6_bite"]
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_body"]
-size = Vector3(1.5, 1.1, 1.2)
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
+radius = 0.6
+height = 1.2
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_bite"]
 size = Vector3(1.8, 1.4, 1.6)
@@ -276,7 +277,7 @@ loot_scene = ExtResource("5_loot")
 
 [node name="CollisionShape3D" parent="." index="0"]
 position = Vector3(0, 0.55, 0)
-shape = SubResource("BoxShape3D_body")
+shape = SubResource("CapsuleShape3D_body")
 
 [node name="Model" parent="." index="1"]
 scale = Vector3(1, 1, 1)

@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/characters/character.tscn" id="1_character"]
 [ext_resource type="Script" path="res://scripts/characters/adventurers/adventurer.gd" id="2_adventurer"]
@@ -9,6 +9,9 @@
 [ext_resource type="Script" path="res://scripts/characters/adventurers/states/dead_state.gd" id="7_dead"]
 [ext_resource type="Script" path="res://scripts/characters/adventurers/quick_inventory.gd" id="8_inventory"]
 [ext_resource type="AudioStream" path="res://resources/audio/hit.tres" id="9_hit"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_camera"]
+radius = 0.3
 
 [node name="Adventurer" instance=ExtResource("1_character")]
 collision_layer = 2
@@ -23,6 +26,7 @@ position = Vector3(0, 1.5, 0)
 
 [node name="SpringArm3D" type="SpringArm3D" parent="CameraPivot"]
 rotation = Vector3(-0.14, 0, 0)
+shape = SubResource("SphereShape3D_camera")
 spring_length = 4.5
 margin = 0.2
 

@@ -5,6 +5,8 @@ extends CanvasLayer
 signal signed(signature: String)
 signal cancelled
 
+const Network := preload("res://scripts/autoload/net.gd")
+
 @onready var name_input: LineEdit = %NameInput
 @onready var signature: Label = %Signature
 @onready var trade_label: Label = %TradeLabel
@@ -52,4 +54,4 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _preview(text: String) -> void:
-	signature.text = Net.clean_name(text)
+	signature.text = Network.clean_name(text)

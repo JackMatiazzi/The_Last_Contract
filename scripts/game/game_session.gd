@@ -38,6 +38,7 @@ const STAGE_NAMES := {
 @export var death_screen: DeathScreen
 @export var hud: Hud
 @export var boss_scene: PackedScene
+@export var boss_arena: BossArena
 @export var victory_screen: VictoryScreen
 
 ## o jogador desta maquina; em grupo os outros ficam em players
@@ -101,7 +102,7 @@ func _log_death() -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	var watching := player.is_dead and is_instance_valid(player.camera_subject) and not pause_menu.visible
-	if watching and event.is_action_pressed("attack") and (Input.mouse_mode == Input.MOUSE_MODE_CAPTURED or Settings.uses_gamepad()):
+	if watching and not is_instance_valid(player.possessed_by) and event.is_action_pressed("attack") and (Input.mouse_mode == Input.MOUSE_MODE_CAPTURED or Settings.uses_gamepad()):
 		hud.announce(_spectate_next())
 		get_viewport().set_input_as_handled()
 		return
@@ -188,6 +189,8 @@ func _show_objective() -> void:
 func _summon_boss() -> void:
 	if boss_scene == null or encounters.boss_spot == null:
 		return
+	if boss_arena:
+		boss_arena.unlock()
 	boss = boss_scene.instantiate() as Enemy
 	boss.name = "Boss"
 	boss.position = encounters.to_local(encounters.boss_spot.global_position)
@@ -223,6 +226,15 @@ func _net_open_trapdoor(spot: Vector3) -> void:
 	_trapdoor_left = trapdoor_time
 	hud.announce("O Necromante caiu e abriu um alçapão no chão")
 	Playtest.record("trapdoor_opened")
+
+
+func allows_portal_at(point: Vector3) -> bool:
+	return boss_arena == null or not boss_arena.locked or not boss_arena.contains(point)
+
+
+func _physics_process(_delta: float) -> void:
+	if boss_arena:
+		boss_arena.keep_boss_inside(boss)
 
 
 func _process(delta: float) -> void:
@@ -273,6 +285,12 @@ func watch_player(adventurer: Adventurer) -> void:
 # solo e um grupo de um: cai todo mundo, vota todo mundo. Em grupo, quem está de pé vê quem caiu
 func _on_player_died(fallen: Adventurer) -> void:
 	if not _all_players_dead():
+		if is_instance_valid(fallen.possessed_by):
+			if fallen == player:
+				hud.announce("O Mímico tomou seu corpo.")
+			else:
+				hud.announce("%s foi possuído. Derrube-o para poder reviver." % fallen.get_display_name())
+			return
 		if fallen == player:
 			hud.announce("Você caiu. Seus aliados ainda lutam. " + _spectate_next())
 		else:

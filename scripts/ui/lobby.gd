@@ -3,6 +3,7 @@ extends Control
 ## Contrato em grupo: sala online por código; rede local e túnel em "Outras formas".
 
 const MAIN_MENU := "res://scenes/ui/main_menu.tscn"
+const Network := preload("res://scripts/autoload/net.gd")
 const LOCAL_ADDRESS := "127.0.0.1"
 const TUNNEL_COMMAND := "cloudflared tunnel --url http://127.0.0.1:%d"
 ## Na linha de comando (testes e2e), --host, --host=ws ou --host=relay escolhem como hospedar.
@@ -77,7 +78,7 @@ func _apply_command_line() -> void:
 			_host_with(HOST_ARGS[arg])
 		elif arg.begins_with("--join"):
 			var address := arg.get_slice("=", 1) if "=" in arg else LOCAL_ADDRESS
-			if Net.is_room_code(address):
+			if Network.is_room_code(address):
 				room_code_input.text = address
 				_join_online()
 			else:
@@ -94,7 +95,7 @@ func _on_room_code_changed(text: String) -> void:
 	var caret := room_code_input.caret_column
 	room_code_input.text = text.to_upper()
 	room_code_input.caret_column = caret
-	join_online_button.disabled = not Net.is_room_code(room_code_input.text)
+	join_online_button.disabled = not Network.is_room_code(room_code_input.text)
 
 
 func _join_online() -> void:
@@ -123,7 +124,7 @@ func _host_with(transport: Net.Transport) -> void:
 
 # nao da para saber qual placa os amigos alcancam: cada endereco vira um botao que copia
 func _show_host_address() -> void:
-	var addresses := Net.shareable_addresses()
+	var addresses := Network.shareable_addresses()
 	%HostAddress.show()
 	if addresses.is_empty():
 		%AddressLabel.text = "Sem rede local encontrada. Porta %d." % Net.PORT

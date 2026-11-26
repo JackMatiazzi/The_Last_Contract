@@ -1,6 +1,8 @@
 extends GdUnitTestSuite
 
 const LEVEL := preload("res://scenes/levels/pedraalta_level.tscn")
+const MIMIC := preload("res://scenes/characters/enemies/mimic.tscn")
+const PORTAL := preload("res://scenes/world/portal.tscn")
 
 var level: Node3D
 var session: GameSession
@@ -91,6 +93,63 @@ func test_the_boss_spot_is_reachable_from_the_entrance() -> void:
 	var path := NavigationServer3D.map_get_path(map, start, boss, true)
 
 	assert_bool(not path.is_empty() and path[-1].distance_to(boss) < 1.5).is_true()
+
+
+func test_arena_blocks_walking_and_portals_until_the_last_group_falls() -> void:
+	var map := await _wait_for_navigation()
+	var arena := session.boss_arena
+	var center := arena.global_position
+	var approach := NavigationServer3D.map_get_closest_point(map, Vector3(0, 12, -49))
+	var mage := (load(TestArena.MAGE) as PackedScene).instantiate() as Adventurer
+	session.add_child(mage)
+	mage.global_position = approach
+	mage.camera_pivot.global_position = approach + Vector3.UP * 1.5
+	mage.camera.global_position = mage.camera_pivot.global_position
+	mage.camera.h_offset = 0.0
+	mage.camera.v_offset = 0.0
+	mage.camera.look_at(center)
+	var spell := mage.secondary_attack as PortalSpell
+	var ray := PhysicsRayQueryParameters3D.create(Vector3(0, 13.5, -49), center + Vector3.UP * 1.48, 1)
+	var space := level.get_world_3d().direct_space_state
+
+	assert_bool(session.allows_portal_at(center)).is_false()
+	assert_object(space.intersect_ray(ray).get("collider")).is_same(arena)
+	var blocked_spot: Variant = spell._ground_spot(mage)
+	assert_bool(blocked_spot == null or not arena.contains(blocked_spot)).is_true()
+
+	for i in range(session._groups_left - 1):
+		session._on_group_cleared()
+	assert_bool(arena.locked).is_true()
+	assert_object(session.boss).is_null()
+
+	session._on_group_cleared()
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	assert_bool(arena.locked).is_false()
+	assert_bool(session.allows_portal_at(center)).is_true()
+	assert_bool(space.intersect_ray(ray).get("collider") != arena).is_true()
+	assert_object(session.boss).is_not_null()
+
+	mage.camera_pivot.global_position = approach + Vector3.UP * 1.5
+	mage.camera.global_position = mage.camera_pivot.global_position
+	mage.camera.h_offset = 0.0
+	mage.camera.look_at(center)
+	var allowed_spot: Variant = spell._ground_spot(mage)
+	assert_bool(allowed_spot is Vector3 and arena.contains(allowed_spot)).is_true()
+
+
+func test_the_necromancer_stays_inside_the_arena_when_pushed() -> void:
+	var arena := session.boss_arena
+	session._summon_boss()
+	var boss := session.boss
+	boss.ai_enabled = false
+	boss.global_position = arena.global_position + Vector3.RIGHT * 10.0
+	boss.velocity = Vector3(10.0, 0, 0)
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+
+	assert_bool(arena.contains(boss.global_position)).is_true()
+	assert_float(boss.velocity.x).is_less_equal(0.0)
 
 
 func test_every_spot_stands_on_open_ground() -> void:
@@ -363,3 +422,103 @@ func test_an_ally_losing_the_connection_is_announced_until_they_return() -> void
 
 	Net.player_away.emit(1, false)
 	assert_str(session.hud.announcement.text).contains("voltou")
+
+
+# com o aventureiro embaixo do terraço, o mímico desce pela rampa em vez de empacar na beirada
+func test_an_awake_mimic_comes_down_the_ramp_after_the_player() -> void:
+	var knight := session.player
+	# os esqueletos ficam parados no teste e fechariam o caminho
+	for group in _groups():
+		group.free()
+	knight.global_position = Vector3(-2, 3.3, -4)
+	var map := await _wait_for_navigation()
+	var mimic: Mimic = MIMIC.instantiate()
+	level.add_child(mimic)
+	mimic.global_position = NavigationServer3D.map_get_closest_point(map, Vector3(9, 6, -20)) + Vector3.UP * 0.2
+	assert_float(mimic.global_position.y).is_greater(5.0)
+	await get_tree().physics_frame
+
+	mimic._wake(knight)
+	for i in 900:
+		await get_tree().physics_frame
+		knight.heal(knight.get_max_health())
+		if mimic.global_position.distance_to(knight.global_position) < mimic.strike_range:
+			break
+
+	assert_float(mimic.global_position.distance_to(knight.global_position)).is_less(mimic.strike_range)
+
+
+# de qualquer ponto de baú, o mímico acordado chega a quem bateu e recuou uns metros por chão andável
+func test_an_awake_mimic_reaches_the_player_from_every_chest_spot() -> void:
+	for group in _groups():
+		group.free()
+	for chest in level.find_children("*", "Mimic", true, false) + level.find_children("*", "Chest", true, false):
+		chest.free()
+	var map := await _wait_for_navigation()
+	var knight := session.player
+	for spot: Marker3D in encounters.chest_spots.get_children():
+		var goal := _walkable_point_near(map, spot.global_position)
+		var mimic: Mimic = MIMIC.instantiate()
+		level.add_child(mimic)
+		mimic.global_position = spot.global_position + Vector3.UP * 0.3
+		await get_tree().physics_frame
+		mimic._wake(knight)
+		for i in 600:
+			knight.global_position = goal + Vector3.UP * 0.3
+			knight.velocity = Vector3.ZERO
+			knight.heal(knight.get_max_health())
+			await get_tree().physics_frame
+			if mimic.global_position.distance_to(knight.global_position) < mimic.strike_range:
+				break
+
+		assert_float(mimic.global_position.distance_to(knight.global_position)).override_failure_message("o mímico do ponto %s travou em %s" % [spot.name, mimic.global_position]).is_less(mimic.strike_range)
+		mimic.free()
+
+
+# um ponto a mais de 4 m que a navegação liga ao baú: perto de casa, o mais próximo pode cair num chão isolado
+func _walkable_point_near(map: RID, origin: Vector3) -> Vector3:
+	for offset: Vector3 in [Vector3(6, 0, 6), Vector3(-6, 0, 6), Vector3(6, 0, -6), Vector3(-6, 0, -6), Vector3(8, 0, 0), Vector3(-8, 0, 0), Vector3(0, 0, 8), Vector3(0, 0, -8)]:
+		var candidate := NavigationServer3D.map_get_closest_point(map, origin + offset)
+		var route := NavigationServer3D.map_get_path(map, origin, candidate, true)
+		if not route.is_empty() and route[route.size() - 1].distance_to(candidate) < 0.5 and candidate.distance_to(origin) > 4.0:
+			return candidate
+	return origin
+
+
+# a saída do portal ficava 1,4 m à frente dele mesmo com muralha, parapeito ou beira de rampa ali:
+# soldado e mago de batalha saíam em cima da muralha, na borda do mapa. Em qualquer chão da vila e em
+# qualquer direção, quem sai fica em chão que a navegação liga ao portal por um caminho curto
+func test_the_portal_exit_always_lands_on_walkable_ground_next_to_the_portal() -> void:
+	var map := await _wait_for_navigation()
+	var entry: Portal = auto_free(PORTAL.instantiate())
+	var exit: Portal = auto_free(PORTAL.instantiate())
+	level.add_child(entry)
+	level.add_child(exit)
+	entry.link = exit
+	exit.link = entry
+	var stranded: Array[String] = []
+	var ahead := 0
+	for x in range(-27, 28, 3):
+		for z in range(-66, 58, 3):
+			var spot := NavigationServer3D.map_get_closest_point(map, Vector3(x, 20, z))
+			if Vector2(spot.x - x, spot.z - z).length() > 1.0:
+				continue
+			for k in 8:
+				var facing := Vector3(sin(k * TAU / 8.0), 0, cos(k * TAU / 8.0))
+				exit.global_position = spot
+				exit.look_at(spot + facing)
+				var point := exit.exit_point()
+				if point.is_equal_approx(spot):
+					continue
+				ahead += 1
+				var on_nav := NavigationServer3D.map_get_closest_point(map, point)
+				var path := NavigationServer3D.map_get_path(map, spot, on_nav, true)
+				var walk := 0.0
+				for i in range(1, path.size()):
+					walk += path[i - 1].distance_to(path[i])
+				if on_nav.distance_to(point) > 0.8 or walk > Portal.EXIT_MAX_WALK + 0.5:
+					stranded.append("%s virado para %s saiu em %s" % [spot, facing, point])
+
+	assert_array(stranded).is_empty()
+	# em chão aberto a saída continua à frente: cair sempre em cima do portal também passaria acima
+	assert_int(ahead).is_greater(300)

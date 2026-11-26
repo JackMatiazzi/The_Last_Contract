@@ -8,6 +8,9 @@ const GROUND_PROBE := 4.0
 const WORLD_LAYER := 1
 ## o caminho a pé precisa chegar a menos disso do ponto: topo de muralha e telhado são ilhas sem acesso
 const MAX_WALK_GAP := 1.0
+## os dois portais colados mandavam quem saia de um direto para dentro do outro, num vai e volta que
+## empilhava os inimigos e jogava todos para cima da muralha
+const MIN_PAIR_DISTANCE := 4.0
 
 @export var portal_scene: PackedScene
 
@@ -23,6 +26,7 @@ func _ready() -> void:
 func _perform(attacker: Character, _total_damage: float, _heavy: bool) -> void:
 	var spot: Variant = _ground_spot(attacker)
 	if spot == null:
+		_refund(attacker)
 		return
 	var facing := ((spot as Vector3) - attacker.global_position).slide(Vector3.UP).normalized()
 	if attacker.is_broadcasting():
@@ -53,6 +57,13 @@ func _close_pair() -> void:
 	_pair.clear()
 
 
+# a mana sai antes da magia chegar ao ponto: portal recusado (colado no outro, sem caminho a pé) devolve
+func _refund(attacker: Character) -> void:
+	var adventurer := attacker as Adventurer
+	if adventurer and adventurer.is_multiplayer_authority():
+		adventurer.attack_pool().restore(adventurer.cost_of(self))
+
+
 # a mira pode bater em parede ou no ar: desce de cima do ponto ate achar o chao
 func _ground_spot(attacker: Character) -> Variant:
 	var target := attacker.get_aim_point()
@@ -62,9 +73,16 @@ func _ground_spot(attacker: Character) -> Variant:
 	_ground_query.from = target + Vector3.UP * GROUND_PROBE
 	_ground_query.to = target + Vector3.DOWN * GROUND_PROBE * 2.0
 	var hit := attacker.get_world_3d().direct_space_state.intersect_ray(_ground_query)
-	if not hit or not _walkable_from(attacker, hit.position):
+	if not hit or not _allowed_by_session(attacker, hit.position) or not _walkable_from(attacker, hit.position):
+		return null
+	if _entry and is_instance_valid(_entry) and _entry.global_position.distance_to(hit.position) < MIN_PAIR_DISTANCE:
 		return null
 	return hit.position
+
+
+func _allowed_by_session(attacker: Character, spot: Vector3) -> bool:
+	var session := attacker.get_parent() as GameSession
+	return session == null or session.allows_portal_at(spot)
 
 
 # o portal encurta caminho, não abre caminho novo: só vale onde o mago chegaria andando
@@ -81,5 +99,5 @@ func _net_open(attacker_path: NodePath, spot: Vector3, facing: Vector3) -> void:
 	var attacker := get_node_or_null(attacker_path) as Character
 	if attacker == null or multiplayer.get_remote_sender_id() != attacker.get_multiplayer_authority():
 		return
-	if spot.is_finite() and facing.is_finite():
+	if spot.is_finite() and facing.is_finite() and _allowed_by_session(attacker, spot):
 		_open(attacker, spot, facing)

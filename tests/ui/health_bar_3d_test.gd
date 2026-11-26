@@ -40,6 +40,14 @@ func test_damage_spawns_number_with_amount() -> void:
 	assert_str((numbers[0] as Label3D).text).is_equal("-2")
 
 
+# espinho devolve fração de ponto: o número mostra a casa decimal em vez de "-0"
+func test_damage_below_one_shows_a_decimal() -> void:
+	assert_str(HealthBar3D.damage_text(0.25)).is_equal("-0,3")
+	assert_str(HealthBar3D.damage_text(0.18)).is_equal("-0,2")
+	assert_str(HealthBar3D.damage_text(2.0)).is_equal("-2")
+	assert_str(HealthBar3D.damage_text(0.97)).is_equal("-1")
+
+
 func test_damage_number_disappears() -> void:
 	var skeleton := arena.spawn(TestArena.SKELETON, Vector3.ZERO)
 

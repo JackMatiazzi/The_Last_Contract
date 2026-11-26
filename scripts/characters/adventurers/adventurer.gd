@@ -3,6 +3,7 @@ extends Character
 
 signal energy_short(pool: EnergyPool)
 signal ability_changed
+signal potion_used(text: String)
 
 ## vida de referência do dano dos inimigos: o dano deles é escrito pensando num aventureiro de 10 de vida
 const ENEMY_DAMAGE_REFERENCE_HEALTH := 10.0
@@ -10,6 +11,12 @@ const ATTACK_BUFFER := 0.2
 const PITCH_MIN := deg_to_rad(-60.0)
 const PITCH_MAX := deg_to_rad(30.0)
 const CAMERA_HEIGHT := 1.5
+## folga entre a câmera deslocada para o lado e a parede que encosta nela
+const CAMERA_WALL_MARGIN := 0.3
+## longe da parede o ombro volta devagar; perto dela encolhe na hora, para não mostrar o outro lado
+const SIDE_RECOVER_SPEED := 2.5
+## espera pela resposta do host ao largar uma poção
+const DROP_REPLY_TIMEOUT := 2.0
 ## tremor da camera de quem acerta: some sozinho em menos de meio segundo
 const SHAKE_QUICK := 0.35
 const SHAKE_HEAVY := 0.7
@@ -101,12 +108,21 @@ var _sustaining := false
 var _interact_hold := -1.0
 var _hinted_ally: Adventurer
 var _ability_index := 0
+var _world_items: Dictionary[String, int] = {}
+var _drop_number := 0
+## pedidos de largar poção esperando o host, na ordem em que saíram (a resposta volta na mesma ordem)
+var _pending_drops: Array[QuickItem] = []
+var _pending_drop_at := 0.0
 var _aim_query := PhysicsRayQueryParameters3D.new()
 var _framing := Vector2.ZERO
+var _side := 0.0
 
 @onready var camera_pivot: Node3D = $CameraPivot
 ## caído em grupo, a câmera acompanha este aliado em vez do próprio corpo; null volta para si
 var camera_subject: Character
+var grabbed_by: Mimic
+var possessed_by: Mimic
+var _escape_pressed_at := -1
 @onready var spring_arm: SpringArm3D = $CameraPivot/SpringArm3D
 @onready var camera: Camera3D = $CameraPivot/SpringArm3D/Camera3D
 @onready var name_tag: Label3D = $NameTag
@@ -131,6 +147,7 @@ func _ready() -> void:
 		mana.recovers_when_empty = recovers_when_empty
 	_aim_query.collision_mask = AIM_LAYERS
 	_framing = Vector2(camera.h_offset, camera.v_offset)
+	_side = _framing.x
 	camera_pivot.global_position = global_position + Vector3.UP * CAMERA_HEIGHT
 	if not is_multiplayer_authority():
 		camera.current = false
@@ -172,6 +189,13 @@ func _incoming_damage(amount: float, source: Node3D) -> float:
 	return amount * max_health / ENEMY_DAMAGE_REFERENCE_HEALTH
 
 
+func take_damage(amount: float, source: Node3D = null) -> void:
+	var before := health
+	super(amount, source)
+	if source is Mimic and is_multiplayer_authority() and health < before:
+		source.confirm_bite_damage(self)
+
+
 func on_hit_landed(heavy: bool) -> void:
 	super(heavy)
 	if not is_multiplayer_authority():
@@ -185,13 +209,29 @@ func _shake_camera(delta: float) -> void:
 	shake_trauma = move_toward(shake_trauma, 0.0, SHAKE_DECAY * delta)
 	var strength := shake_trauma * shake_trauma * SHAKE_OFFSET
 	var jitter := Vector2(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)) * strength
-	camera.h_offset = _framing.x + jitter.x
+	var safe := _safe_side_offset(_framing.x)
+	_side = safe if absf(safe) < absf(_side) else move_toward(_side, safe, SIDE_RECOVER_SPEED * delta)
+	camera.h_offset = _side + jitter.x
 	camera.v_offset = _framing.y + jitter.y
+
+
+## o enquadramento de ombro desloca a câmera para o lado depois do braço, que só confere a parede de
+## trás: encostado numa muralha ou casa, esse lado atravessava a parede e mostrava o fora do mapa
+func _safe_side_offset(side: float) -> float:
+	if is_zero_approx(side):
+		return 0.0
+	var from := camera.global_position
+	var to := from + camera.global_basis.x * (side + signf(side) * CAMERA_WALL_MARGIN)
+	var query := PhysicsRayQueryParameters3D.create(from, to, spring_arm.collision_mask, [get_rid()])
+	var hit := get_world_3d().direct_space_state.intersect_ray(query)
+	if hit.is_empty():
+		return side
+	return signf(side) * maxf(from.distance_to(hit.position) - CAMERA_WALL_MARGIN, 0.0)
 
 
 func _physics_process(delta: float) -> void:
 	super(delta)
-	if not is_multiplayer_authority():
+	if not is_multiplayer_authority() or is_instance_valid(grabbed_by):
 		return
 	_push_bodies(delta)
 	_attack_buffer_left -= delta
@@ -209,6 +249,37 @@ func _physics_process(delta: float) -> void:
 	if _attack_buffer_left > 0.0 and attack_toward_camera():
 		_attack_buffer_left = 0.0
 	_update_revive_target()
+
+
+func _input(event: InputEvent) -> void:
+	if not is_multiplayer_authority() or not is_instance_valid(grabbed_by):
+		return
+	if event.is_action_pressed("attack", false) or event.is_action_released("attack"):
+		var pressed := event.is_action_pressed("attack")
+		if not pressed or _escape_pressed_at < 0:
+			_escape_pressed_at = Time.get_ticks_msec() if pressed else -1
+			grabbed_by._submit_escape_input.rpc_id(MultiplayerPeer.TARGET_PEER_SERVER, pressed)
+		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("interact") or event.is_action_pressed("pause") or event.is_action_pressed("drop_item"):
+		get_viewport().set_input_as_handled()
+
+
+func set_mimic_grab(mimic: Mimic) -> void:
+	grabbed_by = mimic
+	_escape_pressed_at = -1
+	_attack_buffer_left = 0.0
+	_attack_hold = -1.0
+	_interact_hold = -1.0
+	_sustaining = false
+	if mimic:
+		release_secondary()
+		_end_action_locally()
+
+
+func escape_hold_progress() -> float:
+	if _escape_pressed_at < 0:
+		return 0.0
+	return clampf((Time.get_ticks_msec() - _escape_pressed_at) / (HEAVY_HOLD_TIME * 1000.0), 0.0, 1.0)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -244,6 +315,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		next_ability()
 	elif event.is_action_pressed("next_item") and has_control:
 		inventory.select_next()
+	elif event.is_action_pressed("drop_item") and has_control:
+		drop_item()
+		get_viewport().set_input_as_handled()
 
 
 ## o aventureiro que o jogador peer_id controla; null se ele saiu ou ainda nao nasceu
@@ -273,7 +347,7 @@ func set_display_name(display_name: String) -> void:
 
 
 func get_display_name() -> String:
-	return name_tag.text if not name_tag.text.is_empty() else name
+	return name_tag.text if not name_tag.text.is_empty() else String(name)
 
 
 func _allow_friendly_fire() -> void:
@@ -305,14 +379,19 @@ func next_ability() -> void:
 
 
 func can_use(item: QuickItem) -> bool:
-	return item.heal_fraction > 0.0 or (item.mana_amount > 0.0 and mana != null)
+	return item.debuff != QuickItem.Debuff.NONE or item.heal_fraction > 0.0 or (item.mana_amount > 0.0 and mana != null)
 
 
 ## com a vida e a mana cheias o item nao e gasto
 func use_item() -> bool:
 	var item := inventory.selected()
-	if item == null or is_dead:
+	if item == null or is_dead or _drop_waiting():
 		return false
+	if item.debuff != QuickItem.Debuff.NONE:
+		apply_debuff(item.debuff)
+		_consume_item(item)
+		potion_used.emit("%s por 5 segundos" % item.debuff_label())
+		return true
 	var restores_health := item.heal_fraction > 0.0 and health < get_max_health()
 	var restores_mana := item.mana_amount > 0.0 and mana != null and mana.current < mana.maximum
 	if not (restores_health or restores_mana):
@@ -321,14 +400,97 @@ func use_item() -> bool:
 		heal(get_max_health() * item.heal_fraction)
 	if restores_mana:
 		mana.restore(item.mana_amount)
-	inventory.take(item)
+	_consume_item(item)
 	return true
+
+
+## O host registra as poções distribuídas antes de autorizar alguém a largar uma delas.
+func record_potion_pickup(item: QuickItem) -> bool:
+	if not can_use(item):
+		return false
+	var path := item.resource_path
+	var count := inventory.count_of(item) if is_multiplayer_authority() else int(_world_items.get(path, 0))
+	if count >= item.max_carried:
+		return false
+	if not is_multiplayer_authority():
+		_world_items[path] = count + 1
+	return true
+
+
+func _consume_item(item: QuickItem) -> void:
+	inventory.take(item)
+	if Net.is_online() and not multiplayer.is_server():
+		_report_item_used.rpc_id(MultiplayerPeer.TARGET_PEER_SERVER, item.resource_path)
+
+
+@rpc("authority", "reliable")
+func _report_item_used(path: String) -> void:
+	if multiplayer.is_server() and _world_items.has(path):
+		_world_items[path] = maxi(_world_items[path] - 1, 0)
+
+
+## a resposta do host pode nunca chegar (sala caiu, pacote perdido): passado esse tempo o jogador volta a
+## beber e reviver. Cada resposta, mesmo atrasada, tira o item do seu pedido: largar de novo não duplica
+func _drop_waiting() -> bool:
+	return not _pending_drops.is_empty() and Time.get_ticks_msec() / 1000.0 - _pending_drop_at < DROP_REPLY_TIMEOUT
+
+
+func drop_item() -> void:
+	var item := inventory.selected()
+	if item == null or is_dead or _drop_waiting() or not QuickItem.WORLD_SCENES.has(item.resource_path):
+		return
+	_pending_drops.append(item)
+	_pending_drop_at = Time.get_ticks_msec() / 1000.0
+	_request_drop.rpc_id(MultiplayerPeer.TARGET_PEER_SERVER, item.resource_path)
+
+
+@rpc("authority", "call_local", "reliable")
+func _request_drop(path: String) -> void:
+	if not multiplayer.is_server() or not QuickItem.WORLD_SCENES.has(path):
+		return
+	var item := load(path) as QuickItem
+	var stock := inventory.count_of(item) if is_multiplayer_authority() else int(_world_items.get(path, 0))
+	var forward := model.global_basis.z.normalized()
+	var ahead := PhysicsRayQueryParameters3D.create(global_position + Vector3.UP * 0.8, global_position + Vector3.UP * 0.8 + forward * 1.45, 1 | 8)
+	var space := get_world_3d().direct_space_state
+	var ground := PhysicsRayQueryParameters3D.create(ahead.to, ahead.to - Vector3.UP * 1.5, 1 | 8)
+	var floor_hit := space.intersect_ray(ground)
+	if is_dead or stock <= 0 or not space.intersect_ray(ahead).is_empty() or floor_hit.is_empty():
+		_drop_reply.rpc_id(get_multiplayer_authority(), false)
+		return
+	if not is_multiplayer_authority():
+		_world_items[path] = stock - 1
+	_drop_number += 1
+	_drop_reply.rpc_id(get_multiplayer_authority(), true)
+	_spawn_dropped_potion.rpc(path, _drop_number, floor_hit.position)
+
+
+@rpc("any_peer", "call_local", "reliable")
+func _drop_reply(accepted: bool) -> void:
+	if multiplayer.get_remote_sender_id() != MultiplayerPeer.TARGET_PEER_SERVER or _pending_drops.is_empty():
+		return
+	var item: QuickItem = _pending_drops.pop_front()
+	if accepted:
+		inventory.take(item)
+
+
+@rpc("any_peer", "call_local", "reliable")
+func _spawn_dropped_potion(path: String, number: int, spot: Vector3) -> void:
+	if multiplayer.get_remote_sender_id() != MultiplayerPeer.TARGET_PEER_SERVER:
+		return
+	var scene := load(QuickItem.WORLD_SCENES[path]) as PackedScene
+	var potion := scene.instantiate() as Potion
+	potion.name = "%sPocaoLargada%d" % [name, number]
+	potion.armed = potion.item.debuff != QuickItem.Debuff.NONE
+	var parent := get_parent()
+	potion.position = (parent as Node3D).to_local(spot) if parent is Node3D else spot
+	parent.add_child(potion)
 
 
 ## o item so e gasto quando o reviver vale; em grupo quem decide e a maquina do aliado caido,
 ## que confirma de volta (outro jogador pode ter revivido antes)
 func revive_ally() -> void:
-	if inventory.first_healing() == null or not is_instance_valid(revive_target) or not revive_target.is_dead:
+	if _drop_waiting() or inventory.first_healing() == null or not is_instance_valid(revive_target) or not revive_target.is_dead or is_instance_valid(revive_target.possessed_by):
 		return
 	var target := revive_target
 	target.revive_hint.hide()
@@ -341,14 +503,14 @@ func revive_ally() -> void:
 func spend_revive_item() -> void:
 	var item := inventory.first_healing()
 	if item:
-		inventory.take(item)
+		_consume_item(item)
 
 
 func _update_revive_target() -> void:
 	var nearest: Adventurer = null
 	if not is_dead:
 		for ally: Adventurer in get_tree().get_nodes_in_group("players"):
-			if ally != self and ally.is_dead and ally.global_position.distance_to(global_position) <= REVIVE_RANGE:
+			if ally != self and ally.is_dead and not is_instance_valid(ally.possessed_by) and ally.global_position.distance_to(global_position) <= REVIVE_RANGE:
 				nearest = ally
 				break
 	if nearest != _hinted_ally:
@@ -389,7 +551,11 @@ func _push_bodies(delta: float) -> void:
 
 
 func _has_control() -> bool:
-	return not input_locked and (Input.mouse_mode == Input.MOUSE_MODE_CAPTURED or Settings.uses_gamepad())
+	return not input_locked and not is_instance_valid(grabbed_by) and (Input.mouse_mode == Input.MOUSE_MODE_CAPTURED or Settings.uses_gamepad())
+
+
+func accepts_revive_from(sender: int) -> bool:
+	return not is_instance_valid(possessed_by) and super(sender)
 
 
 # so guarda o clique recusado porque o golpe anterior nao terminou; sem estamina ele nao espera
@@ -559,7 +725,7 @@ func _get_move_direction() -> Vector3:
 
 
 func _read_move_input() -> Vector2:
-	if input_locked:
+	if input_locked or is_instance_valid(grabbed_by):
 		return Vector2.ZERO
 	return Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 
