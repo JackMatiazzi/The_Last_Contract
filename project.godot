@@ -178,3 +178,7 @@ menu_next={
 [physics]
 
 common/physics_interpolation=true
+
+[rendering]
+
+renderer/rendering_method.windows_compatibility="gl_compatibility"
