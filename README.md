@@ -28,6 +28,10 @@ Limpe os grupos de esqueletos da vila. Quando o último cair, o Necromante surge
 
 ## Como rodar
 
+No pacote Windows, execute `Jogar-modo-leve.cmd` para abrir o jogo no renderizador Compatibility,
+em janela de 1280 × 720 com limite de 30 FPS. A opção é indicada para o teste em máquinas com
+vídeo integrado. A taxa de quadros alcançada depende do computador.
+
 Abra o projeto no Godot 4.7.2 e rode a cena principal (F5). Para jogar em grupo, um jogador hospeda
 pelo menu Co-op e os outros entram pelo endereço dele. Fora da rede local, dá para usar o Radmin VPN.
 

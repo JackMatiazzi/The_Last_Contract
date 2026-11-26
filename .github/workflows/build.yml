@@ -44,7 +44,8 @@ jobs:
             tar -czf ${{ matrix.pacote }} -C ${{ matrix.pasta }} .
           else
             apt-get update -qq && apt-get install -y -qq zip > /dev/null
-            (cd ${{ matrix.pasta }} && zip -q "$GITHUB_WORKSPACE/${{ matrix.pacote }}" ${{ matrix.arquivo }})
+            cp tools/jogar-modo-leve.cmd "${{ matrix.pasta }}/Jogar-modo-leve.cmd"
+            (cd ${{ matrix.pasta }} && zip -q "$GITHUB_WORKSPACE/${{ matrix.pacote }}" ${{ matrix.arquivo }} Jogar-modo-leve.cmd)
           fi
 
       - name: Pacote .deb
