@@ -16,6 +16,7 @@ height = 2.4
 editor_description = "Mago de batalha (elite): não invoca ninguém, só atira. Mais vida, tiro mais forte, mais rápido e de mais longe que o mago comum."
 max_health = 16.0
 knockback = 1.4
+crosses_portals = false
 walk_speed = 2.4
 run_speed = 3.2
 animation_player = NodePath("Model/Skeleton_Mage/AnimationPlayer")

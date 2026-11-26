@@ -15,13 +15,19 @@ const SECTION := "settings"
 ## Mapeamento de ações de entrada usadas na jogabilidade que serão reconfiguradas no InputMap.
 const GAMEPLAY_ACTIONS := ["move_forward", "move_back", "move_left", "move_right", "attack", "secondary",
 		"run", "look_left", "look_right", "look_up", "look_down", "interact", "decline", "scoreboard",
-		"next_ability", "next_item"]
+		"next_ability", "next_item", "drop_item"]
 ## quem nunca assinou o contrato aparece assim
 const DEFAULT_PLAYER_NAME := "Aventureiro"
 ## escolha sobre enviar o resumo das partidas ao servidor: ainda não perguntado, aceitou ou recusou
 const CONSENT_UNSET := 0
 const CONSENT_YES := 1
 const CONSENT_NO := 2
+
+enum GraphicsMode { QUALITY, PERFORMANCE }
+## o Godot lê este arquivo antes de abrir a janela (application/config/project_settings_override); é o
+## único jeito de trocar o renderizador, então a troca de gráficos só vale quando o jogo abre de novo
+const GRAPHICS_OVERRIDE := "user://graficos.cfg"
+const PERFORMANCE_RENDERER := "gl_compatibility"
 
 var master_volume := 1.0
 var music_volume := 0.8
@@ -35,6 +41,10 @@ var input_device := InputDevice.KEYBOARD_MOUSE
 var stick_sensitivity := 1.0
 var player_name := DEFAULT_PLAYER_NAME
 var telemetry_consent := CONSENT_UNSET
+## Qualidade usa o Forward+ (névoa volumétrica, brilho e luzes sem limite por objeto); Desempenho, o
+## Compatibility, que roda em vídeo integrado fraco
+var graphics_mode := GraphicsMode.QUALITY
+var graphics_override_path := GRAPHICS_OVERRIDE
 ## código aleatório deste PC, criado só quando o jogador aceita: liga as partidas dele no painel sem
 ## nome nem identificador do aparelho. Recusar apaga o código
 var player_code := ""
@@ -48,12 +58,50 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_load()
 	_apply()
+	# o settings.cfg manda: um graficos.cfg que sobrou ou sumiu volta a bater com a escolha salva
+	_write_graphics_override()
 
 ## Atualiza o valor de uma propriedade, aplica as alterações no jogo e salva no disco.
 func set_value(key: StringName, value: Variant) -> void:
 	set(key, value)
 	_apply()
 	_save()
+	if key == &"graphics_mode":
+		_write_graphics_override()
+
+
+## a escolha salva difere do renderizador em uso: vale ao reabrir o jogo
+## no navegador o jogo roda sempre no Compatibility e o Godot não consegue se reiniciar: não há o que escolher
+static func graphics_choice_available() -> bool:
+	return not OS.has_feature("web")
+
+
+func graphics_restart_needed() -> bool:
+	if not graphics_choice_available():
+		return false
+	var running_performance := RenderingServer.get_current_rendering_method() == PERFORMANCE_RENDERER
+	return running_performance != (graphics_mode == GraphicsMode.PERFORMANCE)
+
+
+func restart_game() -> void:
+	OS.set_restart_on_exit(true, OS.get_cmdline_args())
+	get_tree().quit()
+
+
+func _write_graphics_override() -> void:
+	if not graphics_choice_available():
+		return
+	if graphics_mode == GraphicsMode.QUALITY:
+		if FileAccess.file_exists(graphics_override_path):
+			var removed := DirAccess.remove_absolute(ProjectSettings.globalize_path(graphics_override_path))
+			if removed != OK:
+				push_error("Nao foi possivel voltar ao modo de qualidade: %s" % error_string(removed))
+		return
+	var config := ConfigFile.new()
+	config.set_value("rendering", "renderer/rendering_method", PERFORMANCE_RENDERER)
+	var error := config.save(graphics_override_path)
+	if error != OK:
+		push_error("Nao foi possivel salvar o modo de desempenho: %s" % error_string(error))
 
 ## Aplica as configurações ativas nos barramentos de áudio, janela, vsync e mapa de inputs.
 func _apply() -> void:
@@ -107,7 +155,7 @@ func _set_bus_volume(bus: String, linear: float) -> void:
 
 
 func _keys() -> PackedStringArray:
-	return ["master_volume", "music_volume", "sfx_volume", "fullscreen", "vsync", "mouse_sensitivity", "invert_y", "input_device", "stick_sensitivity", "player_name", "telemetry_consent", "player_code"]
+	return ["master_volume", "music_volume", "sfx_volume", "fullscreen", "vsync", "mouse_sensitivity", "invert_y", "input_device", "stick_sensitivity", "player_name", "telemetry_consent", "player_code", "graphics_mode"]
 
 ## desligar só para de enviar: o código fica, para o jogador ainda poder apagar o que já mandou
 func accept_telemetry(accepted: bool) -> void:

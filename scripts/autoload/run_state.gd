@@ -158,7 +158,7 @@ func count_reported_fall(sender: int, raw_cause: String) -> void:
 	if not Net.is_player(sender) or victim == null or not victim.is_dead or victim.fall_counted:
 		return
 	victim.fall_counted = true
-	var cause := Net.clean_text(raw_cause, MAX_CAUSE_LENGTH)
+	var cause := preload("res://scripts/autoload/net.gd").clean_text(raw_cause, MAX_CAUSE_LENGTH)
 	_apply_death({
 		"victim_peer": sender,
 		"victim": Net.display_name(sender),

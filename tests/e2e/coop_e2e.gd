@@ -39,6 +39,7 @@ func run() -> void:
 	var guests := game.players.filter(func(adventurer: Adventurer) -> bool: return adventurer != host)
 	check(host.get_display_name() == "Host" and guests.all(func(guest: Adventurer) -> bool: return guest.get_display_name().begins_with("Cliente")), "nomes do lobby sobre os bonecos")
 
+	await _one_potion_per_player_from_a_chest(game, host)
 	await _rogue_shot_crosses_the_network(game)
 	await _damage_crosses_the_network(host, helper)
 	await _forged_damage_is_ignored()
@@ -49,6 +50,59 @@ func run() -> void:
 	await _michio_joins_and_the_room_holds()
 	await _report_to_the_online_room()
 	await _leave_together()
+
+
+func _one_potion_per_player_from_a_chest(game: GameSession, host: Adventurer) -> void:
+	var chest: Chest
+	for candidate in game.encounters.get_children():
+		if candidate is Chest and candidate.global_position.distance_to(host.global_position) > 12.0:
+			chest = candidate
+			break
+	check(chest != null, "bau distante do ponto inicial")
+	if not chest:
+		return
+	mark("bau selecionado")
+	if not await wait_mark("bau selecionado", players - 1):
+		return
+	var start := game.player.global_position
+	if role == "host":
+		host.global_position = chest.loot_spot.global_position + chest.global_basis.z * 1.3
+		await wait_physics(8)
+		chest._request_open.rpc_id(HOST_PEER)
+	if not await wait_until(func() -> bool: return chest.is_open, "bau aberto em todos os processos"):
+		return
+	var positions: Array[Vector3] = []
+	for i in players:
+		var suffix := "" if i == 0 else str(i + 1)
+		var drop := chest.get_parent().get_node_or_null("%sLoot%s" % [chest.name, suffix]) as Potion
+		check(drop != null, "bau cria a pocao %d de %d" % [i + 1, players])
+		if not drop:
+			return
+		positions.append(drop.global_position)
+	if not await wait_until(func() -> bool: return chest._loot.is_empty(), "a tampa libera as pocoes"):
+		return
+	for peer_id in Net.peers_in_order():
+		var done := "coleta concluida %d" % peer_id
+		if peer_id == multiplayer.get_unique_id():
+			await _walk_over_chest_potions(game.player, start, positions, 3 if peer_id == HOST_PEER else 2)
+			var carried := game.player.inventory.count_of(POTION)
+			var who := "host" if peer_id == HOST_PEER else "cliente"
+			check(carried == 1, "%s passa pelas pocoes e fica com uma unica pocao (%d)" % [who, carried])
+			game.player.global_position = start
+			mark(done)
+		elif not await wait_mark(done):
+			return
+	while game.player.inventory.count_of(POTION) > 0:
+		game.player.inventory.take(POTION)
+
+
+func _walk_over_chest_potions(adventurer: Adventurer, start: Vector3, positions: Array[Vector3], passes: int) -> void:
+	for pass_number in passes:
+		for point in positions:
+			adventurer.global_position = start
+			await wait_physics(4)
+			adventurer.global_position = point
+			await wait_physics(14)
 
 
 # pela sala online cada jogador manda o relatorio da partida com a ficha que recebeu; a sala precisa aceitar

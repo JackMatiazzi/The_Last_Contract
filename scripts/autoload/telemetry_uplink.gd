@@ -8,9 +8,8 @@ extends Node
 
 ## rodada de playtest desta build; precisa estar na lista RODADAS da API
 const ROUND := "PLAYTEST-NOV-2026"
-## contato que aparece no aviso de participação. Vazio = nada é enviado e o aviso não aparece
-## (a LGPD pede um contato real antes de coletar). Preencher antes de gerar a build do playtest
-const CONTACT := ""
+## contato exibido na aba Dados; vazio desliga o envio
+const CONTACT := "matejax17@gmail.com"
 ## estes eventos disparam um envio parcial no solo
 const MILESTONES: Array[String] = ["group_cleared", "boss_killed", "blessing_chosen", "trapdoor_entered", "trapdoor_expired", "dungeon_entered", "dungeon_exit"]
 ## campos que a API aceita em cada evento; o resto (como o resumo de dano) fica só no arquivo local

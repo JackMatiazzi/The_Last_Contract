@@ -1,6 +1,7 @@
 extends GdUnitTestSuite
 
 const REMAINS := "res://scenes/characters/enemies/remains.tscn"
+const MIMIC := preload("res://scenes/characters/enemies/mimic.tscn")
 
 var arena: TestArena
 
@@ -66,3 +67,23 @@ func test_living_skeleton_is_never_cleaned() -> void:
 	await arena.wait_seconds(1.0)
 
 	assert_bool(is_instance_valid(skeleton)).is_true()
+
+
+# o mímico derrotado solta a poção e o corpo fica um tempo antes de afundar e sumir
+func test_a_dead_mimic_leaves_its_loot_and_its_body_sinks_away() -> void:
+	var mimic: Mimic = MIMIC.instantiate()
+	mimic.corpse_time = 0.5
+	mimic.sink_time = 0.3
+	arena.root.add_child(mimic)
+	await arena.wait_physics(3)
+
+	var fell_at := mimic.global_position.y
+	mimic.take_damage(999.0)
+	await arena.wait_seconds(0.3)
+	assert_bool(is_instance_valid(mimic)).is_true()
+	await arena.wait_seconds(0.2 + 0.2)
+	assert_float(mimic.global_position.y).is_less(fell_at - 0.1)
+	await arena.wait_seconds(0.4)
+
+	assert_bool(is_instance_valid(mimic)).is_false()
+	assert_object(arena.root.get_node_or_null("MimicoLoot")).is_not_null()

@@ -21,6 +21,28 @@
 [ext_resource type="PackedScene" path="res://scenes/characters/enemies/mimic.tscn" id="mimic"]
 [ext_resource type="Script" path="res://scripts/game/bounds_guard.gd" id="bounds_guard"]
 
+[ext_resource type="Script" path="res://scripts/game/boss_arena.gd" id="boss_arena"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_boss_arena"]
+height = 6.0
+radius = 8.5
+
+[sub_resource type="StandardMaterial3D" id="Material_boss_barrier"]
+transparency = 1
+cull_mode = 2
+shading_mode = 0
+albedo_color = Color(0.58, 0.28, 0.2, 0.18)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_boss_barrier"]
+material = SubResource("Material_boss_barrier")
+top_radius = 8.5
+bottom_radius = 8.5
+height = 6.0
+radial_segments = 48
+rings = 1
+cap_top = false
+cap_bottom = false
+
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_night"]
 sky_top_color = Color(0.03, 0.04, 0.09, 1)
 sky_horizon_color = Color(0.14, 0.18, 0.28, 1)
@@ -408,6 +430,19 @@ navigation_mesh = ExtResource("2_navmesh")
 [node name="Pedraalta" parent="Navigation" instance=ExtResource("1_village")]
 
 
+[node name="ArenaBarrier" type="StaticBody3D" parent="."]
+position = Vector3(0, 12.02, -61)
+script = ExtResource("boss_arena")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="ArenaBarrier"]
+position = Vector3(0, 2.5, 0)
+shape = SubResource("CylinderShape3D_boss_arena")
+
+[node name="BarrierMesh" type="MeshInstance3D" parent="ArenaBarrier"]
+position = Vector3(0, 2.5, 0)
+cast_shadow = 0
+mesh = SubResource("CylinderMesh_boss_barrier")
+
 [node name="Encounters" type="Node3D" parent="." node_paths=PackedStringArray("player_spots", "group_spots", "boss_spot", "chest_spots")]
 script = ExtResource("3_spawner")
 player_spots = NodePath("../Navigation/Pedraalta/PlayerSpots")
@@ -428,13 +463,14 @@ mimic_scene = ExtResource("mimic")
 
 [node name="VictoryScreen" parent="." instance=ExtResource("victory")]
 
-[node name="GameSession" type="Node" parent="." node_paths=PackedStringArray("encounters", "pause_menu", "death_screen", "hud", "victory_screen")]
+[node name="GameSession" type="Node" parent="." node_paths=PackedStringArray("encounters", "pause_menu", "death_screen", "hud", "victory_screen", "boss_arena")]
 script = ExtResource("10_session")
 encounters = NodePath("../Encounters")
 pause_menu = NodePath("../PauseMenu")
 death_screen = NodePath("../DeathScreen")
 hud = NodePath("../Hud")
 boss_scene = ExtResource("boss")
+boss_arena = NodePath("../ArenaBarrier")
 victory_screen = NodePath("../VictoryScreen")
 
 [node name="MusicCue" type="Node" parent="."]

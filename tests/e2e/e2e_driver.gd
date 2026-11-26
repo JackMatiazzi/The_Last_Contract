@@ -64,6 +64,19 @@ func wait_scene(scene_name: String) -> bool:
 	return await wait_until(func() -> bool: return get_tree().current_scene != null and get_tree().current_scene.name == scene_name and get_tree().current_scene.is_node_ready(), "cena %s" % scene_name)
 
 
+func skip_teaser_to_menu() -> bool:
+	if not await wait_scene("TeaserIntro"):
+		return false
+	var teaser := get_tree().current_scene.get_node("%Teaser") as VideoStreamPlayer
+	check(teaser.is_playing(), "teaser toca antes do menu")
+	var click := InputEventMouseButton.new()
+	click.position = Vector2(20, 20)
+	click.button_index = MOUSE_BUTTON_LEFT
+	click.pressed = true
+	get_tree().root.push_input(click, true)
+	return await wait_scene("MainMenu")
+
+
 # a fase so comeca de verdade depois da barreira de carregamento do grupo
 func wait_level() -> bool:
 	if not await wait_scene("PedraaltaLevel"):

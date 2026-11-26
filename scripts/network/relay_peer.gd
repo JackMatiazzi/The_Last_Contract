@@ -190,7 +190,7 @@ func _keep_alive() -> void:
 		_last_ping_msec = now
 		_socket.send_text("ping")
 	if _status == CONNECTION_CONNECTED and not _key.is_empty() and now - _last_rx_msec > SILENCE_LIMIT_MSEC:
-		Net.log_network("a sala ficou muda por %d s, tentando voltar" % (SILENCE_LIMIT_MSEC / 1000))
+		Net.log_network("a sala ficou muda por %d s, tentando voltar" % int(SILENCE_LIMIT_MSEC / 1000.0))
 		_socket.close(RESUME_CLOSE_CODE, "retomando")
 		_begin_resume()
 

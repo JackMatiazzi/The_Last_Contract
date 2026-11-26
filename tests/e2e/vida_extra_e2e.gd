@@ -8,7 +8,7 @@ const KNIGHT_INDEX := 0
 
 func run() -> void:
 	label = "vida-extra"
-	if not await wait_scene("MainMenu"):
+	if not await skip_teaser_to_menu():
 		return
 	(get_tree().current_scene.get_node("%PlayButton") as Button).pressed.emit()
 	if not await wait_scene("CharacterSelect"):

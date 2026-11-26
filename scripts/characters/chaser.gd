@@ -8,7 +8,14 @@ extends Character
 ## Alvo mais longe que isso e trocado pelo aventureiro mais perto.
 @export var chase_range := 30.0
 
+## o caminho pela navegacao e refeito a esse intervalo: o alvo anda, mas refazer todo quadro e caro
+const PATH_REFRESH := 0.3
+const WAYPOINT_REACHED := 0.6
+
 var _target: Adventurer
+var _path := PackedVector3Array()
+var _path_index := 0
+var _path_age := INF
 
 
 func is_hunting() -> bool:
@@ -43,7 +50,21 @@ func _nearest_player() -> Adventurer:
 func _get_move_direction() -> Vector3:
 	if not is_hunting() or _target == null or _target.global_position.distance_to(global_position) <= strike_range * 0.8:
 		return Vector3.ZERO
-	return (_target.global_position - global_position).slide(Vector3.UP).normalized()
+	return (_next_point_toward(_target.global_position) - global_position).slide(Vector3.UP).normalized()
+
+
+## em linha reta o perseguidor empacava na beira do terraço com o alvo embaixo: segue o caminho da
+## navegação, que passa pela rampa. Sem mapa de navegação (testes, cenas soltas), vai direto
+func _next_point_toward(goal: Vector3) -> Vector3:
+	_path_age += get_physics_process_delta_time()
+	if _path_age >= PATH_REFRESH:
+		_path_age = 0.0
+		var map := get_world_3d().navigation_map
+		_path = NavigationServer3D.map_get_path(map, global_position, goal, true) if NavigationServer3D.map_get_iteration_id(map) > 0 else PackedVector3Array()
+		_path_index = 0
+	while _path_index < _path.size() and Vector2(_path[_path_index].x - global_position.x, _path[_path_index].z - global_position.z).length() < WAYPOINT_REACHED:
+		_path_index += 1
+	return _path[_path_index] if _path_index < _path.size() else goal
 
 
 func _look_toward(point: Vector3) -> void:

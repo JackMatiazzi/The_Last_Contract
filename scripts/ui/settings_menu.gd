@@ -3,6 +3,12 @@ extends Control
 
 signal closed
 
+const RESTART_NOTE := "Vale ao reiniciar o jogo."
+const NEXT_LAUNCH_NOTE := "Vale na próxima vez que abrir o jogo."
+
+## só o menu principal reinicia na hora; na pausa, reiniciar perderia a partida
+@export var allows_restart := false
+
 @onready var master_slider: HSlider = %MasterSlider
 @onready var music_slider: HSlider = %MusicSlider
 @onready var sfx_slider: HSlider = %SfxSlider
@@ -14,6 +20,9 @@ signal closed
 @onready var device_option: OptionButton = %DeviceOption
 @onready var stick_slider: HSlider = %StickSlider
 @onready var stick_value: Label = %StickValue
+@onready var graphics_option: OptionButton = %GraphicsOption
+@onready var graphics_note: Label = %GraphicsNote
+@onready var restart_button: Button = %RestartButton
 
 
 func _ready() -> void:
@@ -33,6 +42,7 @@ func _ready() -> void:
 	_show_multiplier(stick_slider, stick_value)
 	%BackButton.pressed.connect(close)
 	_bind_telemetry()
+	_bind_graphics()
 
 
 func open() -> void:
@@ -59,11 +69,29 @@ func _unhandled_input(event: InputEvent) -> void:
 	get_viewport().set_input_as_handled()
 
 
+func _bind_graphics() -> void:
+	for node: Control in [%GraphicsLabel, graphics_option, %GraphicsSpacer, %GraphicsStatus]:
+		node.visible = Settings.graphics_choice_available()
+	graphics_option.selected = graphics_option.get_item_index(Settings.graphics_mode)
+	graphics_option.item_selected.connect(func(index: int) -> void:
+		Settings.set_value(&"graphics_mode", graphics_option.get_item_id(index))
+		_show_graphics_status())
+	restart_button.pressed.connect(Settings.restart_game)
+	_show_graphics_status()
+
+
+func _show_graphics_status() -> void:
+	var pending := Settings.graphics_restart_needed()
+	graphics_note.text = "" if not pending else (RESTART_NOTE if allows_restart else NEXT_LAUNCH_NOTE)
+	restart_button.visible = pending and allows_restart
+
+
 func _bind_telemetry() -> void:
 	var check := %TelemetryCheck as CheckButton
 	var available := not Playtest.uplink.contact.is_empty()
 	check.set_pressed_no_signal(Settings.telemetry_consent == Settings.CONSENT_YES)
 	check.disabled = not available
+	%DataHint.text = ("Solo: classe, progresso, resultado e outros dados da partida, identificados por um código aleatório, sem seu nome. Sala online: no fim da partida, o apelido e o nome do grupo também vão para o placar. Retenção de 90 dias no Cloudflare, fora do Brasil. Contato: %s" % Playtest.uplink.contact) if available else ""
 	%DeleteDataButton.disabled = not available or Settings.player_code.is_empty()
 	%DataStatus.text = "" if available else "O envio de dados está desligado nesta versão."
 	check.toggled.connect(func(enabled: bool) -> void:
@@ -96,6 +124,6 @@ func _bind_check(check: CheckButton, key: StringName) -> void:
 
 
 func _show_multiplier(slider: HSlider, label: Label) -> void:
-	var show := func(value: float) -> void: label.text = "%.1fx" % value
-	slider.value_changed.connect(show)
-	show.call(slider.value)
+	var update_label := func(value: float) -> void: label.text = "%.1fx" % value
+	slider.value_changed.connect(update_label)
+	update_label.call(slider.value)

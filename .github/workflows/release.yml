@@ -14,24 +14,27 @@ jobs:
   exportar:
     uses: ./.github/workflows/build.yml
 
-  documento:
+  # a entrega leva o GDD completo, gerado do mesmo commit dos executáveis
+  gdd:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
 
       - uses: xu-cheng/latex-action@v4
         with:
-          root_file: projeto.tex
+          root_file: gdd.tex
           working_directory: docs
 
       - uses: actions/upload-artifact@v7
         with:
-          name: documento
-          path: docs/projeto.pdf
+          name: gdd
+          path: docs/gdd.pdf
 
   release:
-    needs: [exportar, documento]
+    needs: [exportar, gdd]
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
     steps:
       - uses: actions/checkout@v7
 
@@ -59,4 +62,18 @@ jobs:
             TheLastContract-linux.tar.gz
             TheLastContract-linux.deb
             TheLastContract-windows.zip
-            projeto.pdf
+            TheLastContract-web.zip
+            gdd.pdf
+
+  # a release criada aqui nao dispara outros workflows: o envio ao itch.io e chamado direto
+  itch:
+    needs: release
+    uses: ./.github/workflows/itch.yml
+    with:
+      versao: ${{ needs.release.outputs.tag }}
+    secrets:
+      BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+    permissions:
+      contents: read
+      checks: write
+      actions: read

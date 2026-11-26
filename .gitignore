@@ -5,6 +5,9 @@
 # Builds (gerados pelo GitHub Actions)
 build/
 
+# Produção local da cinemática
+/blender/
+
 # Temporarios de teste
 _tmp_test/
 reports/
