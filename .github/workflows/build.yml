@@ -1,6 +1,6 @@
 name: Build
 
-# exporta Linux (.tar.gz e .deb) e Windows; roda nos PRs para o main, manualmente e dentro da release
+# exporta Web, Linux e Windows nos PRs para a main, manualmente e nas releases
 on:
   pull_request:
     branches: [main]
@@ -20,6 +20,10 @@ jobs:
             pasta: build/windows
             arquivo: TheLastContract.exe
             pacote: TheLastContract-windows.zip
+          - preset: Web
+            pasta: build/web
+            arquivo: index.html
+            pacote: TheLastContract-web.zip
     runs-on: ubuntu-latest
     container: barichello/godot-ci:4.7.2
     steps:
@@ -27,8 +31,19 @@ jobs:
 
       - name: Modelos de exportacao
         run: |
-          mkdir -p ~/.local/share/godot/export_templates
-          mv /root/.local/share/godot/export_templates/4.7.2.stable ~/.local/share/godot/export_templates/
+          modelos="$HOME/.local/share/godot/export_templates"
+          mkdir -p "$modelos"
+          if [ ! -d "$modelos/4.7.2.stable" ]; then
+            cp -a /root/.local/share/godot/export_templates/4.7.2.stable "$modelos/"
+          fi
+
+      - name: Limitar as texturas do cenário a 1024 px para Web
+        if: matrix.preset == 'Web'
+        run: |
+          for config in assets/quaternius_village/models/T_*.png.import; do
+            test -f "$config"
+            sed -i 's/^process\/size_limit=0$/process\/size_limit=1024/' "$config"
+          done
 
       - name: Exportar ${{ matrix.preset }}
         run: |
@@ -36,6 +51,10 @@ jobs:
           godot --headless --import
           godot --headless --export-release "${{ matrix.preset }}" "${{ matrix.pasta }}/${{ matrix.arquivo }}"
           test -s "${{ matrix.pasta }}/${{ matrix.arquivo }}"
+          if [ "${{ matrix.preset }}" = "Web" ]; then
+            test -s "${{ matrix.pasta }}/index.wasm"
+            test -s "${{ matrix.pasta }}/index.pck"
+          fi
 
       # o tar guarda a permissao de execucao do Linux; o zip e o formato que o Windows abre sem programa extra
       - name: Empacotar
@@ -44,7 +63,7 @@ jobs:
             tar -czf ${{ matrix.pacote }} -C ${{ matrix.pasta }} .
           else
             apt-get update -qq && apt-get install -y -qq zip > /dev/null
-            (cd ${{ matrix.pasta }} && zip -q "$GITHUB_WORKSPACE/${{ matrix.pacote }}" ${{ matrix.arquivo }})
+            (cd ${{ matrix.pasta }} && zip -qr "$GITHUB_WORKSPACE/${{ matrix.pacote }}" .)
           fi
 
       - name: Pacote .deb

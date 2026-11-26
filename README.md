@@ -16,15 +16,20 @@ os mortos-vivos também recebem) ou desiste e é executado.
 | Correr | Segurar Espaço | Clicar no analógico esquerdo |
 | Câmera | Mouse | Analógico direito |
 | Atacar (segurar para o golpe pesado) | Botão esquerdo | RT |
-| Habilidade | Botão direito | LT |
-| Trocar habilidade / item | Roda do mouse | Direcional |
+| Habilidade secundária | Botão direito | LT |
+| Trocar item | Roda do mouse para baixo | Direcional para baixo |
 | Interagir (segurar para beber o item) | E | X |
 | Placar | Segurar Tab | Segurar Back |
 | Pausar | Esc | Start |
 
+O Mage abre o Portal com a habilidade secundária.
+
 Limpe os grupos de esqueletos da vila. Quando o último cair, o Necromante surge na praça.
 
 ## Como rodar
+
+No Windows, extraia o ZIP e abra `TheLastContract.exe`. Em máquinas com vídeo integrado, troque
+Configurações > Vídeo > Gráficos para Desempenho: o jogo reinicia no renderizador mais leve.
 
 Abra o projeto no Godot 4.7.2 e rode a cena principal (F5). Para jogar em grupo, um jogador hospeda
 pelo menu Co-op e os outros entram pelo endereço dele. Fora da rede local, dá para usar o Radmin VPN.
@@ -59,3 +64,15 @@ personagem base ou no `project.godot`, a gente avisa no grupo para não dar conf
 - Efeitos sonoros: [RPG Audio](https://kenney.nl/assets/rpg-audio), [Impact Sounds](https://kenney.nl/assets/impact-sounds) e [Interface Sounds](https://kenney.nl/assets/interface-sounds) (Kenney).
 - Música: [Dark Cavern Ambient](https://opengameart.org/content/dark-cavern-ambient) (Paul Wortmann) e [Medieval fair [Loop]](https://opengameart.org/content/medieval-fair-loop) (Woli34).
 - Fonte dos títulos: [Cinzel](https://github.com/NDISCOVER/Cinzel) (The Cinzel Project Authors), sob a [SIL Open Font License 1.1](assets/fonts/OFL.txt).
+
+### Envio ao itch.io
+
+O workflow **Publicar no itch.io** roda quando uma release é publicada pela equipe. Para enviar uma
+entrega criada automaticamente pelo GitHub, rode o mesmo workflow na branch `main` em **Actions**.
+O GitHub não dispara outro workflow para releases geradas pelo `GITHUB_TOKEN` da entrega automática.
+
+- Configure o segredo `BUTLER_API_KEY` no repositório com a chave da conta que tem acesso ao projeto no itch.io.
+- Depois do primeiro envio, marque o canal `web` como jogável no navegador. Os canais `windows` e `linux`
+  são os downloads com co-op. Os envios seguintes atualizam as mesmas entradas.
+- O envio confere se a API aceita telemetria do navegador antes de substituir as builds. A participação
+  no playtest é opcional em **Configurações → Dados**.

@@ -209,7 +209,7 @@ func test_reaper_thirst_heals_a_share_of_max_health_per_hit() -> void:
 func test_iron_thorns_hurt_whoever_strikes() -> void:
 	RunState.buffs.append(load("res://resources/buffs/espinhos_de_ferro.tres"))
 	var knight := arena.spawn(TestArena.KNIGHT, Vector3.ZERO)
-	var skeleton := arena.spawn(TestArena.SKELETON, Vector3(4, 0, 0))
+	var skeleton := arena.spawn(TestArena.SKELETON, Vector3(1.5, 0, 0))
 
 	knight.take_damage(1.0, skeleton)
 
@@ -220,7 +220,7 @@ func test_iron_thorns_hurt_whoever_strikes() -> void:
 func test_undead_thorns_only_answer_strong_hits() -> void:
 	RunState.buffs.append(load("res://resources/buffs/espinhos_de_ferro.tres"))
 	var knight := arena.spawn(TestArena.KNIGHT, Vector3.ZERO)
-	var skeleton := arena.spawn(TestArena.SKELETON, Vector3(4, 0, 0))
+	var skeleton := arena.spawn(TestArena.SKELETON, Vector3(1.5, 0, 0))
 
 	skeleton.take_damage(1.0, knight)
 	assert_float(knight.health).is_equal(10.0)
@@ -232,7 +232,7 @@ func test_undead_thorns_only_answer_strong_hits() -> void:
 func test_two_thorned_allies_do_not_trade_damage_forever() -> void:
 	RunState.buffs.append(load("res://resources/buffs/espinhos_de_ferro.tres"))
 	var knight := arena.spawn(TestArena.KNIGHT, Vector3.ZERO)
-	var ally := arena.spawn(TestArena.KNIGHT, Vector3(3, 0, 0))
+	var ally := arena.spawn(TestArena.KNIGHT, Vector3(1.5, 0, 0))
 
 	ally.take_damage(1.0, knight)
 
@@ -244,7 +244,7 @@ func test_two_thorned_allies_do_not_trade_damage_forever() -> void:
 func test_thorns_return_only_what_landed_and_the_reflector_dies_once() -> void:
 	RunState.buffs.append(load("res://resources/buffs/espinhos_de_ferro.tres"))
 	var knight := arena.spawn(TestArena.KNIGHT, Vector3.ZERO)
-	var ally := arena.spawn(TestArena.KNIGHT, Vector3(3, 0, 0))
+	var ally := arena.spawn(TestArena.KNIGHT, Vector3(1.5, 0, 0))
 	knight.health = 1.0
 	var signals := monitor_signals(knight, false)
 
@@ -254,6 +254,30 @@ func test_thorns_return_only_what_landed_and_the_reflector_dies_once() -> void:
 	assert_float(ally.health).is_equal_approx(10.0 - 0.25, 0.001)
 	await assert_signal(signals).wait_until(200).is_emitted("died")
 	assert_int(RunState.stats_of(knight.get_multiplayer_authority()).deaths).is_less_equal(1)
+
+
+# o mago acertava um morto-vivo de longe e apanhava junto: espinho só responde a quem bate encostado
+func test_thorns_do_not_answer_a_hit_from_afar() -> void:
+	RunState.buffs.append(load("res://resources/buffs/espinhos_de_ferro.tres"))
+	var shooter := arena.spawn(TestArena.KNIGHT, Vector3.ZERO)
+	var skeleton := arena.spawn(TestArena.SKELETON, Vector3(Character.THORNS_REACH + 2.0, 0, 0))
+
+	skeleton.take_damage(5.0, shooter)
+
+	assert_float(shooter.health).is_equal(10.0)
+
+
+# a ponta da espada do Knight fica a uns 3,6 m do centro do alvo: ainda conta como encostado
+func test_thorns_reach_the_edge_of_the_longest_sword_swing() -> void:
+	RunState.buffs.append(load("res://resources/buffs/espinhos_de_ferro.tres"))
+	var knight := arena.spawn(TestArena.KNIGHT, Vector3.ZERO)
+	var near := arena.spawn(TestArena.SKELETON, Vector3(3.6, 0, 0))
+	var far := arena.spawn(TestArena.SKELETON, Vector3(0, 0, Character.THORNS_REACH + 0.2))
+
+	near.take_damage(5.0, knight)
+	assert_float(knight.health).is_equal_approx(10.0 - 0.25, 0.001)
+	far.take_damage(5.0, knight)
+	assert_float(knight.health).is_equal_approx(10.0 - 0.25, 0.001)
 
 
 func test_thorns_do_not_push_or_stagger_the_attacker() -> void:

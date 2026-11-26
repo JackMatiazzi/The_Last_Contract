@@ -10,6 +10,10 @@ signal connection_failed
 signal player_left(peer_id: int)
 signal room_ready(code: String)
 signal match_report_sent(accepted: bool)
+## a conexao com a sala online caiu e o jogo esta voltando sozinho (true), ou voltou (false)
+signal connection_resuming(active: bool)
+## outro jogador perdeu a conexao com a sala online e ela espera ele voltar (true), ou ele voltou (false)
+signal player_away(peer_id: int, away: bool)
 
 ## ENET e a rede local (UDP); RELAY e a sala online com codigo, a API no Cloudflare (the-last-contract-api);
 ## WEBSOCKET e o host publicando a propria porta com o tunel do cloudflared
@@ -100,6 +104,7 @@ func host(port := PORT, transport := Transport.ENET) -> Error:
 		relay_peer.room_ready.connect(_remember_ticket.bind(relay_peer))
 		# adiado: o aviso sai de dentro do poll do proprio peer, que nao pode ser trocado ali
 		relay_peer.dropped.connect(_on_relay_host_dropped.bind(relay_peer), CONNECT_DEFERRED)
+		_listen_to_resumes(relay_peer)
 		error = relay_peer.create_host(relay_url)
 		peer = relay_peer
 	elif transport == Transport.WEBSOCKET:
@@ -130,6 +135,7 @@ func join(address: String, port := PORT) -> Error:
 	if is_room_code(address):
 		var relay_peer := RelayPeer.new()
 		relay_peer.room_ready.connect(_remember_ticket.bind(relay_peer))
+		_listen_to_resumes(relay_peer)
 		error = relay_peer.create_client(relay_url, address.strip_edges().to_upper())
 		peer = relay_peer
 	elif not web.is_empty():
@@ -158,6 +164,16 @@ static func web_address(raw: String) -> String:
 static func is_room_code(raw: String) -> bool:
 	var code := raw.strip_edges().to_upper()
 	return code.length() == ROOM_CODE_LENGTH and Array(code.split("")).all(func(letter: String) -> bool: return letter in ROOM_CODE_LETTERS)
+
+
+func _listen_to_resumes(relay_peer: RelayPeer) -> void:
+	relay_peer.resuming.connect(connection_resuming.emit)
+	relay_peer.peer_away.connect(_on_player_away)
+
+
+func _on_player_away(peer_id: int, away: bool) -> void:
+	log_network("jogador %d (%s) %s" % [peer_id, names.get(peer_id, "?"), "perdeu a conexão, esperando voltar" if away else "voltou"])
+	player_away.emit(peer_id, away)
 
 
 func _remember_ticket(_code: String, relay_peer: RelayPeer) -> void:

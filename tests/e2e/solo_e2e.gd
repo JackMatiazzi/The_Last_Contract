@@ -8,7 +8,7 @@ const MAGE_INDEX := 2
 func run() -> void:
 	label = "solo"
 	play_with_gamepad()
-	if not await wait_scene("MainMenu"):
+	if not await skip_teaser_to_menu():
 		return
 	(get_tree().current_scene.get_node("%PlayButton") as Button).pressed.emit()
 
@@ -36,9 +36,15 @@ func run() -> void:
 	check(game.player.mana != null and game.player.stamina != null, "mago com mana e estamina")
 	check((get_tree().current_scene.get_node("Hud") as Hud).attempt_label.text == "Tentativa I", "HUD mostra a tentativa 1")
 
-	press_action(&"next_ability")
-	if await wait_until(func() -> bool: return game.player.attack is PortalSpell, "troca de habilidade"):
-		check(true, "a roda troca para o Portal")
+	var trigger := InputEventJoypadMotion.new()
+	trigger.axis = JOY_AXIS_TRIGGER_LEFT
+	trigger.axis_value = 1.0
+	Input.parse_input_event(trigger)
+	if await wait_until(func() -> bool: return game.player.mana.current < game.player.mana.maximum, "gastar mana no Portal"):
+		check(game.player.secondary_attack is PortalSpell and game.player.attack is RangedAttack, "LT inicia o Portal e mantém o projétil no ataque principal")
+	var release := InputEventJoypadMotion.new()
+	release.axis = JOY_AXIS_TRIGGER_LEFT
+	Input.parse_input_event(release)
 
 	game.player.take_damage(999.0)
 	await vote_for_first_blessing()

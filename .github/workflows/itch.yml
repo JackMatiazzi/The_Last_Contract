@@ -1,0 +1,102 @@
+name: Publicar no itch.io
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+  # a release da entrega chama este workflow: release criada pelo token do proprio GitHub nao dispara
+  # o evento "published" para outros workflows
+  workflow_call:
+    inputs:
+      versao:
+        type: string
+        required: false
+    secrets:
+      BUTLER_API_KEY:
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publicar-itch
+  cancel-in-progress: false
+
+jobs:
+  validar:
+    if: github.ref == 'refs/heads/main' || (github.event_name == 'release' && !github.event.release.prerelease)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Confirmar que a versão passou pela main
+        run: git merge-base --is-ancestor "$GITHUB_SHA" origin/main
+
+  testar:
+    needs: validar
+    uses: ./.github/workflows/tests.yml
+    permissions:
+      contents: read
+      checks: write
+
+  exportar:
+    needs: validar
+    uses: ./.github/workflows/build.yml
+
+  publicar:
+    needs: [testar, exportar]
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: TheLastContract-*
+          merge-multiple: true
+
+      - name: Conferir integração Web com a telemetria
+        env:
+          TELEMETRY_URL: https://the-last-contract-api.last-contract.workers.dev/solo/inicio
+          ITCH_ORIGIN: https://html-classic.itch.zone
+        run: |
+          headers=$(curl -fsS --max-time 15 -D - -o /dev/null -X OPTIONS "$TELEMETRY_URL" \
+            -H "Origin: $ITCH_ORIGIN" \
+            -H "Access-Control-Request-Method: POST" \
+            -H "Access-Control-Request-Headers: content-type") || {
+              echo "::error::A API ainda não aceita telemetria do jogo hospedado no itch.io."
+              exit 1
+            }
+          if ! printf '%s\n' "$headers" | tr -d '\r' | grep -Fxi "access-control-allow-origin: $ITCH_ORIGIN"; then
+            echo "::error::A resposta da API não autorizou a origem do jogo no itch.io."
+            exit 1
+          fi
+
+      - name: Preparar os três canais
+        run: |
+          mkdir -p enviar/{web,windows,linux}
+          unzip -q TheLastContract-web.zip -d enviar/web
+          unzip -q TheLastContract-windows.zip -d enviar/windows
+          tar -xzf TheLastContract-linux.tar.gz -C enviar/linux
+          test -s enviar/web/index.html
+          test -s enviar/web/index.wasm
+          test -s enviar/web/index.pck
+          test -s enviar/windows/TheLastContract.exe
+          test -x enviar/linux/TheLastContract.x86_64
+          curl -fsSL --retry 3 https://broth.itch.zone/butler/linux-amd64/LATEST/archive/default -o "$RUNNER_TEMP/butler.zip"
+          unzip -q "$RUNNER_TEMP/butler.zip" -d "$RUNNER_TEMP/butler"
+          chmod +x "$RUNNER_TEMP/butler/butler"
+
+      - name: Enviar para o itch.io
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+          VERSION: ${{ inputs.versao || github.event.release.tag_name || github.sha }}
+        run: |
+          if [ -z "$BUTLER_API_KEY" ]; then
+            echo "::error::Configure o segredo BUTLER_API_KEY no repositório."
+            exit 1
+          fi
+          for channel in web windows linux; do
+            "$RUNNER_TEMP/butler/butler" push "enviar/$channel" "muralhaogigante/the-last-contract:$channel" --userversion "$VERSION"
+          done

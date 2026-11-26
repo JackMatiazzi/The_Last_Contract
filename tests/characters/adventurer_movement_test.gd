@@ -105,3 +105,51 @@ func test_walking_off_a_ledge_falls_and_lands() -> void:
 	await arena.wait_seconds(1.0)
 
 	assert_bool(knight.is_on_floor()).is_true()
+
+
+func _eye(adventurer: Adventurer) -> Vector3:
+	return adventurer.camera.global_transform * Vector3(adventurer.camera.h_offset, 0, 0)
+
+
+func _wall_between_pivot_and_eye(adventurer: Adventurer) -> bool:
+	var query := PhysicsRayQueryParameters3D.create(adventurer.camera_pivot.global_position, _eye(adventurer), 1, [adventurer.get_rid()])
+	return not adventurer.get_world_3d().direct_space_state.intersect_ray(query).is_empty()
+
+
+# a câmera de ombro fica 0,8 m para o lado: encostado numa parede, ela atravessava e mostrava o fora do mapa
+func test_the_shoulder_camera_does_not_go_through_a_wall_beside_the_player() -> void:
+	arena.add_wall(Vector3(0.8, 2.0, 3.0), Vector3(0.4, 4.0, 8.0))
+	knight.camera_pivot.rotation.y = 0.0
+	await arena.wait_physics(3)
+	# o sinal sai antes do _process do quadro: o segundo garante que a câmera já se ajustou
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+	assert_float(knight.camera.h_offset).is_less(0.5)
+	assert_bool(_wall_between_pivot_and_eye(knight)).is_false()
+
+
+func test_with_room_to_the_side_the_camera_keeps_the_shoulder_framing() -> void:
+	knight.camera_pivot.rotation.y = 0.0
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+	assert_float(knight.camera.h_offset).is_equal_approx(0.8, 0.05)
+
+
+# ao sair de perto da parede o ombro volta aos poucos, sem tranco de um quadro para o outro
+func test_the_shoulder_framing_comes_back_smoothly_after_leaving_a_wall() -> void:
+	var wall := arena.add_wall(Vector3(0.8, 2.0, 3.0), Vector3(0.4, 4.0, 8.0))
+	knight.camera_pivot.rotation.y = 0.0
+	await arena.wait_physics(3)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var near_wall := knight.camera.h_offset
+
+	wall.free()
+	await arena.wait_physics(1)
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+	assert_float(knight.camera.h_offset).is_less(0.8 - 0.01)
+	assert_float(knight.camera.h_offset).is_greater_equal(near_wall)

@@ -19,6 +19,10 @@ const HIT_RECOVERY := 0.3
 const MIN_STAT_FACTOR := 0.2
 ## Espinhos de Ferro não devolvem migalhas: os 5% dos mortos-vivos só respondem a golpes de 2 ou mais
 const MIN_REFLECTED_DAMAGE := 0.1
+## espinho fere só quem bate encostado: o projétil chega com o atirador como origem, e o mago apanhava
+## de longe por acertar um morto-vivo. A espada do Knight alcança uns 3,1 m mais o corpo do alvo
+## (cerca de 3,6 m entre os dois), e a posição de quem está em outra máquina chega um pouco atrasada
+const THORNS_REACH := 4.0
 ## em rede so quem tem autoridade simula; as outras maquinas seguem o estado enviado
 const NET_SEND_INTERVAL := 0.05
 ## parado nao manda nada; de tempos em tempos repete o estado, para ninguem ficar com um antigo
@@ -84,6 +88,7 @@ var is_busy := false
 ## muda a cada acao; o golpe compara para saber se foi interrompido
 var action_id := 0
 var active_buffs: Array[Buff] = []
+var _temporary_debuffs: Dictionary[int, SceneTreeTimer] = {}
 var damage_log := DamageLog.new()
 ## o host conta cada queda uma vez so, mesmo que o relato chegue repetido
 var fall_counted := false
@@ -204,6 +209,8 @@ func _reflect_damage(source: Node3D, dealt: float) -> void:
 	var attacker := source as Character
 	if back < MIN_REFLECTED_DAMAGE or attacker == null or attacker == self or attacker.is_dead:
 		return
+	if attacker.global_position.distance_to(global_position) > THORNS_REACH:
+		return
 	attacker.take_reflected_damage(back, self)
 
 
@@ -256,8 +263,8 @@ func _note_attacker(source: Node3D, amount: float) -> void:
 		return
 	if attacker == null:
 		# armadilha e afins tem nome proprio; sem origem nenhuma vira ferimento
-		var cause: String = source.get_display_name() if source and source.has_method("get_display_name") else DamageLog.UNKNOWN_CAUSE
-		damage_log.note_hit(cause, amount)
+		var source_name: String = source.get_display_name() if source and source.has_method("get_display_name") else DamageLog.UNKNOWN_CAUSE
+		damage_log.note_hit(source_name, amount)
 		return
 	var attacker_name := attacker.get_display_name()
 	var is_player := attacker is Adventurer
@@ -292,6 +299,7 @@ func revive(amount: float) -> void:
 ## Restaura as colisões e a animação inicial do personagem re-erguido.
 func _revive_locally(amount: float) -> void:
 	damage_log.clear()
+	_temporary_debuffs.clear()
 	fall_counted = false
 	is_dead = false
 	knockback_velocity = Vector3.ZERO
@@ -351,7 +359,23 @@ func get_stat_bonus(stat: StatModifier.Stat) -> float:
 		for modifier in buff.modifiers:
 			if modifier.stat == stat:
 				total += modifier.amount
-	return total * blessing_share()
+	total *= blessing_share()
+	if stat == StatModifier.Stat.SPEED and _temporary_debuffs.has(QuickItem.Debuff.SLOW):
+		total -= 0.35
+	if stat == StatModifier.Stat.DAMAGE and _temporary_debuffs.has(QuickItem.Debuff.WEAKNESS):
+		total -= 0.5
+	return total
+
+
+func apply_debuff(debuff: QuickItem.Debuff) -> void:
+	if debuff == QuickItem.Debuff.NONE or is_dead:
+		return
+	var timer := get_tree().create_timer(5.0, false)
+	_temporary_debuffs[debuff] = timer
+	timer.timeout.connect(func() -> void:
+		if _temporary_debuffs.get(debuff) == timer:
+			_temporary_debuffs.erase(debuff)
+	, CONNECT_ONE_SHOT)
 
 
 ## parte de cada bênção que este personagem sente: os mortos-vivos e o mímico ficam com uma fração

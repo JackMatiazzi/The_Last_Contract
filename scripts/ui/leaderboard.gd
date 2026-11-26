@@ -3,6 +3,7 @@ class_name Leaderboard
 ## outros jogadores: passam pela mesma limpeza do lobby e só viram texto puro.
 
 const GROUPS_PATH := "/placar/grupos"
+const Network := preload("res://scripts/autoload/net.gd")
 const SOLO_PATH := "/placar/solo"
 const CLASSES: Array[String] = ["Knight", "Barbarian", "Mage", "Rogue"]
 const MISSING := "—"
@@ -20,8 +21,8 @@ static func parse_groups(text: String) -> Variant:
 		var names: Array = []
 		for player: Variant in entry.get("jogadores", []):
 			if player is Dictionary:
-				names.append(Net.clean_name(str(player.get("apelido", ""))))
-		rows.append([str(rows.size() + 1), Net.clean_text(str(entry.get("rotulo", "")), Net.MAX_GROUP_NAME_LENGTH),
+				names.append(Network.clean_name(str(player.get("apelido", ""))))
+		rows.append([str(rows.size() + 1), Network.clean_text(str(entry.get("rotulo", "")), Network.MAX_GROUP_NAME_LENGTH),
 			", ".join(names), _whole(entry.get("tentativas")), _minutes(entry.get("minutos"))])
 	return rows
 

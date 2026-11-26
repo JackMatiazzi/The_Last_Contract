@@ -9,6 +9,8 @@ const POTION := preload("res://resources/items/health_potion.tres")
 
 var role := ""
 var players := 2
+## a conexao muda continua aberta na sala, que nem percebe a queda: a volta tem que tomar o lugar dela
+var _muted_socket: WebSocketPeer
 
 
 func run() -> void:
@@ -37,14 +39,70 @@ func run() -> void:
 	var guests := game.players.filter(func(adventurer: Adventurer) -> bool: return adventurer != host)
 	check(host.get_display_name() == "Host" and guests.all(func(guest: Adventurer) -> bool: return guest.get_display_name().begins_with("Cliente")), "nomes do lobby sobre os bonecos")
 
+	await _one_potion_per_player_from_a_chest(game, host)
+	await _rogue_shot_crosses_the_network(game)
 	await _damage_crosses_the_network(host, helper)
 	await _forged_damage_is_ignored()
+	await _connection_drops_and_comes_back(host, helper)
 	await _revive_through_the_network(host, helper)
 	await _everyone_falls_and_votes()
 	await _host_takes_everyone_down_the_trapdoor()
 	await _michio_joins_and_the_room_holds()
 	await _report_to_the_online_room()
 	await _leave_together()
+
+
+func _one_potion_per_player_from_a_chest(game: GameSession, host: Adventurer) -> void:
+	var chest: Chest
+	for candidate in game.encounters.get_children():
+		if candidate is Chest and candidate.global_position.distance_to(host.global_position) > 12.0:
+			chest = candidate
+			break
+	check(chest != null, "bau distante do ponto inicial")
+	if not chest:
+		return
+	mark("bau selecionado")
+	if not await wait_mark("bau selecionado", players - 1):
+		return
+	var start := game.player.global_position
+	if role == "host":
+		host.global_position = chest.loot_spot.global_position + chest.global_basis.z * 1.3
+		await wait_physics(8)
+		chest._request_open.rpc_id(HOST_PEER)
+	if not await wait_until(func() -> bool: return chest.is_open, "bau aberto em todos os processos"):
+		return
+	var positions: Array[Vector3] = []
+	for i in players:
+		var suffix := "" if i == 0 else str(i + 1)
+		var drop := chest.get_parent().get_node_or_null("%sLoot%s" % [chest.name, suffix]) as Potion
+		check(drop != null, "bau cria a pocao %d de %d" % [i + 1, players])
+		if not drop:
+			return
+		positions.append(drop.global_position)
+	if not await wait_until(func() -> bool: return chest._loot.is_empty(), "a tampa libera as pocoes"):
+		return
+	for peer_id in Net.peers_in_order():
+		var done := "coleta concluida %d" % peer_id
+		if peer_id == multiplayer.get_unique_id():
+			await _walk_over_chest_potions(game.player, start, positions, 3 if peer_id == HOST_PEER else 2)
+			var carried := game.player.inventory.count_of(POTION)
+			var who := "host" if peer_id == HOST_PEER else "cliente"
+			check(carried == 1, "%s passa pelas pocoes e fica com uma unica pocao (%d)" % [who, carried])
+			game.player.global_position = start
+			mark(done)
+		elif not await wait_mark(done):
+			return
+	while game.player.inventory.count_of(POTION) > 0:
+		game.player.inventory.take(POTION)
+
+
+func _walk_over_chest_potions(adventurer: Adventurer, start: Vector3, positions: Array[Vector3], passes: int) -> void:
+	for pass_number in passes:
+		for point in positions:
+			adventurer.global_position = start
+			await wait_physics(4)
+			adventurer.global_position = point
+			await wait_physics(14)
 
 
 # pela sala online cada jogador manda o relatorio da partida com a ficha que recebeu; a sala precisa aceitar
@@ -69,6 +127,75 @@ func _damage_crosses_the_network(host: Adventurer, helper: Adventurer) -> void:
 	var hurt := helper.get_max_health() - 2.0
 	if await wait_until(func() -> bool: return is_equal_approx(helper.health, hurt), "dano do host no cliente"):
 		check(true, "golpe de um jogador chega em todas as maquinas")
+
+
+func _rogue_shot_crosses_the_network(game: GameSession) -> void:
+	var rogue: Adventurer
+	for player in game.players:
+		if player.attack is RangedAttack and (player.attack as RangedAttack).heavy_projectile_count == 2:
+			rogue = player
+			break
+	if not rogue:
+		return
+	var bolts: Array[Projectile] = []
+	var record_bolt := func(node: Node) -> void:
+		if node is Projectile:
+			bolts.append(node)
+	game.child_entered_tree.connect(record_bolt)
+	mark("pronto para ver os virotes")
+	if await wait_mark("pronto para ver os virotes", players - 1):
+		if rogue.is_multiplayer_authority():
+			check(rogue.heavy_attack(), "Rogue dispara o ataque pesado")
+		if await wait_until(func() -> bool: return bolts.size() >= 2, "dois virotes do Rogue"):
+			check(bolts.size() == 2, "ataque pesado do Rogue cria dois virotes nesta máquina")
+	game.child_entered_tree.disconnect(record_bolt)
+
+
+# pela sala online a conexão cai e volta sozinha, sem ninguém sair do grupo nem perder o que aconteceu
+# enquanto estava fora: primeiro o ajudante com a conexão muda, depois o host com a conexão cortada
+func _connection_drops_and_comes_back(host: Adventurer, helper: Adventurer) -> void:
+	var relay := multiplayer.multiplayer_peer as RelayPeer
+	if relay == null:
+		return
+	var hurt := helper.health - 1.0
+	if role == "host":
+		mark("cortar ajudante")
+		await get_tree().create_timer(1.5).timeout
+		helper.take_damage(1.0, host)
+	elif _is_helper():
+		await wait_mark("cortar ajudante")
+		_muted_socket = relay._socket
+		_cut_and_wait(relay)
+		check(relay.is_resuming(), "o ajudante nota a queda e tenta voltar")
+	if await wait_until(func() -> bool: return is_equal_approx(helper.health, hurt) and not relay.is_resuming(), "golpe dado com o ajudante fora"):
+		check(true, "o golpe dado com o ajudante fora chega quando ele volta")
+	check(Net.player_count == players and session().players.size() == players, "ninguém sai do grupo com a queda do ajudante")
+	mark("ajudante de volta")
+	await wait_mark("ajudante de volta", players - 1)
+
+	if role == "host":
+		mark("host vai cair")
+		await get_tree().create_timer(0.5).timeout
+		_cut_and_wait(relay)
+		check(relay.is_resuming(), "o host nota a queda e tenta voltar")
+		if await wait_mark("enquanto o host estava fora"):
+			check(true, "o que o ajudante mandou com o host fora chega quando ele volta")
+	elif _is_helper():
+		await wait_mark("host vai cair")
+		await get_tree().create_timer(1.5).timeout
+		mark("enquanto o host estava fora")
+	await wait_until(func() -> bool: return not relay.is_resuming(), "host voltar")
+	check(Net.player_count == players and session().players.size() == players, "ninguém sai do grupo com a queda do host")
+	mark("host de volta")
+	await wait_mark("host de volta", players - 1)
+
+
+# troca a conexão por uma que nunca abriu e segura a primeira tentativa de voltar por 3 s, para o resto do
+# grupo jogar um pouco sem este processo
+func _cut_and_wait(relay: RelayPeer) -> void:
+	relay._socket = WebSocketPeer.new()
+	relay._poll()
+	relay._next_resume_msec = Time.get_ticks_msec() + 3000
 
 
 # o ajudante manda um pedido de dano forjado; quando o marco chega ao host, ele ja foi processado

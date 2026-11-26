@@ -74,7 +74,14 @@ func _redraw_once() -> void:
 
 
 func _spawn_damage_number(amount: float) -> void:
-	_spawn_text("-%d" % roundi(amount), damage_number_color)
+	_spawn_text(damage_text(amount), damage_number_color)
+
+
+## abaixo de 1 o arredondamento mostrava "-0" para um dano que tirou vida de verdade
+static func damage_text(amount: float) -> String:
+	if amount >= 0.95:
+		return "-%d" % roundi(amount)
+	return "-" + String.num(snappedf(maxf(amount, 0.1), 0.1), 1).replace(".", ",")
 
 
 func _spawn_text(message: String, color: Color) -> void:

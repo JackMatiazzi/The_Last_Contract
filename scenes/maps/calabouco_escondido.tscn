@@ -1,4 +1,4 @@
-[gd_scene load_steps=28 format=3]
+[gd_scene load_steps=29 format=3]
 
 [ext_resource type="MeshLibrary" path="res://resources/mesh_libraries/dungeon_ground.res" id="1_ground"]
 [ext_resource type="MeshLibrary" path="res://resources/mesh_libraries/dungeon_structure.res" id="2_structure"]
@@ -7,8 +7,9 @@
 [ext_resource type="PackedScene" path="res://scenes/world/prop_debris.tscn" id="5_debris"]
 [ext_resource type="PackedScene" path="res://scenes/world/dungeon_torch.tscn" id="6_torch"]
 [ext_resource type="PackedScene" path="res://scenes/world/spike_trap.tscn" id="7_spikes"]
-[ext_resource type="PackedScene" path="res://scenes/world/mana_potion.tscn" id="8_mana"]
 [ext_resource type="PackedScene" path="res://scenes/world/health_potion.tscn" id="9_health"]
+[ext_resource type="PackedScene" path="res://scenes/world/black_potion_slow.tscn" id="black_potion"]
+[ext_resource type="Resource" path="res://resources/items/black_potion_weakness.tres" id="black_alternate"]
 [ext_resource type="PackedScene" path="res://scenes/world/chest.tscn" id="10_chest"]
 [ext_resource type="PackedScene" path="res://scenes/world/pendulum_trap.tscn" id="11_pendulum"]
 [ext_resource type="PackedScene" path="res://scenes/world/dart_trap.tscn" id="12_darts"]
@@ -280,27 +281,6 @@ position = Vector3(68.0, -6, 110.0)
 
 [node name="Interativos" type="Node3D" parent="."]
 
-[node name="PocaoMana1" parent="Interativos" instance=ExtResource("8_mana")]
-position = Vector3(59.0, -4.0, 51.0)
-
-[node name="PocaoMana2" parent="Interativos" instance=ExtResource("8_mana")]
-position = Vector3(69.0, -4.0, 65.0)
-
-[node name="PocaoMana3" parent="Interativos" instance=ExtResource("8_mana")]
-position = Vector3(64.0, -6.0, 116.0)
-
-[node name="PocaoMana4" parent="Interativos" instance=ExtResource("8_mana")]
-position = Vector3(72.0, -6.0, 115.0)
-
-[node name="PocaoMana5" parent="Interativos" instance=ExtResource("8_mana")]
-position = Vector3(52.8, -8.0, 104.8)
-
-[node name="PocaoMana6" parent="Interativos" instance=ExtResource("8_mana")]
-position = Vector3(48.8, 0.0, 35.2)
-
-[node name="PocaoMana7" parent="Interativos" instance=ExtResource("8_mana")]
-position = Vector3(51.2, 0.0, 43.2)
-
 [node name="PocaoVida1" parent="Interativos" instance=ExtResource("9_health")]
 position = Vector3(12.8, 0.0, 29.0)
 
@@ -328,18 +308,19 @@ position = Vector3(88.0, -6.0, 92.0)
 [node name="PocaoVidaEntrada" parent="Interativos" instance=ExtResource("9_health")]
 position = Vector3(34.4, 0.0, 11.2)
 
-[node name="PocaoManaEntrada" parent="Interativos" instance=ExtResource("8_mana")]
-position = Vector3(37.6, 0.0, 11.2)
-
 [node name="PocaoVidaAndar2" parent="Interativos" instance=ExtResource("9_health")]
 position = Vector3(34.4, -4.0, 57.2)
+
+[node name="PocaoPretaAndar2" parent="Interativos" instance=ExtResource("black_potion")]
+position = Vector3(37.2, -4.0, 57.2)
+alternate_item = ExtResource("black_alternate")
 
 [node name="PocaoVidaAndar3" parent="Interativos" instance=ExtResource("9_health")]
 position = Vector3(70.0, -8.0, 87.0)
 
 [node name="BauDoTesouro" parent="Interativos" instance=ExtResource("10_chest")]
 transform = Transform3D(-1.0, 0, 0.0, 0, 1, 0, -0.0, 0, -1.0, 72.0, -6, 121.4)
-loot_scene = ExtResource("8_mana")
+loot_scene = ExtResource("9_health")
 
 [node name="BauSecreto" parent="Interativos" instance=ExtResource("10_chest")]
 transform = Transform3D(-1.0, 0, 0.0, 0, 1, 0, -0.0, 0, -1.0, 52.0, -8, 105.3)
@@ -347,7 +328,7 @@ loot_scene = ExtResource("9_health")
 
 [node name="BauBiblioteca" parent="Interativos" instance=ExtResource("10_chest")]
 transform = Transform3D(-1.0, 0, 0.0, 0, 1, 0, -0.0, 0, -1.0, 48.0, 0, 45.3)
-loot_scene = ExtResource("8_mana")
+loot_scene = ExtResource("9_health")
 
 [node name="BauArsenal" parent="Interativos" instance=ExtResource("10_chest")]
 transform = Transform3D(0.0, 0, -1.0, 0, 1, 0, 1.0, 0, 0.0, 37.3, -4, 80.0)

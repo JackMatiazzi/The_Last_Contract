@@ -241,16 +241,16 @@ gamepad_text = "LT"
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"MutedLabel"
-text = "Trocar habilidade ou item"
+text = "Trocar item"
 
 [node name="Key5" type="Label" parent="Center/GuidePanel/Content/Columns/Controls/Grid"]
 layout_mode = 2
 size_flags_horizontal = 3
 script = ExtResource("3_hint")
 theme_override_font_sizes/font_size = 17
-text = "Roda do mouse"
-keyboard_text = "Roda do mouse"
-gamepad_text = "Direcional"
+text = "Roda do mouse para baixo"
+keyboard_text = "Roda do mouse para baixo"
+gamepad_text = "Direcional para baixo"
 
 [node name="Action6" type="Label" parent="Center/GuidePanel/Content/Columns/Controls/Grid"]
 layout_mode = 2

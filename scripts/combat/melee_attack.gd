@@ -1,5 +1,7 @@
 class_name MeleeAttack
 extends Attack
+
+signal hitting_character(target: Character)
 ## a hitbox atravessa parede, entao cada alvo precisa de linha livre ate o atacante
 
 const WORLD_LAYER := 1
@@ -29,6 +31,7 @@ func _perform(attacker: Character, total_damage: float, heavy: bool) -> void:
 	var landed := false
 	for body in strike.get_overlapping_bodies():
 		if body is Character and body != attacker and _has_clear_line(attacker, body):
+			hitting_character.emit(body)
 			body.take_damage(total_damage, attacker)
 			if heavy and heavy_launch_speed > 0.0:
 				body.launch_away_from(attacker, heavy_launch_speed, heavy_launch_lift)

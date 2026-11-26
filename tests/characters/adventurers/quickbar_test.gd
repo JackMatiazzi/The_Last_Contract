@@ -118,7 +118,7 @@ func test_hud_cross_shows_ability_secondary_and_quick_item() -> void:
 	knight.inventory.add(HEALTH_POTION)
 	assert_object(hud.item_icon.texture).is_same(HEALTH_POTION.icon)
 	assert_str(hud.item_count.text).is_equal("×1")
-	assert_str(hud.item_hint.text).is_equal("Poção de vida\nsegure X")
+	assert_str(hud.item_hint.text).is_equal("Poção de vida\nsegure X · Y larga")
 
 
 func test_every_ability_and_item_has_an_icon() -> void:
@@ -246,3 +246,30 @@ func test_the_potion_heals_a_fifth_of_max_health() -> void:
 	hearty.use_item()
 
 	assert_float(hearty.health - before).is_equal_approx(12.0 * 0.2, 0.001)
+
+
+# o host não respondeu ao largar a poção: passado o tempo, o jogador volta a poder beber e reviver
+func test_a_drop_without_answer_stops_blocking_after_the_timeout() -> void:
+	knight.inventory.add(HEALTH_POTION)
+	knight._pending_drops.append(HEALTH_POTION)
+	knight._pending_drop_at = Time.get_ticks_msec() / 1000.0
+	assert_bool(knight._drop_waiting()).is_true()
+
+	knight._pending_drop_at -= Adventurer.DROP_REPLY_TIMEOUT + 0.1
+
+	assert_bool(knight._drop_waiting()).is_false()
+
+
+# largou de novo antes da resposta atrasada: cada resposta aceita tira um item, sem poção a mais
+func test_two_drops_waiting_on_late_answers_take_one_potion_each() -> void:
+	knight.inventory.add(HEALTH_POTION)
+	knight.inventory.add(HEALTH_POTION)
+	knight._pending_drops.append(HEALTH_POTION)
+	knight._pending_drops.append(HEALTH_POTION)
+
+	# pela rede, como o host responde: a chamada local vem com o id do host
+	knight._drop_reply.rpc_id(knight.get_multiplayer_authority(), true)
+	knight._drop_reply.rpc_id(knight.get_multiplayer_authority(), true)
+
+	assert_int(knight.inventory.count_of(HEALTH_POTION)).is_equal(0)
+	assert_bool(knight._pending_drops.is_empty()).is_true()

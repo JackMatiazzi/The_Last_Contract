@@ -123,10 +123,11 @@ func test_barbarian_offhand_axe_is_quicker_than_the_spin() -> void:
 	assert_float(barbarian.secondary_attack.effective_cooldown(barbarian)).is_less(barbarian.attack.effective_cooldown(barbarian))
 
 
-func test_mage_has_no_secondary() -> void:
+func test_mage_casts_portal_on_secondary() -> void:
 	var mage := arena.spawn(TestArena.MAGE, Vector3.ZERO) as Adventurer
 	await arena.wait_physics(3)
 
 	mage.use_secondary()
 
-	assert_bool(mage.is_busy).is_false()
+	assert_bool(mage.is_busy).is_true()
+	assert_object(mage.secondary_attack).is_instanceof(PortalSpell)
