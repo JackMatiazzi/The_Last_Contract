@@ -71,7 +71,14 @@ func set_value(key: StringName, value: Variant) -> void:
 
 
 ## a escolha salva difere do renderizador em uso: vale ao reabrir o jogo
+## no navegador o jogo roda sempre no Compatibility e o Godot não consegue se reiniciar: não há o que escolher
+static func graphics_choice_available() -> bool:
+	return not OS.has_feature("web")
+
+
 func graphics_restart_needed() -> bool:
+	if not graphics_choice_available():
+		return false
 	var running_performance := RenderingServer.get_current_rendering_method() == PERFORMANCE_RENDERER
 	return running_performance != (graphics_mode == GraphicsMode.PERFORMANCE)
 
@@ -82,6 +89,8 @@ func restart_game() -> void:
 
 
 func _write_graphics_override() -> void:
+	if not graphics_choice_available():
+		return
 	if graphics_mode == GraphicsMode.QUALITY:
 		if FileAccess.file_exists(graphics_override_path):
 			var removed := DirAccess.remove_absolute(ProjectSettings.globalize_path(graphics_override_path))

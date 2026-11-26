@@ -90,3 +90,10 @@ func test_the_main_menu_settings_allow_restarting() -> void:
 	var main_menu: Node = auto_free((load("res://scenes/ui/main_menu.tscn") as PackedScene).instantiate())
 
 	assert_bool((main_menu.get_node("%SettingsMenu") as SettingsMenu).allows_restart).is_true()
+
+
+# no executável a escolha aparece; no navegador (sem reinício e sempre Compatibility) ela some
+func test_the_graphics_choice_shows_on_desktop() -> void:
+	assert_bool(Settings.graphics_choice_available()).is_true()
+	assert_bool(menu.graphics_option.visible).is_true()
+	assert_bool((menu.get_node("%GraphicsStatus") as Control).visible).is_true()

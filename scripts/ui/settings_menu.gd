@@ -70,6 +70,8 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _bind_graphics() -> void:
+	for node: Control in [%GraphicsLabel, graphics_option, %GraphicsSpacer, %GraphicsStatus]:
+		node.visible = Settings.graphics_choice_available()
 	graphics_option.selected = graphics_option.get_item_index(Settings.graphics_mode)
 	graphics_option.item_selected.connect(func(index: int) -> void:
 		Settings.set_value(&"graphics_mode", graphics_option.get_item_id(index))
