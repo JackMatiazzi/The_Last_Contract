@@ -4,6 +4,16 @@ on:
   release:
     types: [published]
   workflow_dispatch:
+  # a release da entrega chama este workflow: release criada pelo token do proprio GitHub nao dispara
+  # o evento "published" para outros workflows
+  workflow_call:
+    inputs:
+      versao:
+        type: string
+        required: false
+    secrets:
+      BUTLER_API_KEY:
+        required: true
 
 permissions:
   contents: read
@@ -81,7 +91,7 @@ jobs:
       - name: Enviar para o itch.io
         env:
           BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
-          VERSION: ${{ github.event.release.tag_name || github.sha }}
+          VERSION: ${{ inputs.versao || github.event.release.tag_name || github.sha }}
         run: |
           if [ -z "$BUTLER_API_KEY" ]; then
             echo "::error::Configure o segredo BUTLER_API_KEY no repositório."

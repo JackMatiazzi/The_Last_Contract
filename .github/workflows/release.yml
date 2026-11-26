@@ -33,6 +33,8 @@ jobs:
   release:
     needs: [exportar, gdd]
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
     steps:
       - uses: actions/checkout@v7
 
@@ -62,3 +64,16 @@ jobs:
             TheLastContract-windows.zip
             TheLastContract-web.zip
             gdd.pdf
+
+  # a release criada aqui nao dispara outros workflows: o envio ao itch.io e chamado direto
+  itch:
+    needs: release
+    uses: ./.github/workflows/itch.yml
+    with:
+      versao: ${{ needs.release.outputs.tag }}
+    secrets:
+      BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+    permissions:
+      contents: read
+      checks: write
+      actions: read
